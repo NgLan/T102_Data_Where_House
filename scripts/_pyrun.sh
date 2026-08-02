@@ -6,6 +6,8 @@
 # Designed to be sourced or called as: bash scripts/_pyrun.sh <script> [args...]
 #
 # Exits 0 silently if no Python is found — hooks must never block the AI tool.
+# Keep this launcher intentionally lightweight so local hooks and CI remain resilient.
+# Check log
 set -u
 
 is_working_python() {
