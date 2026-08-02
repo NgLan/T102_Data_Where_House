@@ -39,7 +39,7 @@ def git(cmd):
 
 def interactive_mode():
     """Prompt user for log info interactively."""
-    print("\n📝 Manual AI Log Entry")
+    print("\n=== Manual AI Log Entry ===")
     print("=" * 40)
 
     tool = input("Tool name (e.g. chatgpt, gemini-web, copilot, other): ").strip()
@@ -52,7 +52,7 @@ def interactive_mode():
 
     prompt = input("What did you ask/do? (brief summary): ").strip()
     if not prompt:
-        print("[log] ❌ Prompt cannot be empty.", file=sys.stderr)
+        print("[log] [ERROR] Prompt cannot be empty.", file=sys.stderr)
         sys.exit(1)
 
     result = input("Result/outcome (optional, press Enter to skip): ").strip()
@@ -81,7 +81,7 @@ def main():
     student = git("git config user.email")
     if not student:
         student = os.environ.get("USERNAME", os.environ.get("USER", "unknown"))
-        print(f"[log] ⚠️  git email not set! Using fallback: {student}", file=sys.stderr)
+        print(f"[log] [WARNING] git email not set! Using fallback: {student}", file=sys.stderr)
         print(f"[log] Run: git config user.email \"your@vinuni.edu.vn\"", file=sys.stderr)
 
     entry = {
@@ -105,8 +105,8 @@ def main():
     with open(log_file, "a", encoding="utf-8") as f:
         f.write(json.dumps(entry, ensure_ascii=False) + "\n")
 
-    print(f"\n[log] ✅ Logged: [{tool}] {prompt[:80]}")
-    print(f"[log] 📁 Saved to: {log_file}")
+    print(f"\n[log] [SUCCESS] Logged: [{tool}] {prompt[:80]}")
+    print(f"[log] Saved to: {log_file}")
 
 
 if __name__ == "__main__":
