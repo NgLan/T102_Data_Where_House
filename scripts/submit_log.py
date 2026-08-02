@@ -7,7 +7,7 @@ After a successful submit, the live log is rotated:
   - Moved into .ai-log/archive/YYYY-MM-DD.jsonl (appended, never overwritten)
   - The live session.jsonl is recreated empty by the next hook write
 
-If the POST fails, the pending file is restored so nothing is lost.
+If the POST fails, the pending file is restored so nothing is lost
 """
 import json
 import os
