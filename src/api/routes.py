@@ -37,23 +37,18 @@ async def agent_status():
     response_model=GenerateSchemaResponse,
     status_code=status.HTTP_200_OK,
     summary="Sinh Data Warehouse Schema & SQL DDL (BigQuery Standard)",
-    description="Nhận yêu cầu nghiệp vụ JSON và trả về BigQuery Kimball Schema gồm Fact/Dim, Grain, PK/FK, DDL SQL và Anti-pattern warnings."
+    description="Nhận yêu cầu nghiệp vụ JSON và trả về BigQuery Kimball Schema gồm Fact/Dim, Grain, PK/FK, DDL SQL và Anti-pattern warnings.",
 )
 async def generate_schema(request: GenerateSchemaRequest) -> GenerateSchemaResponse:
     """Endpoint sinh BigQuery Schema dạng JSON."""
     try:
         data = await schema_agent.generate_schema(request)
         return GenerateSchemaResponse(
-            status="success",
-            code=200,
-            message="BigQuery Data Schema generated successfully",
-            data=data,
-            error=None
+            status="success", code=200, message="BigQuery Data Schema generated successfully", data=data, error=None
         )
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Lỗi hệ thống khi sinh schema: {str(e)}"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Lỗi hệ thống khi sinh schema: {str(e)}"
         )
 
 
@@ -62,21 +57,16 @@ async def generate_schema(request: GenerateSchemaRequest) -> GenerateSchemaRespo
     response_model=ValidateSchemaResponse,
     status_code=status.HTTP_200_OK,
     summary="Thẩm định DDL SQL & Kiểm tra Anti-patterns",
-    description="Nhận đoạn DDL SQL và phân tích bẫy thiết kế (Anti-patterns), chấm điểm chất lượng schema."
+    description="Nhận đoạn DDL SQL và phân tích bẫy thiết kế (Anti-patterns), chấm điểm chất lượng schema.",
 )
 async def validate_schema(request: ValidateSchemaRequest) -> ValidateSchemaResponse:
     """Endpoint thẩm định DDL SQL."""
     try:
         data = await schema_agent.validate_schema(request)
         return ValidateSchemaResponse(
-            status="success",
-            code=200,
-            message="Schema validation completed",
-            data=data,
-            error=None
+            status="success", code=200, message="Schema validation completed", data=data, error=None
         )
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Lỗi hệ thống khi thẩm định schema: {str(e)}"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Lỗi hệ thống khi thẩm định schema: {str(e)}"
         )
