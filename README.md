@@ -55,7 +55,7 @@ cp .env.example .env
 bash scripts/setup_hooks.sh
 
 # Windows PowerShell
-# powershell -ExecutionPolicy Bypass -File scripts\setup_hooks.ps1
+ powershell -ExecutionPolicy Bypass -File scripts\setup_hooks.ps1
 ```
 
 Hooks tự động log mọi AI prompt khi dùng Claude Code, Cursor, Codex, Gemini CLI, Antigravity, hoặc GitHub Copilot. Không cần thao tác thủ công.

@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Model AI Agent - Prototype</title>
+    <style>
+        /* Thiết lập giao diện tổng thể dạng Dashboard hiện đại */
+        :root {
+            --primary: #2563eb; --primary-hover: #1d4ed8;
+            --bg: #f8fafc; --surface: #ffffff;
+            --text: #0f172a; --text-light: #64748b;
+            --border: #e2e8f0;
+        }
+        body { margin: 0; font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; }
+        
+        /* Cấu trúc Sidebar (Menu điều hướng các bước) */
+        .sidebar { width: 260px; background: var(--surface); border-right: 1px solid var(--border); padding: 20px; display: flex; flex-direction: column; }
+        .logo { font-size: 18px; font-weight: bold; color: var(--primary); margin-bottom: 30px; display: flex; align-items: center; gap: 10px; }
+        .nav-item { padding: 12px 15px; margin-bottom: 8px; border-radius: 6px; cursor: pointer; font-weight: 500; color: var(--text-light); transition: all 0.2s; border: 1px solid transparent; }
+        .nav-item:hover { background: #f1f5f9; }
+        .nav-item.active { background: #eff6ff; color: var(--primary); border: 1px solid #bfdbfe; }
+        
+        /* Khu vực nội dung chính */
+        .main-content { flex: 1; padding: 30px; overflow-y: auto; }
+        .screen { display: none; animation: fadeIn 0.3s ease; }
+        .screen.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Card & Layout tổng dụng */
+        .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .header-title { font-size: 24px; font-weight: 600; margin-top: 0; margin-bottom: 20px; border-bottom: 2px solid #f1f5f9; padding-bottom: 15px;}
+        .split-layout { display: flex; gap: 24px; height: calc(100vh - 150px); }
+        .col-50 { flex: 1; display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; overflow: hidden; }
+        
+        /* Form & Button */
+        .form-group { margin-bottom: 16px; }
+        label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 6px; }
+        select, input[type="text"], textarea { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; box-sizing: border-box; }
+        .btn { padding: 10px 18px; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; transition: 0.2s; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-secondary { background: #e2e8f0; color: var(--text); }
+        .btn-secondary:hover { background: #cbd5e1; }
+        .drag-zone { border: 2px dashed #94a3b8; border-radius: 8px; padding: 40px; text-align: center; color: var(--text-light); background: #f8fafc; cursor: pointer; }
+        
+        /* UI cho ERD Canvas & Cảnh báo */
+        .canvas-area { flex: 1; background: #f1f5f9; border-radius: 8px; position: relative; border: 1px dashed #cbd5e1; display: flex; align-items: center; justify-content: center;}
+        .table-node { position: absolute; background: white; border-radius: 6px; padding: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 180px; font-size: 13px; }
+        .fact-node { border-top: 4px solid #3b82f6; top: 20%; left: 30%; }
+        .dim-node { border-top: 4px solid #22c55e; bottom: 20%; right: 20%; }
+        .alert-box { padding: 12px; border-radius: 6px; margin-bottom: 10px; font-size: 14px; }
+        .alert-error { background: #fef2f2; border-left: 4px solid #ef4444; color: #991b1b; }
+        .alert-warn { background: #fffbeb; border-left: 4px solid #f59e0b; color: #b45309; }
+        
+        /* UI Chat & Data Grid */
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th, td { border-bottom: 1px solid var(--border); padding: 12px 10px; text-align: left; }
+        th { background: #f8fafc; font-weight: 600; }
+        .chat-container { display: flex; flex-direction: column; flex: 1; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+        .chat-history { flex: 1; background: #f8fafc; padding: 15px; overflow-y: auto; }
+        .msg { max-width: 80%; padding: 10px 14px; border-radius: 8px; margin-bottom: 10px; font-size: 14px; line-height: 1.4; }
+        .msg-ai { background: white; border: 1px solid var(--border); border-bottom-left-radius: 0; align-self: flex-start; }
+        .msg-user { background: var(--primary); color: white; border-bottom-right-radius: 0; margin-left: auto; }
+        .chat-input { display: flex; padding: 10px; background: white; border-top: 1px solid var(--border); }
+        .chat-input input { flex: 1; margin: 0; border: none; outline: none; }
+        
+        /* Terminal */
+        .terminal { background: #0f172a; color: #22c55e; font-family: 'Courier New', Courier, monospace; padding: 15px; border-radius: 8px; height: 150px; overflow-y: auto; font-size: 13px; line-height: 1.5; }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar Menu Điều hướng -->
+    <div class="sidebar">
+        <div class="logo">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+            DataModel AI
+        </div>
+        <!-- Hàm: switchScreen dùng để đổi giao diện bằng Javascript phía dưới -->
+        <div class="nav-item active" onclick="switchScreen('step1', this)">1. Khởi tạo & Nhập liệu</div>
+        <div class="nav-item" onclick="switchScreen('step2', this)">2. ERD & Cảnh báo</div>
+        <div class="nav-item" onclick="switchScreen('step3', this)">3. HITL Editor (Tinh chỉnh)</div>
+        <div class="nav-item" onclick="switchScreen('step4', this)">4. Export & Sandbox</div>
+    </div>
+
+    <!-- Nội dung chính -->
+    <div class="main-content">
+        
+        <!-- ================= MÀN HÌNH 1 ================= -->
+<!-- ================= MÀN HÌNH 1 ================= -->
+        <div id="step1" class="screen active card">
+            <h2 class="header-title">Khởi tạo dự án & Cấu hình</h2>
+            
+            <!-- Chức năng: Đã gỡ bỏ giới hạn max-width để form tự động kéo dãn 100% theo chiều ngang của khung cha -->
+            <div style="width: 100%;">
+                <div class="form-group">
+                    <label>Domain Mẫu (Nghiệp vụ)</label>
+                    <select>
+                        <option>Dịch vụ Gọi xe (Ride-hailing)</option>
+                        <option>Thương mại điện tử (E-commerce)</option>
+                        <option>Tùy chỉnh (Custom)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Target Dialect (CSDL Mục tiêu)</label>
+                    <div style="display: flex; gap: 15px; padding: 10px; border: 1px solid var(--border); border-radius: 6px;">
+                        <label style="margin:0;"><input type="radio" name="db" checked> PostgreSQL</label>
+                        <label style="margin:0;"><input type="radio" name="db"> Snowflake</label>
+                    </div>
+                </div>
+                
+                <!-- Chức năng: Tăng số hàng (rows) của textarea để khung nhập liệu nhìn thoáng hơn khi kéo ngang -->
+                <div class="form-group">
+                    <label>Mô tả nghiệp vụ</label>
+                    <textarea rows="6" placeholder="Nhập mô tả các thực thể chính, quy trình chuyến đi, khuyến mãi..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Cấu trúc dữ liệu nguồn</label>
+                    <div class="drag-zone">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:10px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg><br>
+                        Kéo thả file .sql hoặc .json (Tối đa 20 bảng)
+                    </div>
+                </div>
+                <div class="form-group" style="display: flex; align-items: center; gap: 8px;">
+                    <input type="checkbox" id="masking" checked>
+                    <label for="masking" style="margin:0; cursor:pointer;">Bật tự động che thông tin nhạy cảm (PII Masking)</label>
+                </div>
+                
+                <!-- Chức năng: Nút bấm chuyển bước mô phỏng hành động AI phân tích -->
+                <button class="btn btn-primary" onclick="document.querySelectorAll('.nav-item')[1].click()" style="width: 100%; margin-top: 15px; padding: 12px; font-size: 16px;">✨ Phân tích & Tạo Mô hình (AI)</button>
+            </div>
+        </div>
+
+        <!-- ================= MÀN HÌNH 2 ================= -->
+        <div id="step2" class="screen">
+            <h2 class="header-title">Kết quả Phân tích (Interactive Dashboard)</h2>
+            <div class="split-layout">
+                <!-- Cột trái: ERD Canvas -->
+                <div class="col-50">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <label>Sơ đồ ERD (Mô phỏng Mermaid.js)</label>
+                        <div>
+                            <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px;">+ Zoom</button>
+                            <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px;">- Zoom</button>
+                        </div>
+                    </div>
+                    <div class="canvas-area">
+                        <!-- Mô phỏng các Node giao diện tĩnh -->
+                        <div class="table-node fact-node">
+                            <b>Fact_Rides</b><br><span style="color: gray;">(Bảng Fact)</span><br>
+                            <hr style="border: 0; border-top: 1px solid #eee;">
+                            PK ride_id<br>FK driver_id
+                        </div>
+                        <div class="table-node dim-node">
+                            <b>Dim_Driver</b><br><span style="color: gray;">(Bảng Dimension)</span><br>
+                            <hr style="border: 0; border-top: 1px solid #eee;">
+                            PK driver_id<br>name
+                        </div>
+                        <span style="color: #94a3b8;">[Khu vực Render Đồ thị Động]</span>
+                    </div>
+                </div>
+                <!-- Cột phải: Grain & Cảnh báo -->
+                <div class="col-50">
+                    <div style="display: flex; gap: 10px; border-bottom: 1px solid var(--border); margin-bottom: 15px;">
+                        <div style="padding-bottom: 10px; border-bottom: 2px solid var(--primary); font-weight: 500; cursor: pointer;">Chi tiết Bảng</div>
+                        <div style="padding-bottom: 10px; color: var(--text-light); cursor: pointer;">Cảnh báo (2)</div>
+                    </div>
+                    
+                    <label>Grain (Độ mịn dữ liệu) - Fact_Rides:</label>
+                    <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid var(--border); font-size: 14px; margin-bottom: 20px;">
+                        "Mỗi dòng trong bảng Fact_Rides tương ứng với 1 chuyến xe hoàn thành hoặc bị hủy."
+                    </div>
+                    
+                    <label>Phát hiện Anti-pattern:</label>
+                    <div class="alert-box alert-error">
+                        <b>Fan Trap:</b> Quan hệ giữa Fact_Rides và Dim_Promotion có thể gây lặp doanh thu khi sum. Gợi ý: Tách riêng bảng Fact_Promotion_Usage.
+                    </div>
+                    <div class="alert-box alert-warn">
+                        <b>Missing Surrogate Key:</b> Bảng Dim_Driver đang dùng Natural Key. Nên sinh khóa driver_key tự động.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= MÀN HÌNH 3 ================= -->
+        <div id="step3" class="screen">
+            <h2 class="header-title">Human-In-The-Loop (Tinh chỉnh mô hình)</h2>
+            <div class="split-layout">
+                <!-- Cột trái: Data Grid -->
+                <div class="col-50">
+                    <label style="margin-bottom: 10px;">Chỉnh sửa Cột trực tiếp (Double-click để sửa)</label>
+                    <div style="flex: 1; border: 1px solid var(--border); border-radius: 8px; overflow: hidden;">
+                        <table>
+                            <tr>
+                                <th>Tên Cột</th>
+                                <th>Kiểu dữ liệu</th>
+                                <th>Khóa</th>
+                                <th>Null</th>
+                            </tr>
+                            <tr><td>ride_key</td><td>INT</td><td>PK</td><td><input type="checkbox"></td></tr>
+                            <tr><td>driver_key</td><td>INT</td><td>FK</td><td><input type="checkbox"></td></tr>
+                            <tr><td>fare_amount</td><td>DECIMAL(10,2)</td><td>-</td><td><input type="checkbox" checked></td></tr>
+                        </table>
+                    </div>
+                </div>
+                <!-- Cột phải: Khung Chat AI -->
+                <div class="col-50">
+                    <label style="margin-bottom: 10px;">Trợ lý AI (Re-prompt)</label>
+                    <div style="display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap;">
+                        <span style="background:#e2e8f0; padding:4px 10px; border-radius:12px; font-size:12px; cursor:pointer;">+ Tách bảng Driver</span>
+                        <span style="background:#e2e8f0; padding:4px 10px; border-radius:12px; font-size:12px; cursor:pointer;">+ Đổi sang Snowflake</span>
+                    </div>
+                    <div class="chat-container">
+                        <div class="chat-history" style="display: flex; flex-direction: column;">
+                            <div class="msg msg-ai">Tui đã dựng xong cấu trúc ban đầu. Bạn kiểm tra Grain và các bảng nhé. Cần điều chỉnh gì cứ báo tui!</div>
+                            <div class="msg msg-user">Thêm thuộc tính 'discount_amount' vào bảng Fact_Rides giúp tui.</div>
+                            <div class="msg msg-ai">Đã rõ! Tui đã thêm `discount_amount` DECIMAL(10,2) vào Fact_Rides. Bạn có thể xem Diff View để đối chiếu.</div>
+                        </div>
+                        <div class="chat-input">
+                            <input type="text" placeholder="Nhập yêu cầu thay đổi logic...">
+                            <button class="btn btn-primary" style="padding: 6px 12px;">Gửi</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= MÀN HÌNH 4 ================= -->
+        <div id="step4" class="screen card">
+            <h2 class="header-title">Xuất DDL & Deploy Sandbox</h2>
+            <div style="display: flex; gap: 24px;">
+                <!-- Cột trái: Code Preview -->
+                <div style="flex: 6;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <label style="margin:0;">Code DDL (PostgreSQL)</label>
+                        <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 13px;">Tải file .sql</button>
+                    </div>
+                    <div style="background: #f8fafc; border: 1px solid var(--border); padding: 15px; border-radius: 6px; font-family: monospace; font-size: 13px; color: #334155;">
+                        <span style="color: #2563eb;">CREATE TABLE</span> sandbox_schema.Fact_Rides (<br>
+                        &nbsp;&nbsp;ride_key <span style="color: #059669;">INT PRIMARY KEY</span>,<br>
+                        &nbsp;&nbsp;driver_key <span style="color: #059669;">INT REFERENCES</span> sandbox_schema.Dim_Driver(driver_key),<br>
+                        &nbsp;&nbsp;discount_amount <span style="color: #059669;">DECIMAL(10,2)</span><br>
+                        );<br>
+                        <span style="color: #94a3b8;">-- Code generated successfully --</span>
+                    </div>
+                </div>
+                <!-- Cột phải: Terminal Sandbox -->
+                <div style="flex: 4; display: flex; flex-direction: column;">
+                    <label>Thử nghiệm Môi trường Sandbox</label>
+                    <input type="text" placeholder="Host: localhost" style="margin-bottom: 8px;">
+                    <input type="text" placeholder="DB: sandbox_db" style="margin-bottom: 15px;">
+                    <button class="btn btn-primary" style="margin-bottom: 15px;">🚀 Chạy DDL (Deploy)</button>
+                    
+                    <label>Execution Log Terminal:</label>
+                    <div class="terminal">
+                        > Connecting to sandbox_db:5432... OK<br>
+                        > Executing script...<br>
+                        > CREATE TABLE Fact_Rides... OK<br>
+                        > Execution Successful - 0 errors.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Đoạn script nhỏ giúp HTML "có cảm giác" tương tác bằng cách chuyển màn hình -->
+    <script>
+        // Hàm: Chuyển đổi hiển thị giữa các màn hình (Screen) dựa trên ID
+        function switchScreen(screenId, navElement) {
+            // 1. Ẩn tất cả các màn hình
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            // 2. Gỡ bỏ trạng thái 'active' của tất cả các nút menu
+            document.querySelectorAll('.nav-item').forEach(nav => {
+                nav.classList.remove('active');
+            });
+            
+            // 3. Hiển thị màn hình được chọn và bôi đậm menu tương ứng
+            document.getElementById(screenId).classList.add('active');
+            navElement.classList.add('active');
+        }
+    </script>
+</body>
+</html>

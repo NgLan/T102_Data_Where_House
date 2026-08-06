@@ -7,20 +7,22 @@ After a successful submit, the live log is rotated:
   - Moved into .ai-log/archive/YYYY-MM-DD.jsonl (appended, never overwritten)
   - The live session.jsonl is recreated empty by the next hook write
 
-If the POST fails, the pending file is restored so nothing is lost.
+If the POST fails, the pending file is restored so nothing is lost
 """
+
 import json
 import os
 import shutil
 import sys
 import time
-import urllib.request
 import urllib.error
-from datetime import datetime, timezone
+import urllib.request
+from datetime import UTC, datetime
 from pathlib import Path
 
 try:
     from dotenv import load_dotenv
+
     load_dotenv()
 except ImportError:
     pass
@@ -42,7 +44,7 @@ def _archive(pending: Path) -> None:
     if not pending.exists() or pending.stat().st_size == 0:
         return
     ARCHIVE_DIR.mkdir(parents=True, exist_ok=True)
-    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    today = datetime.now(UTC).strftime("%Y-%m-%d")
     archive_file = ARCHIVE_DIR / f"{today}.jsonl"
     with open(pending, "rb") as src, open(archive_file, "ab") as dst:
         shutil.copyfileobj(src, dst)
@@ -121,7 +123,7 @@ def main():
     try:
         with urllib.request.urlopen(req, timeout=10) as resp:
             print(f"[ai-log] Submitted {len(entries)} entries → {resp.status}", file=sys.stderr)
-    except urllib.error.URLError as e:
+    except Exception as e:
         # Failure: restore the whole pending (including leftover) for next push.
         _restore_pending(pending)
         print(f"[ai-log] Submit failed: {e} — logs kept locally.", file=sys.stderr)
