@@ -1,10 +1,17 @@
+import sys
+from pathlib import Path
 from unittest.mock import AsyncMock
 
 import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 
-from src.main import app
+# Thêm thư mục backend vào sys.path
+backend_path = Path(__file__).parent.parent / "backend"
+if str(backend_path) not in sys.path:
+    sys.path.insert(0, str(backend_path))
+
+from main import app
 
 
 @pytest_asyncio.fixture

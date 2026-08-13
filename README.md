@@ -1,201 +1,321 @@
-# 🤖 AI20K Agent Template
+# 🤖 AI20K Agent System — DW Design & Requirement Automation
 
-Template chính thức cho học viên **VinUni AI20K Build Phase** — cung cấp sẵn cấu trúc dự án, code mẫu, và hướng dẫn kỹ thuật chi tiết để xây dựng AI Agent đạt điểm cao (35+/50).
+Hệ thống AI Agent tự động hóa phân tích yêu cầu (Requirement Analysis) và thiết kế mô hình kho dữ liệu (Data Warehouse Design), thuộc dự án **VinUni AI20K Build Phase - Cohort 4 (P-102)**.
 
-> 📖 **Technical Guidebook:** [phoenix.note.transformerlabs.ai/technical-book](https://phoenix.note.transformerlabs.ai/technical-book)
+Dự án được xây dựng theo chuẩn **Clean Architecture / DDD (Domain-Driven Design)**, tách biệt hoàn toàn giữa **Domain Layer**, **Application Layer**, **Infrastructure Layer** và **Presentation Layer**.
 
-## 🎯 Template này dùng để làm gì?
+---
 
-Khi tham gia AI20K Build Phase, mỗi đội cần xây dựng một AI Agent hoàn chỉnh — từ kiến trúc, code, test, đến deploy. Thay vì bắt đầu từ con số không, template này cung cấp:
+## 📐 Kiến trúc & Tech Stack
 
-- **Cấu trúc thư mục chuẩn** — đã được thiết kế theo best practices (separation of concerns)
-- **Code mẫu** cho các phần cốt lõi: LangGraph agent, FastAPI API, config, schemas
-- **Docker + CI/CD sẵn** — Dockerfile multi-stage, GitHub Actions workflow
-- **Hướng dẫn kỹ thuật 10 chương** — từ clone template đến nộp bài Demo Day
-- **Checklist 10 deliverables** — đảm bảo không bỏ sót yêu cầu BTC
-- **AI Usage Logging tự động** — Pre-configured hooks cho Claude Code, Cursor, Codex, Gemini CLI, Antigravity, và GitHub Copilot
+- **Tầng Domain & Application**: Python 3.13+, Dataclass Entities, Value Objects, Pure Business Invariants.
+- **Tầng Infrastructure**: FastAPI, SQLAlchemy 2.0 (Async Engine + Mapped API), PostgreSQL 16.
+- **Hệ thống AI Agent**: LangChain / LangGraph (Orchestrator Agent, Requirement Agent, DataSource Agent, DW Design Agent).
+- **Containerization & DevOps**: Docker, Docker Compose, Pytest, Ruff Linter.
 
-## ⚡ Quick Start
+---
 
-### Bước 1: Fork hoặc Clone
+## ⚙️ Yêu cầu tiền đề (Prerequisites)
 
-```bash
-# Clone template
-git clone https://github.com/AI20K-Build-Cohort-2/starter-code-template.git team-YOUR_TEAM_NAME
-cd team-YOUR_TEAM_NAME
+Tùy thuộc vào hệ điều hành của bạn (Windows, Linux, macOS), hãy chuẩn bị các công cụ sau:
 
-# Xóa git history cũ và khởi tạo lại
-rm -rf .git
-git init
-git add .
-git commit -m "feat: khởi tạo dự án từ template"
-```
+- **Python**: phiên bản `>= 3.11` (khuyên dùng Python 3.13).
+- **Docker & Docker Compose**: phiên bản v2.0+.
+- **Git**: dùng để quản lý mã nguồn.
 
-### Bước 2: Setup môi trường
+---
+
+## 🚀 Hướng dẫn Setup & Khởi chạy Chi tiết (Step-by-Step)
+
+### Bước 1: Clone Repository & Tạo Virtual Environment
 
 ```bash
-# Tạo virtual environment
-python3.11 -m venv .venv
+# Clone repository về máy local
+git clone https://github.com/AI20K-Build-Phase-Cohort-3/P-102.git
+cd P-102
+
+# Tạo môi trường ảo virtualenv (Python)
+python -m venv .venv
+
+# Kích hoạt môi trường ảo:
+# Trên Windows (PowerShell):
+.\.venv\Scripts\Activate.ps1
+
+# Trên Linux / macOS / Git Bash:
 source .venv/bin/activate
-
-# Cài dependencies
-pip install -e ".[dev]"
-
-# Cấu hình API keys
-cp .env.example .env
-# Mở .env và thêm OPENAI_API_KEY của bạn
-# Đồng thời cập nhật AI_LOG_API_KEY bằng key riêng từ link mời của BTC
-# (giá trị trong .env.example chỉ là placeholder)
 ```
 
-### Bước 3: Cài AI Logging Hooks
+---
+
+### Bước 2: Cài đặt Dependencies
+
+```bash
+# Cập nhật pip và cài đặt các thư viện cần thiết
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+---
+
+### Bước 3: Cấu hình Biến Môi Trường (`.env`)
+
+Sao chép file mẫu `.env.example` thành `.env` và thiết lập cấu hình:
 
 ```bash
 # Linux / macOS / Git Bash
-bash scripts/setup_hooks.sh
+cp .env.example .env
 
 # Windows PowerShell
- powershell -ExecutionPolicy Bypass -File scripts\setup_hooks.ps1
+copy .env.example .env
 ```
 
-Hooks tự động log mọi AI prompt khi dùng Claude Code, Cursor, Codex, Gemini CLI, Antigravity, hoặc GitHub Copilot. Không cần thao tác thủ công.
+#### 🔑 Giải thích chi tiết các biến môi trường quan trọng trong `.env`:
 
-### Bước 4: Chạy server
+| Biến môi trường | Giá trị mặc định | Mô tả chi tiết |
+| :--- | :--- | :--- |
+| **`APP_NAME`** | `"AI20K Agent System"` | Tên đại diện ứng dụng. |
+| **`APP_ENV`** | `development` | Môi trường chạy (`development`, `staging`, `production`). |
+| **`APP_HOST`** | `0.0.0.0` | Host bind ứng dụng FastAPI. |
+| **`APP_PORT`** | `8001` | **Port chạy của Backend Server (8001)**. |
+| **`POSTGRES_USER`** | `postgres` | Tài khoản quản trị PostgreSQL. |
+| **`POSTGRES_PASSWORD`** | `postgres` | Mật khẩu truy cập PostgreSQL. |
+| **`POSTGRES_HOST`** | `localhost` / `127.0.0.1` | Địa chỉ host của CSDL PostgreSQL. |
+| **`POSTGRES_PORT`** | `5432` / `5434` | Port lắng nghe kết nối CSDL PostgreSQL. |
+| **`POSTGRES_DB`** | `ai20k_db` | Tên cơ sở dữ liệu chính. |
+| **`DATABASE_URL`** | `postgresql+asyncpg://...` | Chuỗi kết nối Async Engine cho SQLAlchemy. |
+| **`OPENAI_API_KEY`** | `sk-...` | API Key kết nối với OpenAI LLMs. |
+| **`LOG_LEVEL`** | `INFO` | Mức độ ghi log hệ thống (`DEBUG`, `INFO`, `WARNING`, `ERROR`). |
+
+---
+
+### Bước 4: Khởi chạy PostgreSQL Database bằng Docker
+
+Sử dụng Docker Compose để khởi chạy dịch vụ PostgreSQL 16 containerized:
 
 ```bash
-# Chạy FastAPI backend
-uvicorn src.main:app --reload --port 8000
+# Khởi chạy duy nhất container PostgreSQL ở chế độ background (-d)
+docker compose up -d postgres
 
-# Mở Swagger UI
-# http://localhost:8000/docs
+# Kiểm tra trạng thái container đang hoạt động
+docker compose ps
+
+# (Tùy chọn) Xem logs của container database
+docker compose logs -f postgres
+
+# Dừng container PostgreSQL khi không sử dụng
+docker compose down
+
+# (Tùy chọn) Dừng container và xóa toàn bộ dữ liệu volume nếu muốn reset lại từ đầu
+docker compose down -v
 ```
 
-### Bước 5: Đọc hướng dẫn
+> 💡 **Lưu ý:** Container PostgreSQL sẽ tạo một volume persistent `postgres_data` để lưu trữ dữ liệu bền vững ngay cả khi stop container. Khi muốn xóa toàn bộ dữ liệu để khởi tạo lại CSDL sạch, bạn có thể dùng `docker compose down -v`.
 
-📖 Mở **[Technical Guidebook](https://phoenix.note.transformerlabs.ai/technical-book)** và làm theo từng chương.
+---
 
-## 📁 Cấu trúc dự án
+### Bước 5: Khởi chạy Backend FastAPI Server ở Port 8001
 
+Khởi chạy server Uvicorn bất đồng bộ trên Cổng **8001**:
+
+```bash
+# Cách 1: Chạy từ thư mục backend
+cd backend
+python -m uvicorn main:app --host 0.0.0.0 --port 8001 --reload
+
+# Cách 2: Chạy trực tiếp từ thư mục gốc dự án P-102
+python -m uvicorn backend.main:app --host 0.0.0.0 --port 8001 --reload
 ```
-├── src/
-│   ├── agents/           # 🧠 LangGraph Agent
-│   │   ├── graph.py      #    State graph (nodes + edges)
-│   │   ├── state.py      #    State schema (TypedDict)
-│   │   ├── nodes/        #    Node functions
-│   │   └── tools/        #    Agent tools (@tool)
-│   ├── api/              # 🌐 FastAPI Backend
-│   │   └── routes.py     #    API endpoints
-│   ├── models/           # 📋 Pydantic schemas
-│   ├── services/         # 🔧 Business logic (LLM, etc.)
-│   ├── config.py         # ⚙️ Pydantic Settings
-│   └── main.py           # 🚀 App entry point
-├── tests/                # 🧪 pytest suite
-│   ├── test_agents/      #    Agent/graph tests
-│   └── test_api/         #    API endpoint tests
-├── scripts/              # 🔌 AI Logging Hooks
-│   ├── log_hook.py       #    Auto-log cho Claude/Cursor/Codex/Gemini/Copilot
-│   ├── log_antigravity.py#    Antigravity IDE prompt scanner
-│   ├── log_manual.py     #    Manual log cho ChatGPT / web tools
-│   ├── submit_log.py     #    Submit logs on git push
-│   └── setup_hooks.sh    #    One-time hook installer
-├── .claude/ .codex/ .cursor/ .gemini/  # Per-tool hook configs
-├── .agents/              # Antigravity rules + workflows
-├── .ai-log/              # 📊 AI usage logs (auto-generated)
-├── docs/
-│   ├── guide/            # 📖 Technical Guidebook (10 chapters)
+
+Màn hình Terminal thông báo thành công:
+```text
+INFO:     Started server process [PID]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
+```
+
+---
+
+## 🔍 Truy cập API & Swagger UI Documentation
+
+Sau khi backend khởi chạy thành công ở port **8001**, bạn có thể tương tác và kiểm thử API tại các đường dẫn sau:
+
+- **Swagger UI (Interactive API Docs)**: [http://localhost:8001/docs](http://localhost:8001/docs)
+- **ReDoc Documentation**: [http://localhost:8001/redoc](http://localhost:8001/redoc)
+- **Health Check Endpoint**: [http://localhost:8001/health](http://localhost:8001/health)
+
+---
+
+## 💡 Sample Queries & HTTP Requests (Ví dụ Gọi API)
+
+### 1. Health Check Query
+
+#### Bằng `cURL`:
+```bash
+curl -X GET "http://localhost:8001/health" -H "accept: application/json"
+```
+
+#### Kết quả trả về (Response):
+```json
+{
+  "status": "ok",
+  "env": "development"
+}
+```
+
+#### Bằng `Python requests`:
+```python
+import requests
+
+response = requests.get("http://localhost:8001/health")
+print(response.status_code)  # 200
+print(response.json())       # {'status': 'ok', 'env': 'development'}
+```
+
+---
+
+### 2. Kiểm tra Kết nối Database qua Python Script mẫu
+
+Tạo một script nhỏ hoặc chạy trong `python` REPL để kiểm tra Async Engine kết nối tới Database Docker:
+
+```python
+import asyncio
+from backend.src.infrastructure.database.session import AsyncSessionFactory
+from sqlalchemy import text
+
+async def test_db_connection():
+    async with AsyncSessionFactory() as session:
+        result = await session.execute(text("SELECT 1;"))
+        print("Database Connection Success:", result.scalar() == 1)
+
+asyncio.run(test_db_connection())
+```
+
+---
+
+## 🧪 Kiểm thử (Testing) & Linter Code Quality
+
+Dự án tích hợp sẵn bộ kiểm thử đơn vị (Unit tests) bao phủ Domain Entities, Mappers, và Repositories.
+
+### Chạy Unit Test Suite (Pytest)
+
+```bash
+# Chạy tất cả test suites
+python -m pytest tests/ -v
+
+# Chạy cụ thể các bài test domain, database models, mappers và repositories
+python -m pytest tests/test_domain.py tests/test_database_models.py tests/test_mappers.py tests/test_repositories.py -v
+```
+
+### Kiểm tra Mã nguồn với Ruff Linter
+
+```bash
+# Kiểm tra các lỗi linter và chuẩn format mã nguồn
+python -m ruff check backend/src/ tests/
+
+# Tự động sửa các lỗi cơ bản
+python -m ruff check --fix backend/src/ tests/
+```
+
+---
+
+## 📂 Cấu trúc Thư mục Dự án (Full Clean Architecture Structure)
+
+```text
+P-102/
+├── backend/                                # Backend Module chính (Python / FastAPI)
+│   ├── config.py                           # Cấu hình Pydantic Settings từ .env
+│   ├── main.py                             # FastAPI Entrypoint (chạy Uvicorn ở Port 8001)
+│   └── src/
+│       ├── presentation/                   # 🌐 Tầng Presentation (API Endpoints, Schemas, Router)
+│       │   ├── api/
+│       │   │   ├── router.py               # Root API Router
+│       │   │   └── v1/                     # API Routers Version 1
+│       │   │       ├── auth.py             # Auth & Identity Endpoints
+│       │   │       ├── users.py            # User Management Endpoints
+│       │   │       ├── projects.py         # Project Management Endpoints
+│       │   │       ├── requirements.py     # Requirements Management Endpoints
+│       │   │       ├── analytical_requirements.py # Analytical Requirements Endpoints
+│       │   │       ├── data_sources.py     # Data Source Integration Endpoints
+│       │   │       ├── sessions.py         # Agent Sessions & Event Endpoints
+│       │   │       ├── data_models.py      # Data Models & DBML Endpoints
+│       │   │       ├── data_model_changes.py # Proposed Changes Endpoints
+│       │   │       └── workflows.py        # AI Agent Workflow Execution Endpoints
+│       │   ├── dependencies/               # Dependency Injection cho FastAPI Routes
+│       │   ├── exception_handlers/         # HTTP Exception Translators
+│       │   ├── middleware/                 # CORS, Security Headers, Logging Middlewares
+│       │   └── schemas/                    # Pydantic Schemas cho API Request/Response DTOs
+│       │
+│       ├── application/                    # ⚙️ Tầng Application (Use Cases, Application Services)
+│       │   ├── auth/                       # Authentication Use Cases
+│       │   ├── projects/                   # Project Use Cases
+│       │   ├── requirements/               # Requirement Processing Use Cases
+│       │   ├── analytical_requirements/    # Analytical Requirement Extraction Use Cases
+│       │   ├── data_sources/               # Data Source Profiling Use Cases
+│       │   ├── data_models/                # DW Design & Revision Use Cases
+│       │   ├── sessions/                   # Agent Session Management Use Cases
+│       │   ├── workflows/                  # Agent Workflow Execution & Orchestration Services
+│       │   └── common/                     # Common Application DTOs & Interfaces
+│       │
+│       ├── domain/                         # 🧠 Tầng Domain (Pure Entities, Value Objects, Enums, Rules)
+│       │   ├── user/                       # User Entity, Email VO, UserRepository Interface
+│       │   ├── project/                    # Project Entity, Member Entity, Roles, Enums
+│       │   ├── requirement/                # Requirement Entity, Priority & Type Enums
+│       │   ├── analytical_requirement/     # Analytical Requirement Entity, Aggregation Enum
+│       │   ├── data_source/                # DataSource Entity, SchemaMetadata VO, Column/Table VO
+│       │   ├── project_session/            # ProjectSession & SessionEvent Entities, Event Metadata VOs
+│       │   ├── data_model/                 # DataModel & DataModelChange Entities
+│       │   └── shared/                     # BaseEntity, BaseValueObject, EntityID, IBaseRepository
+│       │
+│       ├── infrastructure/                 # 🛠️ Tầng Infrastructure (Database, LLMs, Agents, Cache)
+│       │   ├── database/
+│       │   │   ├── base.py                 # Base Declarative Class (Domain Timestamps)
+│       │   │   ├── config.py               # AsyncEngine & Database URLs
+│       │   │   ├── constants.py            # Hằng số giới hạn độ dài trường CSDL
+│       │   │   ├── mappers/                # Domain ↔ Persistence Mappers (10 mappers)
+│       │   │   ├── models/                 # SQLAlchemy 2.0 ORM Models (10 tables)
+│       │   │   └── session.py              # AsyncSession Generator & Connection Management
+│       │   ├── repositories/               # PostgreSQL Repository Implementations (10 repos)
+│       │   ├── agents/                     # LLM Agent Implementations (Orchestrator, Requirement, DW Design)
+│       │   ├── llm/                        # LLM Client Integrations (OpenAI, LangChain)
+│       │   ├── cache/                      # Redis Cache Implementations
+│       │   ├── security/                   # Password Hashing & JWT Handlers
+│       │   ├── storage/                    # File & Schema Storage
+│       │   ├── transaction/                # Unit of Work / Transaction Management
+│       │   └── observability/              # LangSmith & Logging Integrations
+│       │
+│       └── common/                         # 🔧 Shared Cross-Cutting Concerns
+│           ├── dto/                        # ApiResponse DTOs & Standard Envelopes
+│           ├── exceptions/                 # System, Domain, Infrastructure Exception Hierarchy
+│           ├── logging/                    # Centralized Structured Logging Configuration
+│           ├── middleware/                 # Request ID, HTTP Logging, Security Middlewares
+│           ├── utils/                      # Datetime & String Utilities
+│           └── constants/                  # System-wide Constants
+│
+├── frontend/                               # 🖥️ Frontend Web Application (Next.js / React)
+├── tests/                                  # 🧪 Pytest Test Suites (Domain, Models, Mappers, Repos)
+│   ├── test_domain.py                      # Tests kiểm thử Domain Entities & Business Rules
+│   ├── test_database_models.py             # Tests kiểm thử SQLAlchemy ORM Mapping
+│   ├── test_mappers.py                     # Tests kiểm thử Domain ↔ Persistence Mappers
+│   └── test_repositories.py                # Tests kiểm thử Async Repositories
+├── docs/                                   # 📖 Hướng dẫn Kỹ thuật & Sơ đồ Hệ thống
+│   ├── guide_cho_ca_nhom/                  # Guidebook & Database Specifications
+│   │   ├── database.md                     # Schema DBML chi tiết 10 bảng CSDL
+│   │   ├── data_flow.md                    # Sơ đồ luồng dữ liệu & Agent Execution Flow
+│   │   └── TECHNICAL_CODING_GUIDELINES.md  # Quy chuẩn lập trình bắt buộc
 │   └── architecture_diagram.md
-├── eval/                 # 📊 Evaluation results
-├── presentation/         # 🎤 Demo Day slides
-├── .github/workflows/    # ⚡ CI/CD (GitHub Actions)
-├── .github/hooks/        # 🪝 Copilot hook config
-├── Dockerfile            # 🐳 Multi-stage build
-├── docker-compose.yml    # 🐙 Full stack orchestration
-└── README_boilerplate.md # 📝 README template cho đội của bạn
+├── scripts/                                # 🔌 AI Logging Hooks & Helper Scripts
+├── Dockerfile                              # Multi-stage Dockerfile cho Backend
+├── docker-compose.yml                      # Docker Compose orchestrating PostgreSQL & Services
+├── requirements.txt                        # Python Project Dependencies
+├── ruff.toml                               # Ruff Linter Configuration
+├── .env.example                            # Template biến môi trường
+└── README.md                               # Document hướng dẫn dự án chính
 ```
 
-## 📚 Technical Guidebook — 10 Chương
+---
 
-| Chương | Nội dung | Thời gian |
-|---------|----------|-----------|
-| 1 | Lời mở đầu — Mục tiêu, cách sử dụng | 15 phút |
-| 2 | Khởi tạo dự án — Clone, setup, git workflow | 4 giờ |
-| 3 | Thiết kế kiến trúc — 3-tier, diagrams, ADR | 6 giờ |
-| 4 | **LangGraph Agent** — State, nodes, edges, tools, RAG | 8 giờ |
-| 5 | FastAPI — Routes, validation, error handling, streaming | 6 giờ |
-| 6 | Giao diện — Next.js + Streamlit quickstart | 6 giờ |
-| 7 | DevOps — Docker, CI/CD, deploy, logging | 6 giờ |
-| 8 | Kiểm thử — Unit test, integration test, RAGAS | 4 giờ |
-| 9 | Demo Day — 10 deliverables, checklist, tips | 2 giờ |
-| 10 | Tài nguyên — Khóa học, docs, BMAD method | tham khảo |
+## 📄 License & Liên Hệ
 
-📖 **Đọc online:** [phoenix.note.transformerlabs.ai/technical-book](https://phoenix.note.transformerlabs.ai/technical-book)
-
-## 📋 10 Deliverables cho Demo Day
-
-| # | Deliverable | File vị trí | Template có sẵn |
-|---|-------------|-------------|:---:|
-| 1 | Source Code | `src/` | ✅ |
-| 2 | README.md | `README_boilerplate.md` → copy thành `README.md` | ✅ |
-| 3 | Architecture Diagram | `docs/architecture_diagram.md` | ✅ |
-| 4 | AI Logs | LangSmith (3 env vars) + Auto AI Usage Logging | ✅ |
-| 5 | Live URL | Deploy lên Render/Vercel | ⚡ CI/CD sẵn |
-| 6 | Video Demo | `presentation/` | 📝 |
-| 7 | Pitch Deck | `presentation/` | 📝 |
-| 8 | Development Journal | `JOURNAL.md` | ✅ |
-| 9 | Worklog | `WORKLOG.md` | ✅ |
-| 10 | Evaluation Evidence | `eval/` | 📝 |
-
-## 🛠 Tech Stack
-
-| Layer | Technology | Version |
-|-------|-----------|---------|
-| AI Agent | LangGraph + LangChain | Latest |
-| Backend | FastAPI + Uvicorn | 0.100+ |
-| LLM | OpenAI GPT-4o-mini | API |
-| Frontend | Next.js / Streamlit | 14+ / 1.30+ |
-| Database | SQLite (dev) / PostgreSQL (prod) | — |
-| DevOps | Docker + GitHub Actions | — |
-| Testing | pytest + pytest-asyncio | 8+ |
-
-## 📊 AI Usage Logging
-
-Template đã tích hợp sẵn auto-logging hooks cho 6 AI tools:
-
-| Tool | Cơ chế | Config |
-|------|--------|--------|
-| Claude Code | `.claude/settings.json` hooks | Tự động |
-| Cursor | `.cursor/hooks.json` | Tự động |
-| OpenAI Codex CLI | `.codex/hooks.json` | Tự động |
-| Gemini CLI | `.gemini/settings.json` | Tự động |
-| GitHub Copilot | `.github/hooks/hooks.json` | Tự động |
-| Antigravity IDE | Pre-push scan transcript | Tự động trên `git push` |
-
-Tất cả prompts và tool calls được log vào `.ai-log/session.jsonl` và tự động submit lên grading server mỗi khi `git push`.
-
-**ChatGPT / web tools khác** — log thủ công:
-```bash
-bash scripts/_pyrun.sh scripts/log_manual.py --tool chatgpt --prompt "What you asked"
-```
-
-> ⚠️ Chạy `bash scripts/setup_hooks.sh` một lần sau khi clone để cài pre-push hook.
-
-## 📖 Đọc Technical Guidebook
-
-**Online (khuyến nghị):** [phoenix.note.transformerlabs.ai/technical-book](https://phoenix.note.transformerlabs.ai/technical-book)
-
-Đăng nhập bằng GitHub (cùng account đã được BTC mời vào org `AI20K-Build-Cohort-2`)
-→ chọn tab **Technical Book** ở sidebar trái → đọc 10 chương + topic sections,
-có table of contents bên phải, hỗ trợ light/dark/cyberpunk theme.
-
-**Offline:** mọi chương đều ở thư mục `docs/guide/` trong template này — mở bằng
-bất kỳ markdown viewer/editor nào (VS Code, Obsidian, GitHub UI, …).
-
-## 🔗 Liên kết
-
-- 📖 **Technical Guidebook:** [phoenix.note.transformerlabs.ai/technical-book](https://phoenix.note.transformerlabs.ai/technical-book)
-- 🏫 **AI20K Program:** VinUni AI20K Build Phase
-- 👨‍🏫 **Mentor:** Đặng Hải Lộc
-
-## 📄 License
-
-MIT — Sử dụng tự do cho mục đích giáo dục.
+- **Dự án**: VinUni AI20K Build Phase — Cohort 4 (Nhóm P-102)
+- **License**: Internal Educational & Research License.

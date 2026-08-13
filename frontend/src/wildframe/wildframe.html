@@ -1,288 +1,1650 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Data Model AI Agent - Prototype</title>
+    <title>Data Model AI Agent - Enterprise Prototype</title>
     <style>
-        /* Thiết lập giao diện tổng thể dạng Dashboard hiện đại */
+        /* CSS Design System & Theme Variables */
         :root {
-            --primary: #2563eb; --primary-hover: #1d4ed8;
-            --bg: #f8fafc; --surface: #ffffff;
-            --text: #0f172a; --text-light: #64748b;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --primary-light: #eff6ff;
+            --accent-green: #10b981;
+            --accent-purple: #8b5cf6;
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --text: #0f172a;
+            --text-light: #64748b;
             --border: #e2e8f0;
+            --editor-bg: #0f172a;
+            --editor-text: #e2e8f0;
         }
-        body { margin: 0; font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; }
-        
-        /* Cấu trúc Sidebar (Menu điều hướng các bước) */
-        .sidebar { width: 260px; background: var(--surface); border-right: 1px solid var(--border); padding: 20px; display: flex; flex-direction: column; }
-        .logo { font-size: 18px; font-weight: bold; color: var(--primary); margin-bottom: 30px; display: flex; align-items: center; gap: 10px; }
-        .nav-item { padding: 12px 15px; margin-bottom: 8px; border-radius: 6px; cursor: pointer; font-weight: 500; color: var(--text-light); transition: all 0.2s; border: 1px solid transparent; }
-        .nav-item:hover { background: #f1f5f9; }
-        .nav-item.active { background: #eff6ff; color: var(--primary); border: 1px solid #bfdbfe; }
-        
-        /* Khu vực nội dung chính */
-        .main-content { flex: 1; padding: 30px; overflow-y: auto; }
-        .screen { display: none; animation: fadeIn 0.3s ease; }
-        .screen.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        /* Card & Layout tổng dụng */
-        .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        .header-title { font-size: 24px; font-weight: 600; margin-top: 0; margin-bottom: 20px; border-bottom: 2px solid #f1f5f9; padding-bottom: 15px;}
-        .split-layout { display: flex; gap: 24px; height: calc(100vh - 150px); }
-        .col-50 { flex: 1; display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; overflow: hidden; }
-        
-        /* Form & Button */
-        .form-group { margin-bottom: 16px; }
-        label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 6px; }
-        select, input[type="text"], textarea { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; box-sizing: border-box; }
-        .btn { padding: 10px 18px; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; transition: 0.2s; }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-primary:hover { background: var(--primary-hover); }
-        .btn-secondary { background: #e2e8f0; color: var(--text); }
-        .btn-secondary:hover { background: #cbd5e1; }
-        .drag-zone { border: 2px dashed #94a3b8; border-radius: 8px; padding: 40px; text-align: center; color: var(--text-light); background: #f8fafc; cursor: pointer; }
-        
-        /* UI cho ERD Canvas & Cảnh báo */
-        .canvas-area { flex: 1; background: #f1f5f9; border-radius: 8px; position: relative; border: 1px dashed #cbd5e1; display: flex; align-items: center; justify-content: center;}
-        .table-node { position: absolute; background: white; border-radius: 6px; padding: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 180px; font-size: 13px; }
-        .fact-node { border-top: 4px solid #3b82f6; top: 20%; left: 30%; }
-        .dim-node { border-top: 4px solid #22c55e; bottom: 20%; right: 20%; }
-        .alert-box { padding: 12px; border-radius: 6px; margin-bottom: 10px; font-size: 14px; }
-        .alert-error { background: #fef2f2; border-left: 4px solid #ef4444; color: #991b1b; }
-        .alert-warn { background: #fffbeb; border-left: 4px solid #f59e0b; color: #b45309; }
-        
-        /* UI Chat & Data Grid */
-        table { width: 100%; border-collapse: collapse; font-size: 14px; }
-        th, td { border-bottom: 1px solid var(--border); padding: 12px 10px; text-align: left; }
-        th { background: #f8fafc; font-weight: 600; }
-        .chat-container { display: flex; flex-direction: column; flex: 1; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
-        .chat-history { flex: 1; background: #f8fafc; padding: 15px; overflow-y: auto; }
-        .msg { max-width: 80%; padding: 10px 14px; border-radius: 8px; margin-bottom: 10px; font-size: 14px; line-height: 1.4; }
-        .msg-ai { background: white; border: 1px solid var(--border); border-bottom-left-radius: 0; align-self: flex-start; }
-        .msg-user { background: var(--primary); color: white; border-bottom-right-radius: 0; margin-left: auto; }
-        .chat-input { display: flex; padding: 10px; background: white; border-top: 1px solid var(--border); }
-        .chat-input input { flex: 1; margin: 0; border: none; outline: none; }
-        
-        /* Terminal */
-        .terminal { background: #0f172a; color: #22c55e; font-family: 'Courier New', Courier, monospace; padding: 15px; border-radius: 8px; height: 150px; overflow-y: auto; font-size: 13px; line-height: 1.5; }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            width: 270px;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            padding: 24px 18px;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            font-size: 19px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 32px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo svg {
+            color: var(--primary);
+        }
+
+        .nav-section-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-light);
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+            padding-left: 6px;
+        }
+
+        .nav-item {
+            padding: 12px 14px;
+            margin-bottom: 6px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            color: var(--text-light);
+            transition: all 0.2s;
+            border: 1px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-item:hover {
+            background: #f1f5f9;
+            color: var(--text);
+        }
+
+        .nav-item.active {
+            background: var(--primary-light);
+            color: var(--primary);
+            border: 1px solid #bfdbfe;
+            font-weight: 600;
+        }
+
+        .nav-badge {
+            margin-left: auto;
+            font-size: 11px;
+            background: #e2e8f0;
+            color: #475569;
+            padding: 2px 7px;
+            border-radius: 10px;
+        }
+
+        .nav-item.active .nav-badge {
+            background: #dbeafe;
+            color: var(--primary);
+        }
+
+        /* Main Content Container */
+        .main-content {
+            flex: 1;
+            padding: 24px 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .screen {
+            display: none;
+            height: 100%;
+            flex-direction: column;
+        }
+
+        .screen.active {
+            display: flex;
+            animation: fadeIn 0.25s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Cards & Titles */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+            margin-bottom: 20px;
+        }
+
+        .header-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-top: 0;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-subtitle {
+            font-size: 13px;
+            font-weight: normal;
+            color: var(--text-light);
+        }
+
+        /* Form Components */
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #334155;
+        }
+
+        select,
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            box-sizing: border-box;
+            background: #ffffff;
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        select:focus,
+        input[type="text"]:focus,
+        textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary-light);
+        }
+
+        .btn-danger {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+
+        .btn-danger:hover {
+            background: #fee2e2;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+            border-radius: 6px;
+        }
+
+        .drag-zone {
+            border: 2px dashed #cbd5e1;
+            border-radius: 10px;
+            padding: 28px;
+            text-align: center;
+            color: var(--text-light);
+            background: #f8fafc;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .drag-zone:hover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        /* Excel Interactive Preview Grid */
+        .excel-preview-container {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: white;
+            margin-top: 14px;
+            overflow: hidden;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+        }
+
+        .excel-toolbar {
+            background: #f8fafc;
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .excel-table-wrapper {
+            overflow-x: auto;
+            max-height: 280px;
+        }
+
+        .excel-grid {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .excel-grid th {
+            background: #f1f5f9;
+            color: #475569;
+            font-weight: 600;
+            border: 1px solid var(--border);
+            padding: 8px 12px;
+            position: sticky;
+            top: 0;
+            text-align: left;
+        }
+
+        .excel-grid td {
+            border: 1px solid var(--border);
+            padding: 6px 10px;
+            background: white;
+            outline: none;
+        }
+
+        .excel-grid td[contenteditable="true"]:focus {
+            background: #eff6ff;
+            box-shadow: inset 0 0 0 2px var(--primary);
+        }
+
+        /* DB Diagram Style (Step 2 Layout) */
+        .dbdiagram-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            flex: 1;
+        }
+
+        /* Redesigned Notification & Insights System for Many Warnings */
+        .insights-panel-redesigned {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 18px;
+            margin-bottom: 14px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .insights-header-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+        }
+
+        .insights-title-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .insights-counter-badge {
+            background: #eff6ff;
+            color: var(--primary);
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            border: 1px solid #bfdbfe;
+        }
+
+        .insights-filter-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .table-filter-select {
+            padding: 5px 10px;
+            font-size: 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: #f8fafc;
+            font-weight: 600;
+            color: #334155;
+            width: auto;
+        }
+
+        .insights-list-scroll {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 140px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .insight-card-item {
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 12.5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid transparent;
+            transition: all 0.15s;
+        }
+
+        .insight-card-error {
+            background: #fef2f2;
+            border-left-color: #ef4444;
+            color: #991b1b;
+        }
+
+        .insight-card-warn {
+            background: #fffbeb;
+            border-left-color: #f59e0b;
+            color: #92400e;
+        }
+
+        .insight-card-info {
+            background: #ecfdf5;
+            border-left-color: #10b981;
+            color: #065f46;
+        }
+
+        .insight-table-tag {
+            font-size: 11px;
+            font-weight: bold;
+            padding: 2px 7px;
+            border-radius: 4px;
+            background: rgba(0, 0, 0, 0.06);
+            text-transform: uppercase;
+            margin-left: 10px;
+        }
+
+        .dbdiagram-workspace {
+            display: flex;
+            gap: 16px;
+            flex: 1;
+            min-height: 500px;
+        }
+
+        .dsl-code-pane {
+            flex: 4;
+            background: #0f172a;
+            border-radius: 10px;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            font-family: 'Fira Code', 'Courier New', monospace;
+            color: #cbd5e1;
+            border: 1px solid #1e293b;
+        }
+
+        .dsl-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #334155;
+            font-size: 12px;
+            color: #94a3b8;
+            font-weight: 600;
+        }
+
+        .dsl-textarea {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #38bdf8;
+            font-family: inherit;
+            font-size: 13px;
+            line-height: 1.6;
+            resize: none;
+            outline: none;
+        }
+
+        .erd-visual-pane {
+            flex: 6;
+            background: #f1f5f9;
+            border-radius: 10px;
+            border: 1px solid #cbd5e1;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .erd-toolbar {
+            background: white;
+            padding: 8px 14px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-light);
+        }
+
+        .canvas-viewport {
+            flex: 1;
+            position: relative;
+            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+            background-size: 16px 16px;
+            padding: 20px;
+            overflow: auto;
+        }
+
+        /* Table Nodes in ERD */
+        .erd-node {
+            position: absolute;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            width: 215px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            font-size: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+
+        .erd-node:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.2);
+            border-color: var(--primary);
+        }
+
+        .erd-node-header {
+            padding: 8px 12px;
+            font-weight: 700;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .erd-fact {
+            border-top: 3px solid #2563eb;
+        }
+
+        .erd-fact .erd-node-header {
+            background: #2563eb;
+        }
+
+        .erd-dim {
+            border-top: 3px solid #10b981;
+        }
+
+        .erd-dim .erd-node-header {
+            background: #10b981;
+        }
+
+        .erd-node-body {
+            padding: 6px 0;
+        }
+
+        .erd-field {
+            padding: 4px 12px;
+            display: flex;
+            justify-content: space-between;
+            color: #334155;
+            font-family: monospace;
+        }
+
+        .erd-field.pk {
+            font-weight: bold;
+            color: #2563eb;
+            background: #eff6ff;
+        }
+
+        .erd-field.fk {
+            font-weight: bold;
+            color: #059669;
+        }
+
+        .double-click-hint {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: normal;
+            font-style: italic;
+        }
+
+        /* Full Height DDL Editor (Step 3) */
+        .ddl-workspace {
+            display: flex;
+            gap: 20px;
+            height: calc(100vh - 160px);
+        }
+
+        .ddl-editor-container {
+            flex: 7;
+            display: flex;
+            flex-direction: column;
+            background: #0f172a;
+            border-radius: 12px;
+            border: 1px solid #1e293b;
+            overflow: hidden;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .ddl-topbar {
+            background: #1e293b;
+            padding: 12px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #334155;
+            color: #e2e8f0;
+        }
+
+        .ddl-title {
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ddl-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .ddl-code-area {
+            flex: 1;
+            display: flex;
+            position: relative;
+            background: #0f172a;
+            color: #f8fafc;
+            font-family: 'Fira Code', 'Consolas', 'Courier New', monospace;
+        }
+
+        .line-numbers {
+            width: 45px;
+            background: #0b1120;
+            color: #475569;
+            padding: 16px 8px;
+            text-align: right;
+            font-size: 13px;
+            line-height: 1.6;
+            user-select: none;
+            border-right: 1px solid #1e293b;
+        }
+
+        .ddl-textarea-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 16px;
+            color: #38bdf8;
+            font-family: inherit;
+            font-size: 13.5px;
+            line-height: 1.6;
+            resize: none;
+            outline: none;
+            white-space: pre;
+        }
+
+        .sandbox-panel {
+            flex: 3;
+            display: flex;
+            flex-direction: column;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            gap: 14px;
+        }
+
+        .terminal-box {
+            background: #090d16;
+            color: #22c55e;
+            font-family: 'Courier New', monospace;
+            padding: 14px;
+            border-radius: 8px;
+            flex: 1;
+            min-height: 220px;
+            overflow-y: auto;
+            font-size: 12.5px;
+            line-height: 1.5;
+            border: 1px solid #1e293b;
+        }
+
+        /* Modal Backdrop & Glassmorphism HITL Pop-up */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(4px);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-container {
+            width: 920px;
+            max-width: 95vw;
+            height: 640px;
+            max-height: 90vh;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .modal-header {
+            background: #f8fafc;
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .modal-close-btn {
+            background: #e2e8f0;
+            border: none;
+            font-size: 20px;
+            font-weight: bold;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            color: var(--text-light);
+            transition: all 0.2s;
+        }
+
+        .modal-close-btn:hover {
+            background: #cbd5e1;
+            color: var(--text);
+        }
+
+        .modal-body {
+            flex: 1;
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .modal-col-left {
+            flex: 6;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--border);
+            padding-right: 20px;
+            overflow-y: auto;
+        }
+
+        .modal-col-right {
+            flex: 4;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Chat UI inside Modal */
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .chat-history {
+            flex: 1;
+            background: #f8fafc;
+            padding: 14px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .msg {
+            max-width: 88%;
+            padding: 9px 13px;
+            border-radius: 10px;
+            font-size: 13px;
+            line-height: 1.45;
+        }
+
+        .msg-ai {
+            background: white;
+            border: 1px solid var(--border);
+            border-bottom-left-radius: 2px;
+            align-self: flex-start;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+        }
+
+        .msg-user {
+            background: var(--primary);
+            color: white;
+            border-bottom-right-radius: 2px;
+            align-self: flex-end;
+        }
+
+        .chat-input-bar {
+            display: flex;
+            padding: 10px;
+            background: white;
+            border-top: 1px solid var(--border);
+            gap: 6px;
+        }
+
+        .chat-input-bar input {
+            flex: 1;
+            border: 1px solid var(--border);
+            outline: none;
+            border-radius: 6px;
+            padding: 7px 10px;
+            font-size: 13px;
+        }
     </style>
 </head>
+
 <body>
 
-    <!-- Sidebar Menu Điều hướng -->
+    <!-- Sidebar Menu Navigation (Tinh gọn 3 Bước) -->
     <div class="sidebar">
         <div class="logo">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                <polyline points="2 17 12 22 22 17"></polyline>
+                <polyline points="2 12 12 17 22 12"></polyline>
+            </svg>
             DataModel AI
         </div>
-        <!-- Hàm: switchScreen dùng để đổi giao diện bằng Javascript phía dưới -->
-        <div class="nav-item active" onclick="switchScreen('step1', this)">1. Khởi tạo & Nhập liệu</div>
-        <div class="nav-item" onclick="switchScreen('step2', this)">2. ERD & Cảnh báo</div>
-        <div class="nav-item" onclick="switchScreen('step3', this)">3. HITL Editor (Tinh chỉnh)</div>
-        <div class="nav-item" onclick="switchScreen('step4', this)">4. Export & Sandbox</div>
+
+        <div class="nav-section-title">Quy trình Agent DWH</div>
+
+        <div class="nav-item active" onclick="switchScreen('step1', this)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+            1. Khởi tạo & Nạp Excel
+            <span class="nav-badge">Excel</span>
+        </div>
+
+        <div class="nav-item" onclick="switchScreen('step2', this)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="3" y1="9" x2="21" y2="9"></line>
+                <line x1="9" y1="21" x2="9" y2="9"></line>
+            </svg>
+            2. ERD & Cảnh báo
+            <span class="nav-badge">dbdiagram</span>
+        </div>
+
+        <div class="nav-item" onclick="switchScreen('step3', this)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="16 18 22 12 16 6"></polyline>
+                <polyline points="8 6 2 12 8 18"></polyline>
+            </svg>
+            3. Xuất DDL & Sandbox
+            <span class="nav-badge">Code</span>
+        </div>
     </div>
 
-    <!-- Nội dung chính -->
+    <!-- Main Content Area -->
     <div class="main-content">
-        
-        <!-- ================= MÀN HÌNH 1 ================= -->
-<!-- ================= MÀN HÌNH 1 ================= -->
+
+        <!-- ================= MÀN HÌNH 1: KHỞI TẠO & NHẬP EXCEL FILE ================= -->
         <div id="step1" class="screen active card">
-            <h2 class="header-title">Khởi tạo dự án & Cấu hình</h2>
-            
-            <!-- Chức năng: Đã gỡ bỏ giới hạn max-width để form tự động kéo dãn 100% theo chiều ngang của khung cha -->
+            <div class="header-title">
+                Khởi tạo dự án & Đẩy dữ liệu nguồn Excel
+                <span class="header-subtitle">Đẩy file Excel (.xlsx), xem trực tiếp & chỉnh sửa ô/dòng/cột</span>
+            </div>
+
             <div style="width: 100%;">
-                <div class="form-group">
-                    <label>Domain Mẫu (Nghiệp vụ)</label>
-                    <select>
-                        <option>Dịch vụ Gọi xe (Ride-hailing)</option>
-                        <option>Thương mại điện tử (E-commerce)</option>
-                        <option>Tùy chỉnh (Custom)</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Target Dialect (CSDL Mục tiêu)</label>
-                    <div style="display: flex; gap: 15px; padding: 10px; border: 1px solid var(--border); border-radius: 6px;">
-                        <label style="margin:0;"><input type="radio" name="db" checked> PostgreSQL</label>
-                        <label style="margin:0;"><input type="radio" name="db"> Snowflake</label>
+                <div style="display: flex; gap: 20px;">
+                    <div style="flex: 1;">
+                        <div class="form-group">
+                            <label>Domain Nghiệp vụ Mẫu</label>
+                            <select id="domainSelect">
+                                <option value="ride">Dịch vụ Gọi xe (Ride-hailing / Grab / Gojek)</option>
+                                <option value="ecommerce">Thương mại Điện tử (E-commerce / Retail)</option>
+                                <option value="banking">Ngân hàng & Tài chính (Banking / Fintech)</option>
+                                <option value="custom">Tùy chỉnh nghiệp vụ riêng (Custom)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="flex: 1;">
+                        <div class="form-group">
+                            <label>Target Dialect (CSDL Mục tiêu)</label>
+                            <select>
+                                <option>PostgreSQL (Standard DWH)</option>
+                                <option>Snowflake Data Cloud</option>
+                                <option>Google BigQuery</option>
+                                <option>ClickHouse OLAP</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
-                
-                <!-- Chức năng: Tăng số hàng (rows) của textarea để khung nhập liệu nhìn thoáng hơn khi kéo ngang -->
+
                 <div class="form-group">
-                    <label>Mô tả nghiệp vụ</label>
-                    <textarea rows="6" placeholder="Nhập mô tả các thực thể chính, quy trình chuyến đi, khuyến mãi..."></textarea>
+                    <label>Mô tả nghiệp vụ / Yêu cầu báo cáo BI</label>
+                    <textarea id="bizDescription" rows="2"
+                        placeholder="Nhập mô tả quy trình chuyến đi, quản lý tài xế, chương trình khuyến mãi..."></textarea>
                 </div>
-                
+
+                <!-- PHẦN ĐẨY DỮ LIỆU EXCEL DUY NHẤT -->
                 <div class="form-group">
-                    <label>Cấu trúc dữ liệu nguồn</label>
-                    <div class="drag-zone">
-                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:10px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg><br>
-                        Kéo thả file .sql hoặc .json (Tối đa 20 bảng)
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                        <label style="margin:0;">Đẩy file Nguồn Excel (.xlsx, .xls):</label>
+                        <button class="btn btn-secondary btn-sm" onclick="loadSampleExcelData()">⚡ Tải dữ liệu Excel Mẫu
+                            (Rides.xlsx)</button>
+                    </div>
+
+                    <div class="drag-zone" onclick="loadSampleExcelData()">
+                        <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="1.8"
+                            style="margin-bottom:6px;">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="8" y1="13" x2="16" y2="13"></line>
+                            <line x1="8" y1="17" x2="16" y2="17"></line>
+                        </svg><br>
+                        <b>Kéo thả file Excel (.xlsx / .xls) hoặc bấm để chọn file</b><br>
+                        <span style="font-size:12px; color:var(--text-light);">Hệ thống tự động đọc tất cả các Sheets và
+                            hiển thị khung xem trước dữ liệu nguồn bên dưới (Chế độ xem - Read Only)</span>
+                    </div>
+
+                    <!-- Khung Xem Dữ Liệu Nguồn Excel Trực Tiếp (Data Preview Grid Read-Only) -->
+                    <div id="excelPreviewBox" class="excel-preview-container" style="display:block;">
+                        <div class="excel-toolbar">
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <span>🟢 Sheet Nguồn đang xem: <b>Sheet1_RawRides.xlsx</b></span>
+                                <span style="font-size:11px; background:#e2e8f0; padding:2px 8px; border-radius:10px;">4
+                                    rows, 6 columns</span>
+                            </div>
+                            <div style="display:flex; gap:6px;">
+                                <span
+                                    style="font-size:12px; background:#f1f5f9; border:1px solid var(--border); padding:4px 10px; border-radius:6px; font-weight:600; color:#64748b;">🔒
+                                    Chế độ xem trước (Read-Only)</span>
+                            </div>
+                        </div>
+
+                        <div class="excel-table-wrapper">
+                            <table class="excel-grid" id="excelGrid">
+                                <thead>
+                                    <tr>
+                                        <th>STT</th>
+                                        <th>ride_id</th>
+                                        <th>driver_id</th>
+                                        <th>customer_id</th>
+                                        <th>fare_amount</th>
+                                        <th>status</th>
+                                        <th>created_at</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style="background:#f8fafc; font-weight:bold;">1</td>
+                                        <td>1001</td>
+                                        <td>501</td>
+                                        <td>8812</td>
+                                        <td>150000</td>
+                                        <td>COMPLETED</td>
+                                        <td>2026-08-01 08:30:00</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="background:#f8fafc; font-weight:bold;">2</td>
+                                        <td>1002</td>
+                                        <td>502</td>
+                                        <td>8815</td>
+                                        <td>85000</td>
+                                        <td>COMPLETED</td>
+                                        <td>2026-08-01 09:15:00</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="background:#f8fafc; font-weight:bold;">3</td>
+                                        <td>1003</td>
+                                        <td>501</td>
+                                        <td>8820</td>
+                                        <td>45000</td>
+                                        <td>CANCELLED</td>
+                                        <td>2026-08-01 10:00:00</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="background:#f8fafc; font-weight:bold;">4</td>
+                                        <td>1004</td>
+                                        <td>503</td>
+                                        <td>8812</td>
+                                        <td>210000</td>
+                                        <td>COMPLETED</td>
+                                        <td>2026-08-01 11:20:00</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
-                <div class="form-group" style="display: flex; align-items: center; gap: 8px;">
+
+                <div class="form-group" style="display: flex; align-items: center; gap: 8px; margin-top:14px;">
                     <input type="checkbox" id="masking" checked>
-                    <label for="masking" style="margin:0; cursor:pointer;">Bật tự động che thông tin nhạy cảm (PII Masking)</label>
+                    <label for="masking" style="margin:0; cursor:pointer; font-weight:500;">Bật tự động phát hiện & che
+                        chắn dữ liệu nhạy cảm doanh nghiệp (PII Masking & Anonymization)</label>
                 </div>
-                
-                <!-- Chức năng: Nút bấm chuyển bước mô phỏng hành động AI phân tích -->
-                <button class="btn btn-primary" onclick="document.querySelectorAll('.nav-item')[1].click()" style="width: 100%; margin-top: 15px; padding: 12px; font-size: 16px;">✨ Phân tích & Tạo Mô hình (AI)</button>
+
+                <button class="btn btn-primary" onclick="document.querySelectorAll('.nav-item')[1].click()"
+                    style="width: 100%; margin-top: 6px; padding: 13px; font-size: 15px;">✨ AI Agents Phân tích & Tự
+                    động dựng Datawarehouse (ERD)</button>
             </div>
         </div>
 
-        <!-- ================= MÀN HÌNH 2 ================= -->
+        <!-- ================= MÀN HÌNH 2: ERD & CẢNH BÁO (CÓ DOUBLE-CLICK BẢNG MỞ HITL MODAL) ================= -->
         <div id="step2" class="screen">
-            <h2 class="header-title">Kết quả Phân tích (Interactive Dashboard)</h2>
-            <div class="split-layout">
-                <!-- Cột trái: ERD Canvas -->
-                <div class="col-50">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                        <label>Sơ đồ ERD (Mô phỏng Mermaid.js)</label>
-                        <div>
-                            <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px;">+ Zoom</button>
-                            <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px;">- Zoom</button>
+            <div class="header-title" style="margin-bottom:12px;">
+                Mô hình ERD Data Warehouse (dbdiagram.io Layout)
+                <span class="header-subtitle">Bố cục DSL Text + ERD Canvas kéo thả | <b>Đúp chuột (Double-click) vào
+                        bảng để tinh chỉnh HITL</b></span>
+            </div>
+
+            <div class="dbdiagram-container">
+
+                <!-- GIAO DIỆN TỐI ƯU CHO NHIỀU THÔNG BÁO / GRAIN VÀ LỌC THEO BẢNG RIÊNG -->
+                <div class="insights-panel-redesigned">
+                    <div class="insights-header-controls">
+                        <div class="insights-title-group">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb"
+                                stroke-width="2">
+                                <path
+                                    d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z">
+                                </path>
+                                <line x1="12" y1="9" x2="12" y2="13"></line>
+                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                            </svg>
+                            <span>Khái quát Grain & Cảnh báo Tự động (AI Insights)</span>
+                            <span class="insights-counter-badge" id="insightsCounter">5 Cảnh báo / Insights</span>
+                        </div>
+
+                        <!-- DROPDOWN CỦA CẢNH BÁO RIÊNG TỪNG BẢNG -->
+                        <div class="insights-filter-group">
+                            <label style="margin:0; font-size:12px;">Lọc theo Bảng:</label>
+                            <select id="tableInsightFilter" class="table-filter-select"
+                                onchange="filterInsightsByTable(this.value)">
+                                <option value="ALL">-- Tất cả các bảng (4 bảng) --</option>
+                                <option value="Fact_Rides">Fact_Rides (2 cảnh báo)</option>
+                                <option value="Dim_Driver">Dim_Driver (1 cảnh báo)</option>
+                                <option value="Dim_Customer">Dim_Customer (1 cảnh báo)</option>
+                                <option value="Dim_Promo">Dim_Promo (1 cảnh báo)</option>
+                            </select>
                         </div>
                     </div>
-                    <div class="canvas-area">
-                        <!-- Mô phỏng các Node giao diện tĩnh -->
-                        <div class="table-node fact-node">
-                            <b>Fact_Rides</b><br><span style="color: gray;">(Bảng Fact)</span><br>
-                            <hr style="border: 0; border-top: 1px solid #eee;">
-                            PK ride_id<br>FK driver_id
+
+                    <!-- DANH SÁCH THÔNG BÁO CÓ THỂ CUỘN / TỐI ƯU KHI NHIỀU THÔNG BÁO -->
+                    <div class="insights-list-scroll" id="insightsList">
+                        <div class="insight-card-item insight-card-info" data-table="Fact_Rides">
+                            <div>
+                                <b>ℹ️ Khái quát Grain (Độ mịn):</b> Fact_Rides = "Mỗi dòng tương ứng 1 chuyến đi được
+                                đặt thành công/hủy"
+                            </div>
+                            <span class="insight-table-tag">Fact_Rides</span>
                         </div>
-                        <div class="table-node dim-node">
-                            <b>Dim_Driver</b><br><span style="color: gray;">(Bảng Dimension)</span><br>
-                            <hr style="border: 0; border-top: 1px solid #eee;">
-                            PK driver_id<br>name
+                        <div class="insight-card-item insight-card-error" data-table="Fact_Rides">
+                            <div>
+                                <b>⚠️ Fan Trap Anti-pattern:</b> Quan hệ 1:N giữa Fact_Rides ↔ Dim_Promo gây nhân đôi số
+                                tiền giảm giá khi SUM aggregates.
+                            </div>
+                            <span class="insight-table-tag">Fact_Rides ↔ Dim_Promo</span>
                         </div>
-                        <span style="color: #94a3b8;">[Khu vực Render Đồ thị Động]</span>
+                        <div class="insight-card-item insight-card-warn" data-table="Dim_Driver">
+                            <div>
+                                <b>⚡ Missing Surrogate Key:</b> Bảng Dim_Driver đang dùng Natural Key (CMND/SĐT). Gợi ý
+                                sinh `driver_key INT AUTO_INCREMENT`.
+                            </div>
+                            <span class="insight-table-tag">Dim_Driver</span>
+                        </div>
+                        <div class="insight-card-item insight-card-warn" data-table="Dim_Customer">
+                            <div>
+                                <b>💡 Unindexed Foreign Key:</b> Cột customer_key trong bảng Fact chưa được đánh Index,
+                                có thể gây chậm query Join.
+                            </div>
+                            <span class="insight-table-tag">Dim_Customer</span>
+                        </div>
                     </div>
                 </div>
-                <!-- Cột phải: Grain & Cảnh báo -->
-                <div class="col-50">
-                    <div style="display: flex; gap: 10px; border-bottom: 1px solid var(--border); margin-bottom: 15px;">
-                        <div style="padding-bottom: 10px; border-bottom: 2px solid var(--primary); font-weight: 500; cursor: pointer;">Chi tiết Bảng</div>
-                        <div style="padding-bottom: 10px; color: var(--text-light); cursor: pointer;">Cảnh báo (2)</div>
+
+                <!-- Bố cục Workspace chuẩn dbdiagram.io -->
+                <div class="dbdiagram-workspace">
+
+                    <!-- Cột Trái: DSL Code Editor -->
+                    <div class="dsl-code-pane">
+                        <div class="dsl-header">
+                            <span>📝 DBML CODE EDITOR (dbdiagram DSL)</span>
+                            <span style="color:#10b981;">● Live Sync Active</span>
+                        </div>
+                        <textarea class="dsl-textarea" spellcheck="false">// Định nghĩa Fact & Dimension Tables
+Table Fact_Rides {
+  ride_key int [pk, increment]
+  driver_key int [ref: > Dim_Driver.driver_key]
+  customer_key int [ref: > Dim_Customer.customer_key]
+  fare_amount decimal(10,2)
+  discount_amount decimal(10,2)
+  trip_status varchar(20)
+  created_at timestamp
+}
+
+Table Dim_Driver {
+  driver_key int [pk]
+  driver_natural_id varchar(50)
+  full_name varchar(100)
+  vehicle_type varchar(30)
+  rating decimal(3,2)
+}
+
+Table Dim_Customer {
+  customer_key int [pk]
+  phone_number varchar(20)
+  member_tier varchar(20)
+}</textarea>
                     </div>
-                    
-                    <label>Grain (Độ mịn dữ liệu) - Fact_Rides:</label>
-                    <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid var(--border); font-size: 14px; margin-bottom: 20px;">
-                        "Mỗi dòng trong bảng Fact_Rides tương ứng với 1 chuyến xe hoàn thành hoặc bị hủy."
+
+                    <!-- Cột Phải: Visual ERD Canvas (Hỗ trợ DOUBLE-CLICK MỞ HITL MODAL) -->
+                    <div class="erd-visual-pane">
+                        <div class="erd-toolbar">
+                            <span>🗺️ MAP KÉO THẢ ERD VISUAL CANVAS</span>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span
+                                    style="color:#059669; background:#ecfdf5; padding:2px 8px; border-radius:4px; font-size:11px;">💡
+                                    Nhấn đúp (Double-click) vào bảng để sửa HITL</span>
+                                <button class="btn btn-secondary btn-sm" onclick="alert('Đã phóng to ERD Canvas')">+
+                                    Zoom</button>
+                                <button class="btn btn-secondary btn-sm" onclick="alert('Đã thu nhỏ ERD Canvas')">-
+                                    Zoom</button>
+                            </div>
+                        </div>
+
+                        <div class="canvas-viewport">
+                            <!-- Visual Table Node 1: Fact_Rides (SỰ KIỆN DOUBLE-CLICK MỞ MODAL) -->
+                            <div class="erd-node erd-fact" style="top: 30px; left: 40px;"
+                                ondblclick="openHitlModal('Fact_Rides')">
+                                <div class="erd-node-header">
+                                    <span>Fact_Rides</span>
+                                    <span class="double-click-hint">Đúp chuột để sửa</span>
+                                </div>
+                                <div class="erd-node-body">
+                                    <div class="erd-field pk"><span>🔑 ride_key</span><span>INT</span></div>
+                                    <div class="erd-field fk"><span>🔗 driver_key</span><span>INT</span></div>
+                                    <div class="erd-field fk"><span>🔗 customer_key</span><span>INT</span></div>
+                                    <div class="erd-field"><span>fare_amount</span><span>DECIMAL</span></div>
+                                    <div class="erd-field"><span>discount_amount</span><span>DECIMAL</span></div>
+                                    <div class="erd-field"><span>trip_status</span><span>VARCHAR</span></div>
+                                </div>
+                            </div>
+
+                            <!-- Visual Table Node 2: Dim_Driver (SỰ KIỆN DOUBLE-CLICK MỞ MODAL) -->
+                            <div class="erd-node erd-dim" style="top: 40px; left: 320px;"
+                                ondblclick="openHitlModal('Dim_Driver')">
+                                <div class="erd-node-header">
+                                    <span>Dim_Driver</span>
+                                    <span class="double-click-hint">Đúp chuột để sửa</span>
+                                </div>
+                                <div class="erd-node-body">
+                                    <div class="erd-field pk"><span>🔑 driver_key</span><span>INT</span></div>
+                                    <div class="erd-field"><span>driver_natural_id</span><span>VARCHAR</span></div>
+                                    <div class="erd-field"><span>full_name</span><span>VARCHAR</span></div>
+                                    <div class="erd-field"><span>vehicle_type</span><span>VARCHAR</span></div>
+                                </div>
+                            </div>
+
+                            <!-- Visual Table Node 3: Dim_Customer (SỰ KIỆN DOUBLE-CLICK MỞ MODAL) -->
+                            <div class="erd-node erd-dim" style="top: 250px; left: 320px;"
+                                ondblclick="openHitlModal('Dim_Customer')">
+                                <div class="erd-node-header">
+                                    <span>Dim_Customer</span>
+                                    <span class="double-click-hint">Đúp chuột để sửa</span>
+                                </div>
+                                <div class="erd-node-body">
+                                    <div class="erd-field pk"><span>🔑 customer_key</span><span>INT</span></div>
+                                    <div class="erd-field"><span>phone_number</span><span>VARCHAR</span></div>
+                                    <div class="erd-field"><span>member_tier</span><span>VARCHAR</span></div>
+                                </div>
+                            </div>
+
+                            <!-- Connector Indicator -->
+                            <div
+                                style="position: absolute; top: 120px; left: 255px; width: 65px; border-top: 2px dashed #2563eb; color: #2563eb; font-size: 10px; font-weight: bold; text-align: center;">
+                                1 : N
+                            </div>
+                        </div>
                     </div>
-                    
-                    <label>Phát hiện Anti-pattern:</label>
-                    <div class="alert-box alert-error">
-                        <b>Fan Trap:</b> Quan hệ giữa Fact_Rides và Dim_Promotion có thể gây lặp doanh thu khi sum. Gợi ý: Tách riêng bảng Fact_Promotion_Usage.
-                    </div>
-                    <div class="alert-box alert-warn">
-                        <b>Missing Surrogate Key:</b> Bảng Dim_Driver đang dùng Natural Key. Nên sinh khóa driver_key tự động.
-                    </div>
+
                 </div>
             </div>
         </div>
 
-        <!-- ================= MÀN HÌNH 3 ================= -->
+        <!-- ================= MÀN HÌNH 3: XUẤT DDL & DEPLOY SANDBOX ================= -->
         <div id="step3" class="screen">
-            <h2 class="header-title">Human-In-The-Loop (Tinh chỉnh mô hình)</h2>
-            <div class="split-layout">
-                <!-- Cột trái: Data Grid -->
-                <div class="col-50">
-                    <label style="margin-bottom: 10px;">Chỉnh sửa Cột trực tiếp (Double-click để sửa)</label>
-                    <div style="flex: 1; border: 1px solid var(--border); border-radius: 8px; overflow: hidden;">
-                        <table>
-                            <tr>
-                                <th>Tên Cột</th>
-                                <th>Kiểu dữ liệu</th>
-                                <th>Khóa</th>
-                                <th>Null</th>
-                            </tr>
-                            <tr><td>ride_key</td><td>INT</td><td>PK</td><td><input type="checkbox"></td></tr>
-                            <tr><td>driver_key</td><td>INT</td><td>FK</td><td><input type="checkbox"></td></tr>
-                            <tr><td>fare_amount</td><td>DECIMAL(10,2)</td><td>-</td><td><input type="checkbox" checked></td></tr>
+            <div class="header-title" style="margin-bottom:14px;">
+                Xuất Code DDL & Deploy Sandbox Executable
+                <span class="header-subtitle">Cho phép xem & trực tiếp chỉnh sửa code DDL mở rộng full chiều cao</span>
+            </div>
+
+            <!-- Workspace Xuất DDL Mở Rộng Kéo Dài Cho Phép Edit -->
+            <div class="ddl-workspace">
+
+                <!-- Cột Trái (Flex 7): DDL Code Editor Mở Rộng Full Height -->
+                <div class="ddl-editor-container">
+                    <div class="ddl-topbar">
+                        <div class="ddl-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38bdf8"
+                                stroke-width="2">
+                                <polyline points="16 18 22 12 16 6"></polyline>
+                                <polyline points="8 6 2 12 8 18"></polyline>
+                            </svg>
+                            PostgreSQL DWH DDL Script (Có thể chỉnh sửa trực tiếp)
+                        </div>
+                        <div class="ddl-actions">
+                            <button class="btn btn-secondary btn-sm"
+                                style="background:#334155; color:#fff; border:none;" onclick="formatDDL()">⚡ Format
+                                SQL</button>
+                            <button class="btn btn-secondary btn-sm"
+                                style="background:#334155; color:#fff; border:none;" onclick="copyDDL()">📋 Sao chép
+                                DDL</button>
+                            <button class="btn btn-secondary btn-sm"
+                                style="background:#0284c7; color:#fff; border:none;" onclick="downloadSchemaDoc()">📖
+                                Tải Tài liệu Cấu trúc DWH (.md)</button>
+                            <button class="btn btn-primary btn-sm" onclick="downloadDDL()">💾 Tải file .sql</button>
+                        </div>
+                    </div>
+
+                    <!-- Khung Code Textarea Chỉnh Sửa Trực Tiếp Mở Rộng Full Chiều Cao -->
+                    <div class="ddl-code-area">
+                        <div class="line-numbers">
+                            1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9<br>10<br>11<br>12<br>13<br>14<br>15<br>16<br>17<br>18<br>19<br>20<br>21<br>22
+                        </div>
+                        <textarea id="ddlTextarea" class="ddl-textarea-input" spellcheck="false">-- ============================================================
+-- Data Warehouse DDL Generated by AI Agent
+-- Target Engine: PostgreSQL / Redshift
+-- Target Schema: sandbox_dwh
+-- ============================================================
+
+CREATE SCHEMA IF NOT EXISTS sandbox_dwh;
+
+-- 1. Dimension Tables
+CREATE TABLE sandbox_dwh.Dim_Driver (
+    driver_key INT PRIMARY KEY,
+    driver_natural_id VARCHAR(50) NOT NULL,
+    full_name VARCHAR(100),
+    vehicle_type VARCHAR(30),
+    rating DECIMAL(3,2),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE sandbox_dwh.Dim_Customer (
+    customer_key INT PRIMARY KEY,
+    phone_number VARCHAR(20),
+    member_tier VARCHAR(20),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 2. Fact Tables
+CREATE TABLE sandbox_dwh.Fact_Rides (
+    ride_key INT PRIMARY KEY,
+    driver_key INT REFERENCES sandbox_dwh.Dim_Driver(driver_key),
+    customer_key INT REFERENCES sandbox_dwh.Dim_Customer(customer_key),
+    fare_amount DECIMAL(10,2) NOT NULL,
+    discount_amount DECIMAL(10,2) DEFAULT 0.00,
+    trip_status VARCHAR(20),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);</textarea>
+                    </div>
+                </div>
+
+                <!-- Cột Phải (Flex 3): Thử nghiệm Sandbox & Execution Terminal -->
+                <div class="sandbox-panel">
+                    <label style="margin:0; font-size:15px;">🚀 Thử nghiệm Môi trường Sandbox</label>
+                    <span style="font-size:12px; color:var(--text-light);">Tự động tạo schema thử nghiệm để validate DDL
+                        & sinh dữ liệu mẫu test query</span>
+
+                    <div class="form-group" style="margin-bottom:8px;">
+                        <label style="font-size:12px;">Host Connection</label>
+                        <input type="text" value="localhost:5432 (Isolated Postgres Container)">
+                    </div>
+                    <div class="form-group" style="margin-bottom:8px;">
+                        <label style="font-size:12px;">Database & Target Schema</label>
+                        <input type="text" value="sandbox_db / schema: sandbox_dwh">
+                    </div>
+
+                    <button class="btn btn-primary" onclick="runSandboxDeploy()" style="padding:12px;">🚀 Exec DDL &
+                        Deploy Sandbox</button>
+                    <button class="btn btn-secondary btn-sm" onclick="runDataSimulation()">🧪 Generates Test Mock Data
+                        (100 rows)</button>
+
+                    <label style="margin-top:10px; margin-bottom:4px; font-size:13px;">Terminal Output Log:</label>
+                    <div id="terminalLog" class="terminal-box">
+                        > Ready for execution.<br>
+                        > Click 'Exec DDL & Deploy Sandbox' to test DDL script.
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ================= POP-UP MODAL HUMAN-IN-THE-LOOP (HITL EDITOR) ================= -->
+    <div id="hitlModal" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                    <span>⚡ HITL Editor: Tinh chỉnh Bảng <b id="modalTableName"
+                            style="color:#2563eb;">Fact_Rides</b></span>
+                </div>
+                <button class="modal-close-btn" onclick="closeHitlModal()">×</button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Cột trái trong Modal: Direct Attributes Editing -->
+                <div class="modal-col-left">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <label style="margin:0;">Chỉnh sửa Cột & Thuộc tính (Sửa trực tiếp):</label>
+                        <button class="btn btn-secondary btn-sm" onclick="addModalColumn()">+ Thêm Cột</button>
+                    </div>
+
+                    <div style="flex:1; border:1px solid var(--border); border-radius:8px; overflow-y:auto;">
+                        <table id="modalColumnsTable">
+                            <thead>
+                                <tr>
+                                    <th>Tên Cột</th>
+                                    <th>Kiểu Dữ Liệu</th>
+                                    <th>Khóa</th>
+                                    <th>Null</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="modalTableBody">
+                                <!-- Dynamic Column Rows Loaded by JS -->
+                            </tbody>
                         </table>
                     </div>
                 </div>
-                <!-- Cột phải: Khung Chat AI -->
-                <div class="col-50">
-                    <label style="margin-bottom: 10px;">Trợ lý AI (Re-prompt)</label>
-                    <div style="display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap;">
-                        <span style="background:#e2e8f0; padding:4px 10px; border-radius:12px; font-size:12px; cursor:pointer;">+ Tách bảng Driver</span>
-                        <span style="background:#e2e8f0; padding:4px 10px; border-radius:12px; font-size:12px; cursor:pointer;">+ Đổi sang Snowflake</span>
-                    </div>
+
+                <!-- Cột phải trong Modal: AI Agent Re-prompting Chat -->
+                <div class="modal-col-right">
+                    <label style="margin-bottom:6px;">Trợ lý AI Agent (Re-prompting Bảng):</label>
                     <div class="chat-container">
-                        <div class="chat-history" style="display: flex; flex-direction: column;">
-                            <div class="msg msg-ai">Tui đã dựng xong cấu trúc ban đầu. Bạn kiểm tra Grain và các bảng nhé. Cần điều chỉnh gì cứ báo tui!</div>
-                            <div class="msg msg-user">Thêm thuộc tính 'discount_amount' vào bảng Fact_Rides giúp tui.</div>
-                            <div class="msg msg-ai">Đã rõ! Tui đã thêm `discount_amount` DECIMAL(10,2) vào Fact_Rides. Bạn có thể xem Diff View để đối chiếu.</div>
+                        <div class="chat-history" id="modalChatHistory">
+                            <div class="msg msg-ai">Tui đang mở bảng này để hỗ trợ bạn chỉnh sửa. Bạn muốn thêm cột, đổi
+                                kiểu dữ liệu hay tách bảng phụ nào không?</div>
                         </div>
-                        <div class="chat-input">
-                            <input type="text" placeholder="Nhập yêu cầu thay đổi logic...">
-                            <button class="btn btn-primary" style="padding: 6px 12px;">Gửi</button>
+                        <div class="chat-input-bar">
+                            <input type="text" id="modalChatInput" placeholder="Nhập yêu cầu sửa đổi cho bảng này...">
+                            <button class="btn btn-primary btn-sm" onclick="sendModalChatMessage()">Gửi</button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <!-- ================= MÀN HÌNH 4 ================= -->
-        <div id="step4" class="screen card">
-            <h2 class="header-title">Xuất DDL & Deploy Sandbox</h2>
-            <div style="display: flex; gap: 24px;">
-                <!-- Cột trái: Code Preview -->
-                <div style="flex: 6;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                        <label style="margin:0;">Code DDL (PostgreSQL)</label>
-                        <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 13px;">Tải file .sql</button>
-                    </div>
-                    <div style="background: #f8fafc; border: 1px solid var(--border); padding: 15px; border-radius: 6px; font-family: monospace; font-size: 13px; color: #334155;">
-                        <span style="color: #2563eb;">CREATE TABLE</span> sandbox_schema.Fact_Rides (<br>
-                        &nbsp;&nbsp;ride_key <span style="color: #059669;">INT PRIMARY KEY</span>,<br>
-                        &nbsp;&nbsp;driver_key <span style="color: #059669;">INT REFERENCES</span> sandbox_schema.Dim_Driver(driver_key),<br>
-                        &nbsp;&nbsp;discount_amount <span style="color: #059669;">DECIMAL(10,2)</span><br>
-                        );<br>
-                        <span style="color: #94a3b8;">-- Code generated successfully --</span>
-                    </div>
-                </div>
-                <!-- Cột phải: Terminal Sandbox -->
-                <div style="flex: 4; display: flex; flex-direction: column;">
-                    <label>Thử nghiệm Môi trường Sandbox</label>
-                    <input type="text" placeholder="Host: localhost" style="margin-bottom: 8px;">
-                    <input type="text" placeholder="DB: sandbox_db" style="margin-bottom: 15px;">
-                    <button class="btn btn-primary" style="margin-bottom: 15px;">🚀 Chạy DDL (Deploy)</button>
-                    
-                    <label>Execution Log Terminal:</label>
-                    <div class="terminal">
-                        > Connecting to sandbox_db:5432... OK<br>
-                        > Executing script...<br>
-                        > CREATE TABLE Fact_Rides... OK<br>
-                        > Execution Successful - 0 errors.
-                    </div>
-                </div>
-            </div>
-        </div>
-
     </div>
 
-    <!-- Đoạn script nhỏ giúp HTML "có cảm giác" tương tác bằng cách chuyển màn hình -->
+    <!-- JavaScript Interactive Handlers -->
     <script>
-        // Hàm: Chuyển đổi hiển thị giữa các màn hình (Screen) dựa trên ID
+        // Switch Screen Logic (3 steps)
         function switchScreen(screenId, navElement) {
-            // 1. Ẩn tất cả các màn hình
-            document.querySelectorAll('.screen').forEach(screen => {
-                screen.classList.remove('active');
-            });
-            // 2. Gỡ bỏ trạng thái 'active' của tất cả các nút menu
-            document.querySelectorAll('.nav-item').forEach(nav => {
-                nav.classList.remove('active');
-            });
-            
-            // 3. Hiển thị màn hình được chọn và bôi đậm menu tương ứng
+            document.querySelectorAll('.screen').forEach(screen => screen.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
             document.getElementById(screenId).classList.add('active');
             navElement.classList.add('active');
         }
+
+        // Excel Preview Grid Interactivity
+        function loadSampleExcelData() {
+            document.getElementById('excelPreviewBox').style.display = 'block';
+        }
+
+        function addExcelRow() {
+            const tbody = document.querySelector('#excelGrid tbody');
+            const rowCount = tbody.children.length + 1;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td style="background:#f8fafc; font-weight:bold;">${rowCount}</td>
+                            <td contenteditable="true">100${rowCount}</td>
+                            <td contenteditable="true">501</td>
+                            <td contenteditable="true">88${rowCount + 10}</td>
+                            <td contenteditable="true">120000</td>
+                            <td contenteditable="true">COMPLETED</td>
+                            <td contenteditable="true">2026-08-01 12:00:00</td>`;
+            tbody.appendChild(tr);
+        }
+
+        function addExcelColumn() {
+            const table = document.getElementById('excelGrid');
+            const th = document.createElement('th');
+            th.contentEditable = "true";
+            th.textContent = "column_new";
+            table.querySelector('thead tr').appendChild(th);
+
+            table.querySelectorAll('tbody tr').forEach(tr => {
+                const td = document.createElement('td');
+                td.contentEditable = "true";
+                td.textContent = "val_sample";
+                tr.appendChild(td);
+            });
+        }
+
+        function clearExcelData() {
+            document.querySelector('#excelGrid tbody').innerHTML = '';
+        }
+
+        // Filter Insights by Table
+        function filterInsightsByTable(tableName) {
+            const items = document.querySelectorAll('#insightsList .insight-card-item');
+            let visibleCount = 0;
+            items.forEach(item => {
+                const itemTable = item.getAttribute('data-table');
+                if (tableName === 'ALL' || itemTable.includes(tableName)) {
+                    item.style.display = 'flex';
+                    visibleCount++;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+            document.getElementById('insightsCounter').textContent = `${visibleCount} Cảnh báo / Insights`;
+        }
+
+        // Pop-up Modal HITL Editor Functions (DOUBLE CLICK EVENT - KHỞI TẠO PHIÊN AI MỚI)
+        function openHitlModal(tableName) {
+            document.getElementById('modalTableName').textContent = tableName;
+            const tbody = document.getElementById('modalTableBody');
+            tbody.innerHTML = '';
+
+            // 1. Khởi tạo phiên AI Chat MỚI hoàn toàn mỗi lần mở pop-up
+            const sessionId = Math.floor(1000 + Math.random() * 9000);
+            const chatHistory = document.getElementById('modalChatHistory');
+            chatHistory.innerHTML = `
+                <div style="font-size:11px; text-align:center; color:#64748b; margin-bottom:6px; background:#e2e8f0; padding:3px 10px; border-radius:10px; font-weight:600;">
+                    ✨ Phiên AI Agent Mới [#SESSION-${sessionId}] - ${new Date().toLocaleTimeString()}
+                </div>
+                <div class="msg msg-ai">
+                    🤖 <b>Khởi tạo phiên AI Agent mới cho bảng [${tableName}]:</b><br>
+                    Tui đã sẵn sàng hỗ trợ bạn tinh chỉnh thuộc tính, đổi kiểu dữ liệu hoặc thêm bớt cột cho bảng này. Hãy nhập yêu cầu của bạn!
+                </div>
+            `;
+            document.getElementById('modalChatInput').value = '';
+
+            // 2. Render cột dữ liệu của bảng tương ứng
+            if (tableName === 'Fact_Rides') {
+                tbody.innerHTML = `
+                    <tr><td contenteditable="true"><b>ride_key</b></td><td><input value="INT" style="padding:2px 5px; font-size:12px;"></td><td>PK</td><td><input type="checkbox"></td><td><button class="btn btn-danger btn-sm" onclick="this.closest('tr').remove()">Xóa</button></td></tr>
+                    <tr><td contenteditable="true"><b>driver_key</b></td><td><input value="INT" style="padding:2px 5px; font-size:12px;"></td><td>FK</td><td><input type="checkbox"></td><td><button class="btn btn-danger btn-sm" onclick="this.closest('tr').remove()">Xóa</button></td></tr>
+                    <tr><td contenteditable="true"><b>customer_key</b></td><td><input value="INT" style="padding:2px 5px; font-size:12px;"></td><td>FK</td><td><input type="checkbox"></td><td><button class="btn btn-danger btn-sm" onclick="this.closest('tr').remove()">Xóa</button></td></tr>
+                    <tr><td contenteditable="true"><b>fare_amount</b></td><td><input value="DECIMAL(10,2)" style="padding:2px 5px; font-size:12px;"></td><td>-</td><td><input type="checkbox" checked></td><td><button class="btn btn-danger btn-sm" onclick="this.closest('tr').remove()">Xóa</button></td></tr>
+                    <tr><td contenteditable="true"><b>discount_amount</b></td><td><input value="DECIMAL(10,2)" style="padding:2px 5px; font-size:12px;"></td><td>-</td><td><input type="checkbox" checked></td><td><button class="btn btn-danger btn-sm" onclick="this.closest('tr').remove()">Xóa</button></td></tr>
+                `;
+            } else if (tableName === 'Dim_Driver') {
+                tbody.innerHTML = `
+                    <tr><td contenteditable="true"><b>driver_key</b></td><td><input value="INT" style="padding:2px 5px; font-size:12px;"></td><td>PK</td><td><input type="checkbox"></td><td><button class="btn btn-danger btn-sm" onclick="this.closest('tr').remove()">Xóa</button></td></tr>
+                    <tr><td contenteditable="true"><b>driver_natural_id</b></td><td><input value="VARCHAR(50)" style="padding:2px 5px; font-size:12px;"></td><td>-</td><td><input type="checkbox"></td><td><button class="btn btn-danger btn-sm" onclick="this.closest('tr').remove()">Xóa</button></td></tr>
+                    <tr><td contenteditable="true"><b>full_name</b></td><td><input value="VARCHAR(100)" style="padding:2px 5px; font-size:12px;"></td><td>-</td><td><input type="checkbox" checked></td><td><button class="btn btn-danger btn-sm" onclick="this.closest('tr').remove()">Xóa</button></td></tr>
+                    <tr><td contenteditable="true"><b>vehicle_type</b></td><td><input value="VARCHAR(30)" style="padding:2px 5px; font-size:12px;"></td><td>-</td><td><input type="checkbox" checked></td><td><button class="btn btn-danger btn-sm" onclick="this.closest('tr').remove()">Xóa</button></td></tr>
+                `;
+            } else {
+                tbody.innerHTML = `
+                    <tr><td contenteditable="true"><b>customer_key</b></td><td><input value="INT" style="padding:2px 5px; font-size:12px;"></td><td>PK</td><td><input type="checkbox"></td><td><button class="btn btn-danger btn-sm" onclick="this.closest('tr').remove()">Xóa</button></td></tr>
+                    <tr><td contenteditable="true"><b>phone_number</b></td><td><input value="VARCHAR(20)" style="padding:2px 5px; font-size:12px;"></td><td>-</td><td><input type="checkbox"></td><td><button class="btn btn-danger btn-sm" onclick="this.closest('tr').remove()">Xóa</button></td></tr>
+                    <tr><td contenteditable="true"><b>member_tier</b></td><td><input value="VARCHAR(20)" style="padding:2px 5px; font-size:12px;"></td><td>-</td><td><input type="checkbox" checked></td><td><button class="btn btn-danger btn-sm" onclick="this.closest('tr').remove()">Xóa</button></td></tr>
+                `;
+            }
+
+            document.getElementById('hitlModal').classList.add('active');
+        }
+
+        function closeHitlModal() {
+            document.getElementById('hitlModal').classList.remove('active');
+        }
+
+        function addModalColumn() {
+            const tbody = document.getElementById('modalTableBody');
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td contenteditable="true"><b>column_name</b></td><td><input value="VARCHAR(50)" style="padding:2px 5px; font-size:12px;"></td><td>-</td><td><input type="checkbox" checked></td><td><button class="btn btn-danger btn-sm" onclick="this.closest('tr').remove()">Xóa</button></td>`;
+            tbody.appendChild(tr);
+        }
+
+        function sendModalChatMessage() {
+            const input = document.getElementById('modalChatInput');
+            if (!input.value.trim()) return;
+            const history = document.getElementById('modalChatHistory');
+
+            const userMsg = document.createElement('div');
+            userMsg.className = 'msg msg-user';
+            userMsg.textContent = input.value;
+            history.appendChild(userMsg);
+
+            const currentTable = document.getElementById('modalTableName').textContent;
+
+            setTimeout(() => {
+                const aiMsg = document.createElement('div');
+                aiMsg.className = 'msg msg-ai';
+                aiMsg.textContent = `Đã cập nhật bảng [${currentTable}]: "${input.value}". Hệ thống đã đồng bộ lại ERD & DDL!`;
+                history.appendChild(aiMsg);
+                history.scrollTop = history.scrollHeight;
+            }, 500);
+
+            input.value = '';
+            history.scrollTop = history.scrollHeight;
+        }
+
+        // Sandbox Execution Simulation
+        function runSandboxDeploy() {
+            const term = document.getElementById('terminalLog');
+            term.innerHTML = `> [${new Date().toLocaleTimeString()}] Connecting to sandbox_db:5432... OK<br>
+> Validating DDL syntax against PostgreSQL dialect... OK<br>
+> Executing CREATE SCHEMA sandbox_dwh... OK<br>
+> Executing CREATE TABLE Dim_Driver... OK<br>
+> Executing CREATE TABLE Dim_Customer... OK<br>
+> Executing CREATE TABLE Fact_Rides... OK<br>
+> Foreign keys validation passed.<br>
+<span style="color:#22c55e; font-weight:bold;">> ✅ Sandbox Deployment Successful! 0 Errors.</span>`;
+        }
+
+        function runDataSimulation() {
+            const term = document.getElementById('terminalLog');
+            term.innerHTML += `<br>> [${new Date().toLocaleTimeString()}] Generating 100 synthetic mock rows...<br>
+> Inserting mock data into Dim_Driver (10 rows)... OK<br>
+> Inserting mock data into Fact_Rides (100 rows)... OK<br>
+<span style="color:#38bdf8;">> 🧪 Mock Data Simulation Finished. Ready for Query Testing.</span>`;
+        }
+
+        function copyDDL() {
+            const code = document.getElementById('ddlTextarea').value;
+            navigator.clipboard.writeText(code);
+            alert('Đã sao chép DDL Code vào Clipboard!');
+        }
+
+        function downloadDDL() {
+            const code = document.getElementById('ddlTextarea').value;
+            const blob = new Blob([code], { type: 'text/sql' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'dwh_schema_ddl.sql';
+            a.click();
+        }
+
+        function downloadSchemaDoc() {
+            const docContent = `# TÀI LIỆU CẤU TRÚC DATA WAREHOUSE (SCHEMA DOCUMENTATION)
+Ngày khởi tạo: ${new Date().toLocaleDateString('vi-VN')}
+Engine Mục tiêu: PostgreSQL / Redshift
+Schema: sandbox_dwh
+
+---
+
+## 1. TỔNG QUAN CÁC BẢNG (DATA DICTIONARY)
+
+### Bảng Fact: Fact_Rides
+- **Grain (Độ mịn)**: Mỗi dòng tương ứng với 1 chuyến đi được đặt thành công hoặc bị hủy.
+- **Khóa chính (PK)**: \`ride_key\` (INT, Surrogate Key)
+- **Danh sách cột**:
+  - \`ride_key\` (INT, PK): Khóa chính tự sinh.
+  - \`driver_key\` (INT, FK -> Dim_Driver.driver_key): Khóa ngoại nối tài xế.
+  - \`customer_key\` (INT, FK -> Dim_Customer.customer_key): Khóa ngoại nối khách hàng.
+  - \`fare_amount\` (DECIMAL(10,2)): Tổng tiền cước chuyến đi.
+  - \`discount_amount\` (DECIMAL(10,2)): Số tiền giảm giá khuyến mãi.
+  - \`trip_status\` (VARCHAR(20)): Trạng thái chuyến đi (COMPLETED, CANCELLED).
+  - \`created_at\` (TIMESTAMP): Thời gian tạo chuyến.
+
+---
+
+### Bảng Dimension: Dim_Driver
+- **Mô tả**: Lưu trữ thông tin danh mục tài xế.
+- **Khóa chính (PK)**: \`driver_key\` (INT)
+- **Danh sách cột**:
+  - \`driver_key\` (INT, PK): Khóa chính thay thế.
+  - \`driver_natural_id\` (VARCHAR(50)): Mã tài xế tự nhiên từ hệ thống nguồn.
+  - \`full_name\` (VARCHAR(100)): Họ và tên tài xế.
+  - \`vehicle_type\` (VARCHAR(30)): Loại phương tiện (Xe máy, Ô tô 4 chỗ,...).
+  - \`rating\` (DECIMAL(3,2)): Đánh giá sao của tài xế.
+
+---
+
+### Bảng Dimension: Dim_Customer
+- **Mô tả**: Lưu trữ thông tin khách hàng.
+- **Khóa chính (PK)**: \`customer_key\` (INT)
+- **Danh sách cột**:
+  - \`customer_key\` (INT, PK): Khóa chính thay thế.
+  - \`phone_number\` (VARCHAR(20)): Số điện thoại khách hàng.
+  - \`member_tier\` (VARCHAR(20)): Hạng thành viên (Gold, Silver, Platinum).
+
+---
+*Tài liệu được sinh tự động bởi DataModel AI Agent Platform.*
+`;
+            const blob = new Blob([docContent], { type: 'text/markdown;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'DataWarehouse_Schema_Documentation.md';
+            a.click();
+        }
+
+        function formatDDL() {
+            alert('Đã tự động định dạng chuẩn SQL DDL!');
+        }
     </script>
 </body>
+
 </html>
