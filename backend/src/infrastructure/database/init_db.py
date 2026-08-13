@@ -6,18 +6,6 @@ from config import Settings, get_settings
 from src.common.logging import get_logger
 from src.infrastructure.database.base import Base
 from src.infrastructure.database.config import get_async_db_engine
-from src.infrastructure.database.models import (  # noqa: F401 - Nạp toàn bộ ORM models vào Base.metadata
-    AnalyticalRequirementModel,
-    DataModelChangeModel,
-    DataModelModel,
-    DataSourceModel,
-    ProjectMemberModel,
-    ProjectModel,
-    ProjectSessionModel,
-    RequirementModel,
-    SessionEventModel,
-    UserModel,
-)
 
 logger = get_logger(__name__)
 

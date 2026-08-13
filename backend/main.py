@@ -77,6 +77,9 @@ def create_app() -> FastAPI:
     # 3. Đăng ký hệ thống xử lý ngoại lệ tập trung (Global Exception Handlers)
     register_exception_handlers(app)
 
+    # 3. Đăng ký hệ thống xử lý ngoại lệ tập trung (Global Exception Handlers)
+    register_exception_handlers(app)
+
     @app.get("/health", tags=["Health Check"])
     async def health_check() -> dict[str, str]:
         """Endpoint kiểm tra trạng thái hoạt động của hệ thống."""
