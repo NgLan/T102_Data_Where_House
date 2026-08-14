@@ -1,0 +1,42 @@
+{
+  "app_name": "Data Model AI Agent",
+  "app_description": "Công cụ phân tích và tự động dựng mô hình dữ liệu Data Warehouse bằng AI Agent",
+  "actions": {
+    "save": "Lưu",
+    "cancel": "Hủy",
+    "confirm": "Xác nhận",
+    "delete": "Xóa",
+    "edit": "Chỉnh sửa",
+    "close": "Đóng",
+    "upload": "Tải lên",
+    "download": "Tải xuống",
+    "search": "Tìm kiếm",
+    "filter": "Lọc",
+    "reset": "Đặt lại",
+    "back": "Quay lại",
+    "next": "Tiếp theo",
+    "retry": "Thử lại"
+  },
+  "status": {
+    "idle": "Chờ xử lý",
+    "loading": "Đang xử lý...",
+    "success": "Thành công",
+    "error": "Lỗi",
+    "warning": "Cảnh báo",
+    "info": "Thông tin",
+    "pending": "Đang chờ",
+    "completed": "Hoàn thành",
+    "failed": "Thất bại"
+  },
+  "pagination": {
+    "page": "Trang",
+    "of": "trên",
+    "items_per_page": "Số mục mỗi trang",
+    "total_items": "Tổng số {{count}} mục"
+  },
+  "language": {
+    "vietnamese": "Tiếng Việt",
+    "english": "English",
+    "switch_language": "Đổi ngôn ngữ"
+  }
+}

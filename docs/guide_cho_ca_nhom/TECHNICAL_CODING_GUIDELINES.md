@@ -231,6 +231,30 @@ Mã nguồn Frontend trong `src/` được chia thành các phân vùng chính:
   - Sử dụng Tailwind CSS qua class name.
   - Khi cần gộp class động, bắt buộc dùng hàm tiện ích `cn()` (từ `clsx` và `tailwind-merge`).
 
+### 5. Quy Định Chuẩn Cho Đa Ngôn Ngữ & Quản Lý Chuỗi Văn Bản (Frontend i18n Guidelines)
+- **CẤM Hardcode Văn Bản Hiển Thị Trong Code UI & Logic:**
+  - **CẤM HOÀN TOÀN** hardcode trực tiếp các chuỗi văn bản (tiếng Việt hay tiếng Anh) trong các file JSX/TSX/TS (`<span>`, `<button>`, `title`, `placeholder`, `aria-label`, alert, toast message, error message...).
+  - 100% văn bản hiển thị cho người dùng phải được lấy thông qua chìa khóa dịch (translation key) của thư viện `react-i18next`.
+
+- **Quy Tắc Phân Tầng & Quản Lý Namespace JSON (`src/common/locales/`):**
+  - **Dùng chung (`common.json`):** Chứa các nhãn giao diện, nút bấm, trạng thái, phân trang được sử dụng ở 2 feature trở lên (*Lưu, Hủy, Xóa, Tìm kiếm, Đang tải, Trang...*).
+  - **Thông báo (`notifications.json`):** Chứa toàn bộ nội dung tiêu đề và thông điệp Toast/Alert/Modal thông báo tác vụ (*thành công, thất bại, cảnh báo, bắt đầu tác vụ...*).
+  - **Mã lỗi Backend (`errors.json`):** Chứa bản dịch tương ứng 1-1 cho tất cả mã lỗi `ErrorCode` được trả về từ Backend API (`INVALID_INPUT_SCHEMA`, `PROJECT_NOT_FOUND`, `UNAUTHORIZED`...).
+  - **Theo từng Feature (`{featureName}.json`):** Mọi văn bản chỉ thuộc về duy nhất một tính năng nghiệp vụ cụ thể bắt buộc phải nằm trong namespace tương ứng của feature đó (ví dụ: `projectInit.json`, `hitlEditor.json`, `sandboxDeployment.json`).
+
+- **Quy Định Phát Thông Báo Qua Custom Hook (`useAppNotification`):**
+  - **CẤM** hardcode câu chữ khi hiển thị thông báo thành công hoặc báo lỗi trong các hàm xử lý sự kiện hoặc API callbacks (`onSuccess`, `onError`, `catch`).
+  - Mọi thông báo thành công hoặc cảnh báo phải được phát thông qua chìa khóa dịch trong `notifications.json`.
+  - Mọi thông báo lỗi từ API Backend phải truyền trực tiếp `error_code` nhận từ response vào `useAppNotification` để tự động tra cứu câu chữ tương ứng trong `errors.json`.
+
+- **Strict Type Safety & Đăng Ký Namespace:**
+  - Mọi namespace JSON mới khi tạo ra phải được khai báo và import trong `src/common/i18n/i18n.ts` để đảm bảo hỗ trợ autocomplete và type checking qua `i18n.d.ts`.
+  - **CẤM** ép kiểu `any` hoặc tắt type check khi gọi chìa khóa i18n trong code.
+
+- **Định Dạng Dữ Liệu Động & Chuyển Đổi Ngôn Ngữ:**
+  - Các tham số biến đổi trong câu chữ (ví dụ: số lượng file, tên file, thời gian) bắt buộc phải dùng cú pháp nội hàm `{{paramName}}` của i18next thay vì cộng chuỗi thủ công.
+  - Chuyển đổi ngôn ngữ phải thông qua component `LanguageSwitcher` hoặc instance `i18n.changeLanguage()`.
+
 ---
 
 ## III. Quy Chuẩn Giao Tiếp API Frontend - Backend

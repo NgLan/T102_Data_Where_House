@@ -1,0 +1,24 @@
+{
+  "titles": {
+    "success": "Success",
+    "error": "System Error",
+    "warning": "Warning",
+    "info": "Notification"
+  },
+  "project_init": {
+    "upload_success": "Successfully uploaded {{count}} requirement file(s).",
+    "upload_failed": "File upload failed. Please check the format or try again.",
+    "file_deleted": "File {{fileName}} deleted successfully.",
+    "analysis_started": "AI Agent started analyzing requirement documents...",
+    "analysis_completed": "Document analysis completed successfully."
+  },
+  "sandbox": {
+    "execution_success": "DDL script executed successfully.",
+    "execution_failed": "Failed to execute DDL script on Sandbox environment."
+  },
+  "general": {
+    "action_completed": "Action completed successfully.",
+    "action_failed": "Action failed. Please try again later.",
+    "network_error": "Network error or server unreachable."
+  }
+}

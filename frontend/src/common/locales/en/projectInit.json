@@ -1,0 +1,20 @@
+{
+  "title": "Project Initialization & Data Source Ingestion",
+  "subtitle": "Drag and drop or select up to 20 Excel (.xlsx) files containing problem requirements and source table schema.",
+  "dropzone": {
+    "drag_active": "Drop Excel files here...",
+    "drag_instructions": "Drag & drop .xlsx files here, or click to select files from your computer",
+    "supported_formats": "Supports .xlsx format - Maximum 20MB per file, up to 20 files."
+  },
+  "file_list": {
+    "title": "Selected File List ({{count}}/20)",
+    "clear_all": "Clear all",
+    "file_name": "File Name",
+    "file_size": "Size",
+    "status": "Status"
+  },
+  "actions": {
+    "analyze": "Start AI Agent Analysis",
+    "analyzing": "AI is analyzing..."
+  }
+}
