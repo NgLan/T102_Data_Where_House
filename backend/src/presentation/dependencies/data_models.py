@@ -11,7 +11,10 @@ from src.infrastructure.repositories.postgres_data_model_repository import (
     PostgresDataModelRepository,
 )
 from src.infrastructure.transaction.sqlalchemy_unit_of_work import SqlAlchemyUnitOfWork
+from functools import lru_cache
 
+from src.application.data_models.i_view_ddl_service import IViewDdlService
+from src.application.data_models.view_ddl_service import ViewDdlService
 
 def get_data_model_service(
     session: AsyncSession = Depends(get_async_db_session),
@@ -26,3 +29,10 @@ DataModelServiceDependency = Annotated[
     IDataModelService,
     Depends(get_data_model_service),
 ]
+"""Dependency injection cho các use case Data Model."""
+
+
+@lru_cache
+def get_view_ddl_service() -> IViewDdlService:
+    """Khởi tạo và cache service sinh DDL không trạng thái."""
+    return ViewDdlService()

@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from uuid import uuid4
 
 from src.common.exceptions.business import BusinessException
-from src.domain.data_model.enums import DataModelChangeStatus
+from src.domain.data_model.enums import DataModelChangeStatus, DdlDialect
 from src.domain.data_model.rules import (
     validate_change_status_transition,
     validate_dbml,
@@ -93,3 +93,24 @@ class DataModelChange(BaseEntity):
         """Đánh dấu đề xuất thay đổi bị xung đột revision (CONFLICTED)."""
         self.status = DataModelChangeStatus.CONFLICTED
         self.mark_updated()
+
+
+@dataclass(frozen=True, slots=True)
+class DataModelSnapshot:
+    """Ảnh chụp mô hình hiện tại dùng để sinh DDL."""
+
+    name: str
+    revision: int
+    dbml: str
+
+
+@dataclass(frozen=True, slots=True)
+class DdlDocument:
+    """Tài liệu DDL đã được sinh từ một phiên bản mô hình."""
+
+    model_name: str
+    revision: int
+    dialect: DdlDialect
+    content: str
+    table_count: int
+    generated_at: str

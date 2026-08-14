@@ -1,4 +1,4 @@
-"""Router gốc của application API."""
+"""Router gốc của ứng dụng."""
 
 from fastapi import APIRouter
 from src.presentation.api.v1.router import router as v1_router
