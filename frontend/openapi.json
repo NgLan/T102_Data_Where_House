@@ -1,0 +1,492 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "AI20K Agent System",
+    "description": "AI20K Agent System API",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/projects/{project_id}/data-model": {
+      "get": {
+        "tags": [
+          "Data Models"
+        ],
+        "summary": "Get Current Data Model",
+        "description": "Lấy DBML và revision hiện tại của dự án.",
+        "operationId": "getDataModel",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID dự án chứa Data Model",
+              "title": "Project Id"
+            },
+            "description": "ID dự án chứa Data Model"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_DataModelResponse_"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Data Models"
+        ],
+        "summary": "Update Current Data Model",
+        "description": "Lưu snapshot DBML mới bằng optimistic locking.",
+        "operationId": "updateDataModel",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID dự án chứa Data Model",
+              "title": "Project Id"
+            },
+            "description": "ID dự án chứa Data Model"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateDataModelRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_DataModelResponse_"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "Health Check"
+        ],
+        "summary": "Health Check",
+        "description": "Endpoint kiểm tra trạng thái hoạt động của hệ thống.",
+        "operationId": "healthCheck",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_HealthResponse_"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ApiErrorResponse": {
+        "properties": {
+          "code": {
+            "type": "integer",
+            "maximum": 599.0,
+            "minimum": 400.0,
+            "title": "Code",
+            "description": "HTTP status code"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Thông báo lỗi"
+          },
+          "error_code": {
+            "type": "string",
+            "title": "Error Code",
+            "description": "Mã lỗi ổn định cho client"
+          },
+          "details": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/ErrorDetail"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Details",
+            "description": "Danh sách chi tiết lỗi theo field"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "code",
+          "message",
+          "error_code"
+        ],
+        "title": "ApiErrorResponse",
+        "description": "Error envelope được Global Exception Handler trả về."
+      },
+      "ApiResponse_DataModelResponse_": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "Trạng thái phản hồi (luôn là 'success' đối với 2xx)",
+            "default": "success"
+          },
+          "code": {
+            "type": "integer",
+            "title": "Code",
+            "description": "HTTP Status Code (mặc định 200)",
+            "default": 200
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Thông điệp phản hồi cho người dùng",
+            "default": "Xử lý thành công"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DataModelResponse"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Dữ liệu payload chính trả về"
+          },
+          "meta": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ResponseMeta"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Metadata chung đi kèm phản hồi (request_id, timestamp... nếu có)"
+          }
+        },
+        "type": "object",
+        "title": "ApiResponse[DataModelResponse]"
+      },
+      "ApiResponse_HealthResponse_": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "Trạng thái phản hồi (luôn là 'success' đối với 2xx)",
+            "default": "success"
+          },
+          "code": {
+            "type": "integer",
+            "title": "Code",
+            "description": "HTTP Status Code (mặc định 200)",
+            "default": 200
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Thông điệp phản hồi cho người dùng",
+            "default": "Xử lý thành công"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/HealthResponse"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Dữ liệu payload chính trả về"
+          },
+          "meta": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ResponseMeta"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Metadata chung đi kèm phản hồi (request_id, timestamp... nếu có)"
+          }
+        },
+        "type": "object",
+        "title": "ApiResponse[HealthResponse]"
+      },
+      "DataModelResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id",
+            "description": "ID của Data Model"
+          },
+          "project_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Project Id",
+            "description": "ID dự án sở hữu Data Model"
+          },
+          "dbml": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Dbml",
+            "description": "Snapshot DBML hiện tại"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Revision",
+            "description": "Revision phục vụ optimistic locking"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "description": "Thời điểm tạo theo ISO 8601"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At",
+            "description": "Thời điểm cập nhật theo ISO 8601"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "project_id",
+          "dbml",
+          "revision",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "DataModelResponse",
+        "description": "Snapshot Data Model trả về cho Frontend editor."
+      },
+      "ErrorDetail": {
+        "properties": {
+          "field": {
+            "type": "string",
+            "title": "Field",
+            "description": "Đường dẫn field không hợp lệ"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Mô tả lỗi validation"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "field",
+          "message"
+        ],
+        "title": "ErrorDetail",
+        "description": "Chi tiết validation của một trường request."
+      },
+      "HealthResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "ok",
+            "title": "Status",
+            "description": "Trạng thái hoạt động"
+          },
+          "env": {
+            "type": "string",
+            "title": "Env",
+            "description": "Môi trường chạy hiện tại"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "status",
+          "env"
+        ],
+        "title": "HealthResponse",
+        "description": "Trạng thái hoạt động và môi trường hiện tại của Backend."
+      },
+      "ResponseMeta": {
+        "properties": {
+          "request_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Id",
+            "description": "Mã định danh request phục vụ truy vết (X-Request-ID)"
+          },
+          "timestamp": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timestamp",
+            "description": "Thời gian tạo phản hồi (ISO 8601 string)"
+          }
+        },
+        "type": "object",
+        "title": "ResponseMeta",
+        "description": "Metadata chung đi kèm phản hồi (request_id, timestamp...). Cấm đưa metadata đặc thù LLM/Agent vào đây."
+      },
+      "UpdateDataModelRequest": {
+        "properties": {
+          "data_model_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Data Model Id",
+            "description": "ID của Data Model cần cập nhật"
+          },
+          "dbml": {
+            "type": "string",
+            "maxLength": 1000000,
+            "minLength": 1,
+            "title": "Dbml",
+            "description": "Toàn bộ snapshot DBML mới"
+          },
+          "base_revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Base Revision",
+            "description": "Revision mà client đã tải trước khi chỉnh sửa"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "data_model_id",
+          "dbml",
+          "base_revision"
+        ],
+        "title": "UpdateDataModelRequest",
+        "description": "Payload lưu snapshot DBML với revision gốc của client."
+      }
+    }
+  }
+}

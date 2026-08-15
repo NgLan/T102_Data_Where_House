@@ -1,21 +1,35 @@
 import type { Metadata } from 'next';
+import type { ReactNode } from 'react';
 import { I18nProvider } from '@/common/i18n/I18nProvider';
+import { NotificationCenter } from '@/common/components/ui/notification-center';
+import commonVi from '@/common/i18n/locales/vi/common.json';
 import './globals.css';
+import { Geist } from 'next/font/google';
+import { cn } from '@/common/lib/utils';
+
+const geist = Geist({ subsets: ['latin'], variable: '--font-sans' });
 
 export const metadata: Metadata = {
-  title: 'Data Model AI Agent - Enterprise Prototype',
-  description: 'Công cụ phân tích và tự động dựng mô hình dữ liệu Data Warehouse bằng AI Agent',
+  title: commonVi.TXT_APP_NAME,
+  description: commonVi.TXT_APP_DESCRIPTION,
 };
 
+/** Cấu hình document root, font và provider dùng chung của App Router.
+ * @param props Nội dung route hiện hành.
+ * @returns Root HTML layout của ứng dụng.
+ */
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: ReactNode;
 }>) {
   return (
-    <html lang="vi">
+    <html lang="vi" className={cn('font-sans', geist.variable)}>
       <body className="antialiased">
-        <I18nProvider>{children}</I18nProvider>
+        <I18nProvider>
+          {children}
+          <NotificationCenter />
+        </I18nProvider>
       </body>
     </html>
   );

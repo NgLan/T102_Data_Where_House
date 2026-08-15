@@ -15,6 +15,13 @@ class IDataModelRepository(IBaseRepository[DataModel]):
         """Lấy mô hình dữ liệu theo dự án."""
         pass
 
+    @abstractmethod
+    async def update_if_revision_matches(
+        self, entity: DataModel, base_revision: int
+    ) -> DataModel | None:
+        """Cập nhật khi revision hiện tại vẫn khớp base revision."""
+        pass
+
 
 class IDataModelChangeRepository(IBaseRepository[DataModelChange]):
     """Interface trừu tượng cho thao tác lưu trữ đề xuất thay đổi mô hình dữ liệu."""

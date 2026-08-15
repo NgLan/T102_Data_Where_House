@@ -15,6 +15,10 @@ from src.common.middleware import (
     setup_cors_middleware,
 )
 from src.infrastructure.database.init_db import init_db
+from src.presentation.api.router import router as api_router
+from src.presentation.dtos.common import ApiErrorResponse
+from src.presentation.dtos.health import HealthResponse
+from src.presentation.routing import ApiResponseRoute
 
 logger = get_logger(__name__)
 
@@ -49,6 +53,7 @@ def create_app() -> FastAPI:
         debug=settings.debug,
         lifespan=lifespan,
     )
+    app.router.route_class = ApiResponseRoute
 
     # 2. Đăng ký Middleware Layer theo thứ tự thực thi (Innermost -> Outermost)
     # Innermost: HTTP Logging Middleware (Ghi nhận duration và log request lifecycle)
@@ -77,13 +82,18 @@ def create_app() -> FastAPI:
     # 3. Đăng ký hệ thống xử lý ngoại lệ tập trung (Global Exception Handlers)
     register_exception_handlers(app)
 
-    # 3. Đăng ký hệ thống xử lý ngoại lệ tập trung (Global Exception Handlers)
-    register_exception_handlers(app)
+    app.include_router(api_router)
 
-    @app.get("/health", tags=["Health Check"])
-    async def health_check() -> dict[str, str]:
+    @app.get(
+        "/health",
+        tags=["Health Check"],
+        response_model=HealthResponse,
+        operation_id="healthCheck",
+        responses={500: {"model": ApiErrorResponse}},
+    )
+    async def health_check() -> HealthResponse:
         """Endpoint kiểm tra trạng thái hoạt động của hệ thống."""
-        return {"status": "ok", "env": settings.app_env}
+        return HealthResponse(status="ok", env=settings.app_env)
 
     return app
 

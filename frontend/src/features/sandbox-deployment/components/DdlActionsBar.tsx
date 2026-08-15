@@ -1,10 +1,9 @@
-/**
- * Presentation Component: Thanh công cụ DDL Editor
- * Dark IDE Toolbar với các nút thao tác nhanh (Format, Copy, Download)
- */
+'use client';
 
-import React from 'react';
-import { Code2, Wand2, Copy, FileText, Download } from 'lucide-react';
+import { Code2, Copy, Download, FileText, Wand2 } from 'lucide-react';
+import type { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Button } from '@/common/components/ui/button';
 
 export interface DdlActionsBarProps {
   onFormat: () => void;
@@ -13,52 +12,25 @@ export interface DdlActionsBarProps {
   onDownloadSql: () => void;
 }
 
-export const DdlActionsBar: React.FC<DdlActionsBarProps> = ({
-  onFormat,
-  onCopy,
-  onDownloadDoc,
-  onDownloadSql,
-}) => {
+/** Hiển thị các action của DDL editor.
+ * @param props Callback định dạng, sao chép và tải file.
+ * @returns Toolbar sử dụng shadcn Button.
+ */
+export function DdlActionsBar(props: DdlActionsBarProps) {
+  const { t } = useTranslation('sandbox-deployment');
   return (
-    <div className="flex flex-wrap justify-between items-center bg-slate-900/90 px-4 py-3 border-b border-slate-800/80 text-slate-200 gap-2">
-      <div className="flex items-center gap-2 text-xs font-bold tracking-wide">
-        <Code2 className="w-4 h-4 text-sky-400" />
-        <span className="text-slate-100">POSTGRESQL DWH DDL SCRIPT</span>
-        <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
-          Editable
-        </span>
-      </div>
-
-      <div className="flex items-center gap-2">
-        <button
-          onClick={onFormat}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition cursor-pointer"
-        >
-          <Wand2 className="w-3.5 h-3.5 text-amber-400" /> Format SQL
-        </button>
-
-        <button
-          onClick={onCopy}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition cursor-pointer"
-        >
-          <Copy className="w-3.5 h-3.5 text-sky-400" /> Copy DDL
-        </button>
-
-        <button
-          onClick={onDownloadDoc}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-sky-900/60 hover:bg-sky-800 text-sky-200 border border-sky-700/60 transition cursor-pointer"
-        >
-          <FileText className="w-3.5 h-3.5 text-sky-300" /> Tải Data Doc (.md)
-        </button>
-
-        <button
-          onClick={onDownloadSql}
-          className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-sm transition cursor-pointer border border-blue-400/30"
-        >
-          <Download className="w-3.5 h-3.5" /> Tải file .sql
-        </button>
+    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 bg-slate-900/90 px-4 py-3 text-slate-200">
+      <div className="flex items-center gap-2 text-xs font-bold tracking-wide"><Code2 className="size-4 text-sky-400" /><span>{t('TXT_EDITOR_TITLE')}</span><span className="rounded border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 font-mono text-[10px] text-emerald-400">{t('TXT_EDITABLE')}</span></div>
+      <div className="flex flex-wrap items-center gap-2">
+        <ActionButton icon={<Wand2 />} label={t('BTN_FORMAT_SQL')} onClick={props.onFormat} />
+        <ActionButton icon={<Copy />} label={t('BTN_COPY_DDL')} onClick={props.onCopy} />
+        <ActionButton icon={<FileText />} label={t('BTN_DOWNLOAD_DOC')} onClick={props.onDownloadDoc} />
+        <ActionButton icon={<Download />} label={t('BTN_DOWNLOAD_SQL')} onClick={props.onDownloadSql} />
       </div>
     </div>
   );
-};
+}
 
+function ActionButton({ icon, label, onClick }: { icon: ReactNode; label: string; onClick: () => void }) {
+  return <Button type="button" size="sm" variant="secondary" onClick={onClick}>{icon}{label}</Button>;
+}

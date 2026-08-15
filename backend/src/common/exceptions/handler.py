@@ -49,9 +49,7 @@ async def app_exception_handler(request: Request, exc: AppException) -> JSONResp
     return JSONResponse(status_code=status_code, content=content)
 
 
-async def validation_exception_handler(
-    request: Request, exc: RequestValidationError
-) -> JSONResponse:
+async def validation_exception_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
     """Xử lý lỗi validation dữ liệu đầu vào từ Pydantic / FastAPI."""
     status_code: int = HTTPStatus.UNPROCESSABLE_ENTITY.value
     details: list[dict[str, str]] = []
@@ -81,9 +79,7 @@ async def validation_exception_handler(
     return JSONResponse(status_code=status_code, content=content)
 
 
-async def http_exception_handler(
-    request: Request, exc: StarletteHTTPException
-) -> JSONResponse:
+async def http_exception_handler(request: Request, exc: StarletteHTTPException) -> JSONResponse:
     """Xử lý các ngoại lệ dạng Starlette / FastAPI HTTPException."""
     status_code: int = exc.status_code
     message: str = str(exc.detail) if exc.detail else "HTTP Exception"

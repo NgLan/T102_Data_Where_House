@@ -11,6 +11,9 @@ export const API_ENDPOINTS = {
   GENERATE_ERD: '/modeling/generate-erd',
   UPDATE_DBML: '/modeling/update-dbml',
   GET_INSIGHTS: '/modeling/insights',
+
+  // Data Model hiện tại và chỉnh sửa trực quan UC5.1.3
+  DATA_MODEL: (projectId: string) => `/projects/${projectId}/data-model`,
   
   // Endpoints HITL Editor & Proposal Review
   REPROMPT_HITL: '/hitl/reprompt',

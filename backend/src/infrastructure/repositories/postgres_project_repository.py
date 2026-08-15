@@ -7,6 +7,7 @@ from src.domain.project.repository import IProjectRepository
 from src.domain.shared.types import EntityID
 from src.infrastructure.database.mappers.project_mapper import ProjectMapper
 from src.infrastructure.database.models.project import ProjectModel
+from typing_extensions import override
 
 
 class PostgresProjectRepository(IProjectRepository):
@@ -16,13 +17,15 @@ class PostgresProjectRepository(IProjectRepository):
         """Khởi tạo repository với SQLAlchemy AsyncSession."""
         self._session: AsyncSession = session
 
-    async def get_by_id(self, id: EntityID) -> Project | None:
+    @override
+    async def get_by_id(self, entity_id: EntityID) -> Project | None:
         """Lấy dự án theo ID."""
-        stmt = select(ProjectModel).where(ProjectModel.id == id)
+        stmt = select(ProjectModel).where(ProjectModel.id == entity_id)
         result = await self._session.execute(stmt)
         model = result.scalar_one_or_none()
         return ProjectMapper.to_domain(model) if model else None
 
+    @override
     async def list_by_user(self, user_id: EntityID) -> list[Project]:
         """Lấy danh sách dự án sở hữu bởi người dùng."""
         stmt = select(ProjectModel).where(ProjectModel.user_id == user_id)
@@ -30,6 +33,7 @@ class PostgresProjectRepository(IProjectRepository):
         models = result.scalars().all()
         return [ProjectMapper.to_domain(m) for m in models]
 
+    @override
     async def save(self, entity: Project) -> Project:
         """Lưu (tạo mới hoặc cập nhật) thực thể Project."""
         stmt = select(ProjectModel).where(ProjectModel.id == entity.id)
@@ -45,11 +49,14 @@ class PostgresProjectRepository(IProjectRepository):
         await self._session.flush()
         return ProjectMapper.to_domain(model)
 
-    async def delete(self, id: EntityID) -> None:
+    @override
+    async def delete(self, entity_id: EntityID) -> bool:
         """Xóa thực thể Project theo ID."""
-        stmt = select(ProjectModel).where(ProjectModel.id == id)
+        stmt = select(ProjectModel).where(ProjectModel.id == entity_id)
         result = await self._session.execute(stmt)
         model = result.scalar_one_or_none()
-        if model:
-            await self._session.delete(model)
-            await self._session.flush()
+        if model is None:
+            return False
+        await self._session.delete(model)
+        await self._session.flush()
+        return True

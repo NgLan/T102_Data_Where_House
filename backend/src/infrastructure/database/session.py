@@ -1,6 +1,7 @@
 """Cung cấp session factory và dependency injection cho SQLAlchemy Database Sessions."""
 
 from collections.abc import AsyncGenerator, Generator
+from functools import lru_cache
 
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
@@ -15,24 +16,31 @@ from src.infrastructure.database.config import (
 
 logger = get_logger(__name__)
 
-AsyncSessionFactory: async_sessionmaker[AsyncSession] = async_sessionmaker(
-    bind=get_async_db_engine(),
-    autocommit=False,
-    autoflush=False,
-    expire_on_commit=False,
-)
+@lru_cache
+def get_async_session_factory() -> async_sessionmaker[AsyncSession]:
+    """Khởi tạo lazy async session factory khi request thực sự cần CSDL."""
+    return async_sessionmaker(
+        bind=get_async_db_engine(),
+        autocommit=False,
+        autoflush=False,
+        expire_on_commit=False,
+    )
 
-SyncSessionFactory: sessionmaker[Session] = sessionmaker(
-    bind=get_sync_db_engine(),
-    autocommit=False,
-    autoflush=False,
-    expire_on_commit=False,
-)
+
+@lru_cache
+def get_sync_session_factory() -> sessionmaker[Session]:
+    """Khởi tạo lazy sync session factory khi tác vụ thực sự cần CSDL."""
+    return sessionmaker(
+        bind=get_sync_db_engine(),
+        autocommit=False,
+        autoflush=False,
+        expire_on_commit=False,
+    )
 
 
 async def get_async_db_session() -> AsyncGenerator[AsyncSession, None]:
     """Tạo và quản lý session bất đồng bộ (AsyncSession) cho FastAPI dependency."""
-    session: AsyncSession = AsyncSessionFactory()
+    session: AsyncSession = get_async_session_factory()()
     try:
         yield session
     except SQLAlchemyError as exc:
@@ -48,7 +56,7 @@ async def get_async_db_session() -> AsyncGenerator[AsyncSession, None]:
 
 def get_sync_db_session() -> Generator[Session, None, None]:
     """Tạo và quản lý session đồng bộ (Session) cho các tác vụ đồng bộ."""
-    session: Session = SyncSessionFactory()
+    session: Session = get_sync_session_factory()()
     try:
         yield session
     except SQLAlchemyError as exc:

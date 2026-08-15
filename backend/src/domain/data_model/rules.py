@@ -1,17 +1,34 @@
 """Quy tắc nghiệp vụ cho miền Mô hình Dữ liệu (Data Model)."""
 
+from json import loads
+from lark_dbml import loads
+from lark_dbml.lark_dbml_standalone import UnexpectedInput
 from src.common.exceptions.business import BusinessException
 from src.common.exceptions.error_codes import ErrorCode
 from src.domain.data_model.enums import DataModelChangeStatus
 
 
 def validate_dbml(dbml: str) -> None:
-    """Kiểm tra nội dung DBML không được rỗng."""
+    """Kiểm tra nội dung và cú pháp DBML.
+    
+    Args:
+        dbml: Nội dung DBML cần xác thực.
+
+    Raises:
+        BusinessException: Khi cú pháp DBML không hợp lệ.
+    """
     if not dbml or not dbml.strip():
         raise BusinessException(
             code=ErrorCode.INVALID_DBML_CONTENT,
             message="Nội dung DBML không được để trống.",
         )
+    try:
+        loads(dbml)
+    except (UnexpectedInput, Exception) as exc:
+        raise BusinessException(
+            code=ErrorCode.INVALID_DBML_CONTENT,
+            message="Nội dung DBML không hợp lệ.",
+        ) from exc
 
 
 def validate_revision_match(base_revision: int, current_revision: int) -> None:

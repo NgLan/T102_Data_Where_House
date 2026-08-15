@@ -28,10 +28,10 @@ export const ProposalReviewActions: React.FC<ProposalReviewActionsProps> = ({
         <Button variant="secondary" size="sm" onClick={onRetry} className="text-xs rounded-xl px-3 py-1.5 font-semibold">
           <RefreshCw className="w-3.5 h-3.5 mr-1 text-slate-600" /> Yêu cầu AI làm lại
         </Button>
-        <Button variant="danger" size="sm" onClick={onReject} className="text-xs rounded-xl px-3 py-1.5 font-semibold">
+        <Button variant="destructive" size="sm" onClick={onReject} className="text-xs rounded-xl px-3 py-1.5 font-semibold">
           <X className="w-3.5 h-3.5 mr-1" /> Hủy bỏ (Reject)
         </Button>
-        <Button variant="primary" size="sm" onClick={onAccept} className="text-xs rounded-xl px-4 py-1.5 font-bold shadow-xs">
+        <Button size="sm" onClick={onAccept} className="text-xs rounded-xl px-4 py-1.5 font-bold shadow-xs">
           <Check className="w-3.5 h-3.5 mr-1" /> Áp dụng thay đổi (Accept)
         </Button>
       </div>

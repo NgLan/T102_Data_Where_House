@@ -1,0 +1,26 @@
+{
+  "valid": [
+    {
+      "name": "single-line table",
+      "source": "Table users { id uuid }"
+    },
+    {
+      "name": "constraints notes defaults and reference",
+      "source": "Table users {\n  id uuid [pk, not null]\n  email varchar(255) [unique, note: 'Login email']\n}\n\nTable posts {\n  id int [pk, increment]\n  user_id uuid [ref: > users.id]\n  published boolean [default: false]\n}"
+    },
+    {
+      "name": "enum index and schema-qualified table",
+      "source": "Enum role {\n  admin\n  member\n}\n\nTable auth.users {\n  id uuid [pk]\n  role role\n  indexes {\n    (id, role) [unique]\n  }\n}"
+    }
+  ],
+  "invalid": [
+    {
+      "name": "unclosed table",
+      "source": "Table users { id uuid"
+    },
+    {
+      "name": "unknown statement",
+      "source": "this is not dbml"
+    }
+  ]
+}

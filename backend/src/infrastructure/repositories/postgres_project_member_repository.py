@@ -7,6 +7,7 @@ from src.domain.project.repository import IProjectMemberRepository
 from src.domain.shared.types import EntityID
 from src.infrastructure.database.mappers.project_member_mapper import ProjectMemberMapper
 from src.infrastructure.database.models.project_member import ProjectMemberModel
+from typing_extensions import override
 
 
 class PostgresProjectMemberRepository(IProjectMemberRepository):
@@ -16,13 +17,15 @@ class PostgresProjectMemberRepository(IProjectMemberRepository):
         """Khởi tạo repository với SQLAlchemy AsyncSession."""
         self._session: AsyncSession = session
 
-    async def get_by_id(self, id: EntityID) -> ProjectMember | None:
+    @override
+    async def get_by_id(self, entity_id: EntityID) -> ProjectMember | None:
         """Lấy thành viên dự án theo ID."""
-        stmt = select(ProjectMemberModel).where(ProjectMemberModel.id == id)
+        stmt = select(ProjectMemberModel).where(ProjectMemberModel.id == entity_id)
         result = await self._session.execute(stmt)
         model = result.scalar_one_or_none()
         return ProjectMemberMapper.to_domain(model) if model else None
 
+    @override
     async def list_by_project(self, project_id: EntityID) -> list[ProjectMember]:
         """Danh sách thành viên thuộc một dự án."""
         stmt = select(ProjectMemberModel).where(ProjectMemberModel.project_id == project_id)
@@ -30,6 +33,7 @@ class PostgresProjectMemberRepository(IProjectMemberRepository):
         models = result.scalars().all()
         return [ProjectMemberMapper.to_domain(m) for m in models]
 
+    @override
     async def save(self, entity: ProjectMember) -> ProjectMember:
         """Lưu (tạo mới hoặc cập nhật) thực thể ProjectMember."""
         stmt = select(ProjectMemberModel).where(ProjectMemberModel.id == entity.id)
@@ -45,11 +49,14 @@ class PostgresProjectMemberRepository(IProjectMemberRepository):
         await self._session.flush()
         return ProjectMemberMapper.to_domain(model)
 
-    async def delete(self, id: EntityID) -> None:
+    @override
+    async def delete(self, entity_id: EntityID) -> bool:
         """Xóa thực thể ProjectMember theo ID."""
-        stmt = select(ProjectMemberModel).where(ProjectMemberModel.id == id)
+        stmt = select(ProjectMemberModel).where(ProjectMemberModel.id == entity_id)
         result = await self._session.execute(stmt)
         model = result.scalar_one_or_none()
-        if model:
-            await self._session.delete(model)
-            await self._session.flush()
+        if model is None:
+            return False
+        await self._session.delete(model)
+        await self._session.flush()
+        return True

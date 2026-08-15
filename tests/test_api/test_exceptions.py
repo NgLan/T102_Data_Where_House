@@ -115,15 +115,15 @@ async def test_system_exception_llm_error(test_client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_validation_error_format(test_client: AsyncClient):
-    # Gửi payload sai kiểu dữ liệu để trigger validation error
+    # Gửi hai field sai để bảo đảm mỗi lỗi có một phần tử details riêng.
     response = await test_client.post("/test/validation", json={"age": "not-an-int"})
     assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
     data = response.json()
     assert data["code"] == 422
     assert data["error_code"] == "VALIDATION_ERROR"
     assert data["message"] == "Request validation failed."
-    assert isinstance(data["details"], list)
-    assert len(data["details"]) > 0
+    assert {detail["field"] for detail in data["details"]} == {"age", "name"}
+    assert all(set(detail) == {"field", "message"} and detail["message"] for detail in data["details"])
 
 
 @pytest.mark.asyncio
@@ -141,8 +141,6 @@ async def test_unhandled_unexpected_exception(test_client: AsyncClient):
 def test_all_error_codes_are_mapped():
     """Đảm bảo mọi ErrorCode định nghĩa trong ErrorCode Enum đều được ánh xá trong ERROR_STATUS_MAP."""
     for error_code in ErrorCode:
-        assert error_code in ERROR_STATUS_MAP, (
-            f"ErrorCode {error_code} chưa được định nghĩa trong ERROR_STATUS_MAP!"
-        )
+        assert error_code in ERROR_STATUS_MAP, f"ErrorCode {error_code} chưa được định nghĩa trong ERROR_STATUS_MAP!"
         status = get_http_status_code(error_code)
         assert isinstance(status, HTTPStatus)

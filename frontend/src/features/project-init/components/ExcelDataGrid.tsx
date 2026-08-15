@@ -3,9 +3,9 @@
  * Responsive table với sticky headers, status badges & column type tags
  */
 
-import React from 'react';
-import { ExcelPreviewRowDto } from '@/api/model/project.dto';
-import { Table, Lock, Eye } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import type { ExcelPreviewRowDto } from '@/api/model/project.dto';
+import { Lock, Table } from 'lucide-react';
 
 export interface ExcelDataGridProps {
   fileName: string;
@@ -29,9 +29,15 @@ const COLUMNS: { key: keyof ExcelPreviewRowDto; label: string; type: string }[] 
   { key: 'created_at', label: 'created_at', type: 'DATETIME' },
 ];
 
-export const ExcelDataGrid: React.FC<ExcelDataGridProps> = ({ fileName, rows }) => {
+/** Hiển thị bản xem trước dữ liệu nguồn ở chế độ chỉ đọc.
+ * @param props Tên file và các dòng preview.
+ * @returns Bảng dữ liệu responsive với thông tin schema.
+ */
+export function ExcelDataGrid({ fileName, rows }: ExcelDataGridProps) {
+  const { t, i18n } = useTranslation('project-init');
   const displayRows: ExcelPreviewRowDto[] = rows.length > 0 ? rows : MOCK_ROWS;
   const displayFileName = fileName || 'Sheet1_RawRides.xlsx';
+  const currencyFormatter = new Intl.NumberFormat(i18n.language === 'vi' ? 'vi-VN' : 'en-US', { style: 'currency', currency: 'VND' });
 
   return (
     <div className="border border-slate-200/80 rounded-2xl bg-white mt-3.5 overflow-hidden shadow-xs">
@@ -39,15 +45,15 @@ export const ExcelDataGrid: React.FC<ExcelDataGridProps> = ({ fileName, rows }) 
       <div className="bg-slate-50/80 px-4 py-2.5 border-b border-slate-200/80 flex justify-between items-center text-xs font-semibold text-slate-700">
         <div className="flex items-center gap-2">
           <Table className="w-3.5 h-3.5 text-blue-600" />
-          <span className="text-slate-500 font-normal">Sheet Nguồn:</span>
+          <span className="text-slate-500 font-normal">{t('TXT_SOURCE_SHEET')}</span>
           <span className="font-bold text-slate-800">{displayFileName}</span>
           <span className="text-[11px] bg-slate-200/70 px-2 py-0.5 rounded-full text-slate-600 font-semibold">
-            {displayRows.length} dòng × {COLUMNS.length} cột
+            {t('TXT_DATA_SHAPE', { rows: displayRows.length, columns: COLUMNS.length })}
           </span>
         </div>
 
         <div className="flex items-center gap-1.5 text-[11px] text-slate-500 bg-white border border-slate-200 px-2.5 py-1 rounded-full font-semibold">
-          <Lock className="w-3 h-3 text-slate-400" /> Read-Only Preview
+          <Lock className="w-3 h-3 text-slate-400" /> {t('TXT_READ_ONLY')}
         </div>
       </div>
 
@@ -81,7 +87,7 @@ export const ExcelDataGrid: React.FC<ExcelDataGridProps> = ({ fileName, rows }) 
                 <td className="border-r border-slate-100 px-3.5 py-2 text-slate-600">{row.driver_id}</td>
                 <td className="border-r border-slate-100 px-3.5 py-2 text-slate-600">{row.customer_id}</td>
                 <td className="border-r border-slate-100 px-3.5 py-2 text-emerald-700 font-bold">
-                  {row.fare_amount.toLocaleString('vi-VN')} đ
+                  {currencyFormatter.format(row.fare_amount)}
                 </td>
                 <td className="border-r border-slate-100 px-3.5 py-2">
                   <span
@@ -102,5 +108,5 @@ export const ExcelDataGrid: React.FC<ExcelDataGridProps> = ({ fileName, rows }) 
       </div>
     </div>
   );
-};
+}
 

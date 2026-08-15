@@ -1,33 +1,24 @@
-/**
- * Pure Presentation Component: Nút bấm kích hoạt AI Agent phân tích
- * Style: Nút primary lớn theo wildframe
- */
+'use client';
 
-import React from 'react';
+import { Loader2, Sparkles } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { Button } from '@/common/components/ui/button';
 
 export interface AnalyzeTriggerButtonProps {
   isAnalyzing: boolean;
-  onClick: () => void;
+  onAnalyze: () => void;
 }
 
-export const AnalyzeTriggerButton: React.FC<AnalyzeTriggerButtonProps> = ({
-  isAnalyzing,
-  onClick,
-}) => {
+/** Hiển thị action bắt đầu phân tích dữ liệu nguồn.
+ * @param props Trạng thái xử lý và callback phân tích.
+ * @returns Nút shadcn có loading state rõ ràng.
+ */
+export function AnalyzeTriggerButton({ isAnalyzing, onAnalyze }: AnalyzeTriggerButtonProps) {
+  const { t } = useTranslation('project-init');
   return (
-    <button
-      onClick={onClick}
-      disabled={isAnalyzing}
-      className="w-full mt-1.5 py-3 px-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold text-[15px] rounded-lg border-none cursor-pointer transition-all duration-200 flex items-center justify-center gap-2 shadow-[0_2px_4px_rgba(37,99,235,0.2)] hover:translate-y-[-1px] hover:shadow-[0_4px_8px_rgba(37,99,235,0.3)]"
-    >
-      {isAnalyzing ? (
-        <>
-          <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-          Đang phân tích dữ liệu...
-        </>
-      ) : (
-        <>✨ AI Agents Phân tích & Tự động dựng Datawarehouse (ERD)</>
-      )}
-    </button>
+    <Button type="button" size="lg" className="w-full" disabled={isAnalyzing} onClick={onAnalyze}>
+      {isAnalyzing ? <Loader2 className="animate-spin" /> : <Sparkles />}
+      {isAnalyzing ? t('MSG_ANALYZING') : t('BTN_ANALYZE')}
+    </Button>
   );
-};
+}

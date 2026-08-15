@@ -7,6 +7,7 @@ from src.domain.user.entities import User
 from src.domain.user.repository import IUserRepository
 from src.infrastructure.database.mappers.user_mapper import UserMapper
 from src.infrastructure.database.models.user import UserModel
+from typing_extensions import override
 
 
 class PostgresUserRepository(IUserRepository):
@@ -16,13 +17,15 @@ class PostgresUserRepository(IUserRepository):
         """Khởi tạo repository với SQLAlchemy AsyncSession."""
         self._session: AsyncSession = session
 
-    async def get_by_id(self, id: EntityID) -> User | None:
+    @override
+    async def get_by_id(self, entity_id: EntityID) -> User | None:
         """Lấy người dùng theo ID."""
-        stmt = select(UserModel).where(UserModel.id == id)
+        stmt = select(UserModel).where(UserModel.id == entity_id)
         result = await self._session.execute(stmt)
         model = result.scalar_one_or_none()
         return UserMapper.to_domain(model) if model else None
 
+    @override
     async def get_by_username(self, username: str) -> User | None:
         """Lấy thông tin người dùng theo tên đăng nhập."""
         stmt = select(UserModel).where(UserModel.username == username)
@@ -30,6 +33,7 @@ class PostgresUserRepository(IUserRepository):
         model = result.scalar_one_or_none()
         return UserMapper.to_domain(model) if model else None
 
+    @override
     async def get_by_email(self, email: str) -> User | None:
         """Lấy thông tin người dùng theo địa chỉ email."""
         stmt = select(UserModel).where(UserModel.email == email)
@@ -37,6 +41,7 @@ class PostgresUserRepository(IUserRepository):
         model = result.scalar_one_or_none()
         return UserMapper.to_domain(model) if model else None
 
+    @override
     async def save(self, entity: User) -> User:
         """Lưu (tạo mới hoặc cập nhật) thực thể User."""
         stmt = select(UserModel).where(UserModel.id == entity.id)
@@ -52,11 +57,14 @@ class PostgresUserRepository(IUserRepository):
         await self._session.flush()
         return UserMapper.to_domain(model)
 
-    async def delete(self, id: EntityID) -> None:
+    @override
+    async def delete(self, entity_id: EntityID) -> bool:
         """Xóa thực thể User theo ID."""
-        stmt = select(UserModel).where(UserModel.id == id)
+        stmt = select(UserModel).where(UserModel.id == entity_id)
         result = await self._session.execute(stmt)
         model = result.scalar_one_or_none()
-        if model:
-            await self._session.delete(model)
-            await self._session.flush()
+        if model is None:
+            return False
+        await self._session.delete(model)
+        await self._session.flush()
+        return True

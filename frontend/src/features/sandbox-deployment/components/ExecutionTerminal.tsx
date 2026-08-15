@@ -3,14 +3,19 @@
  * Developer dark console với terminal window controls & color-coded logs
  */
 
-import React from 'react';
-import { TerminalLogEntryDto } from '@/api/model/sandbox.dto';
+import { useTranslation } from 'react-i18next';
+import type { TerminalLogEntryDto } from '@/api/model/sandbox.dto';
 
 export interface ExecutionTerminalProps {
   logs: TerminalLogEntryDto[];
 }
 
-export const ExecutionTerminal: React.FC<ExecutionTerminalProps> = ({ logs }) => {
+/** Hiển thị log thực thi sandbox theo thứ tự thời gian.
+ * @param props Danh sách log hiện hành.
+ * @returns Terminal chỉ đọc với empty state được dịch.
+ */
+export function ExecutionTerminal({ logs }: ExecutionTerminalProps) {
+  const { t } = useTranslation('sandbox-deployment');
   return (
     <div className="flex flex-col flex-1 rounded-xl border border-slate-800 bg-[#090d16] overflow-hidden shadow-inner font-mono text-[11.5px] leading-relaxed">
       {/* Terminal Window Header Bar */}
@@ -20,7 +25,7 @@ export const ExecutionTerminal: React.FC<ExecutionTerminalProps> = ({ logs }) =>
           <span className="w-2.5 h-2.5 rounded-full bg-amber-500/80 inline-block" />
           <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/80 inline-block" />
         </div>
-        <span className="font-mono text-slate-400">sandbox@sandbox-dwh:~</span>
+        <span className="font-mono text-slate-400">{t('TXT_TERMINAL_HOST')}</span>
       </div>
 
       {/* Terminal Logs Window */}
@@ -28,10 +33,10 @@ export const ExecutionTerminal: React.FC<ExecutionTerminalProps> = ({ logs }) =>
         {logs.length === 0 ? (
           <div className="text-slate-500 space-y-1">
             <div className="flex items-center gap-1.5 text-emerald-400/90">
-              <span className="text-slate-600">❯</span> Ready for DDL execution.
+              <span className="text-slate-600">❯</span> {t('MSG_TERMINAL_READY')}
             </div>
             <div className="text-slate-500">
-              <span className="text-slate-600">❯</span> Click &apos;Exec DDL &amp; Deploy Sandbox&apos; to validate DDL script.
+              <span className="text-slate-600">❯</span> {t('MSG_TERMINAL_INSTRUCTION')}
             </div>
           </div>
         ) : (
@@ -61,5 +66,5 @@ export const ExecutionTerminal: React.FC<ExecutionTerminalProps> = ({ logs }) =>
       </div>
     </div>
   );
-};
+}
 

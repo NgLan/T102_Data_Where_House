@@ -1,0 +1,21 @@
+{
+  "INVALID_INPUT_SCHEMA": "Dữ liệu đầu vào không đúng định dạng yêu cầu.",
+  "PROJECT_NOT_FOUND": "Không tìm thấy dự án được yêu cầu.",
+  "DATA_MODEL_NOT_FOUND": "Không tìm thấy Data Model của dự án.",
+  "DATA_MODEL_CONTEXT_REQUIRED": "Chưa có dự án hiện tại để tải Data Model.",
+  "INVALID_DBML_CONTENT": "Nội dung DBML không hợp lệ.",
+  "INVALID_DATA_MODEL": "Data Model không thuộc dự án hiện tại.",
+  "REVISION_CONFLICT": "Data Model đã được cập nhật bởi một thao tác khác.",
+  "FILE_TOO_LARGE": "Kích thước file vượt quá giới hạn cho phép (tối đa 20MB).",
+  "UNSUPPORTED_FILE_TYPE": "Định dạng file không được hỗ trợ. Vui lòng chỉ tải lên file Excel (.xlsx).",
+  "MAX_FILES_EXCEEDED": "Số lượng file tải lên vượt quá số lượng tối đa 20 file.",
+  "DATABASE_ERROR": "Lỗi kết nối hoặc truy vấn Cơ sở dữ liệu.",
+  "LLM_ERROR": "Lỗi khi giao tiếp với mô hình AI Agent.",
+  "UNAUTHORIZED": "Bạn chưa được cấp quyền thực hiện thao tác này.",
+  "INTERNAL_SERVER_ERROR": "Lỗi máy chủ nội bộ. Vui lòng liên hệ bộ phận kỹ thuật.",
+  "FORBIDDEN": "Bạn không có quyền thực hiện thao tác này.",
+  "PERMISSION_DENIED": "Bạn không có quyền thực hiện thao tác này.",
+  "NETWORK_ERROR": "Không thể kết nối đến máy chủ.",
+  "TIMEOUT_ERROR": "Yêu cầu mất quá nhiều thời gian để hoàn tất.",
+  "UNKNOWN_ERROR": "Đã xảy ra lỗi không xác định."
+}

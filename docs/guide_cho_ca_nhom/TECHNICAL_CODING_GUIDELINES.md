@@ -4,6 +4,74 @@ Tài liệu này tổng hợp toàn bộ các quy định kỹ thuật, kiến t
 
 ---
 
+## 0. QUY TẮC BẮT BUỘC ĐỌC TRƯỚC
+
+Các quy tắc trong mục này có mức ưu tiên cao nhất. Nếu nội dung cũ bên dưới mâu thuẫn, áp dụng mục này.
+
+### 0.1. SRP, DRY và giới hạn kích thước
+
+- **Single Responsibility Principle (SRP):** Một file, class hoặc function chỉ có một lý do để thay đổi. Không đặt DTO, dependency wiring, business logic, persistence và HTTP handling chung một file.
+- **Don't Repeat Yourself (DRY):** Mỗi business rule, validation rule, mapping hoặc API contract chỉ có một nguồn sự thật. Tái sử dụng abstraction hiện có; không copy logic giữa Presentation, Application, Domain và Frontend.
+- Function/method tối đa **25 dòng logic** và tối đa **3 tham số**. Nếu vượt giới hạn, tách function hoặc gom tham số thành application input model/Pydantic request model phù hợp với layer.
+- File code thủ công tối đa **120 dòng logic**. Khi gần giới hạn phải tách theo trách nhiệm, không tách máy móc theo từng method. File generated, migration, lock file và OpenAPI snapshot không áp dụng giới hạn này và không được sửa thủ công.
+- Không tạo file chung chung như `helpers.py`, `common_service.py` hoặc `application.py` nếu file chứa nhiều trách nhiệm không liên quan. Tên file phải phản ánh đúng feature hoặc trách nhiệm duy nhất.
+
+### 0.2. Trình tự bắt buộc khi tạo một chức năng Backend
+
+1. **Domain (`src/domain/<module>/`):** Tạo/cập nhật entity, value object, enum và business rule thuần. Nếu cần persistence, khai báo repository interface tại Domain. Domain không import FastAPI, Pydantic, SQLAlchemy hoặc Infrastructure.
+2. **Application input/output (`src/application/<module>/input|output/`):** Khai báo input/output model độc lập HTTP. Không dùng Pydantic request DTO làm application input và không trả domain entity qua application boundary.
+3. **Application service interface (`i_<module>_service.py`):** Thêm method công khai vào interface service duy nhất của module. Method nhận application input và trả application output.
+4. **Application service (`<module>_service.py`):** Hiện thực interface, điều phối domain rule, repository interface và `IUnitOfWork`. Không import concrete repository/ORM/FastAPI. Method hiện thực interface phải dùng `@override` khi runtime hỗ trợ.
+5. **Infrastructure (`src/infrastructure/`):** Tạo ORM model, mapper và concrete repository khi cần. Repository phải kế thừa Domain interface, dùng `@override` và giữ nguyên contract về tên/kiểu tham số, kiểu trả về.
+6. **Presentation request DTO (`src/presentation/dtos/<module>/request.py`):** Khai báo Pydantic model, `Field` constraints, `field_validator`/`model_validator`, `extra="forbid"` và mapping sang application input. Tất cả kiểm tra hình dạng/định dạng input HTTP phải kết thúc tại đây. Validator DTO chỉ được phát sinh lỗi validation của Pydantic (`ValueError`, `PydanticCustomError` hoặc lỗi constraint); không để `BusinessException`, `HTTPException` hay exception thư viện thoát trực tiếp khỏi validator. Mọi `RequestValidationError` phải đi qua global validation handler duy nhất và trả `details` dạng danh sách, mỗi vị trí field sai là một phần tử `{field, message}`. Domain vẫn phải bảo vệ invariant để chống bypass từ CLI, queue hoặc test.
+7. **Presentation response payload DTO (`response.py`):** Chỉ mô tả payload `data`, có type và `Field` metadata đầy đủ để sinh OpenAPI. Mapping application output sang payload được đặt tại đây; không tự tạo success envelope theo module.
+8. **Dependency wiring (`src/presentation/dependencies/<module>.py`):** Tạo provider FastAPI `Depends` để nối application service interface với concrete repository/UoW. Đây là composition root duy nhất được phép import cả Application interface và Infrastructure implementation; không chứa business logic.
+9. **API router (`src/presentation/api/v1/<module>.py`):** Dùng `ApiResponseRoute`, khai báo payload `response_model`, `operation_id` ổn định, error responses và type annotation cho path/query/body. Endpoint chỉ map request → input, gọi service interface và trả payload `data`.
+10. **Kiểm thử và đồng bộ Frontend:** Viết Domain/Application/API contract tests, chạy Ruff/Pytest, export FastAPI OpenAPI rồi chạy `npm run api:generate`. Frontend chỉ dùng generated types/client; không sửa code trong `src/api/generated/`.
+
+- Khi gọi method ngoài module hiện tại, chỉ phụ thuộc application service interface hoặc Domain repository interface; không import concrete service/repository của module khác.
+- Transaction phải đi qua `IUnitOfWork`. Nếu framework chưa có decorator transaction/service chuẩn thì không tự tạo decorator hình thức.
+
+### 0.3. Success response và OpenAPI contract
+
+- Mọi JSON success endpoint phải dùng `ApiResponseRoute`. Endpoint **chỉ trả payload data**; route tự bọc thành `ApiResponse[T]` ở runtime và tự công bố cùng envelope trong OpenAPI.
+- Không viết `_success_response()`, không khởi tạo `ApiResponse` trong từng module và không dùng HTTP middleware đọc/ghi lại response body.
+- Route phải khai báo `response_model` là payload DTO cụ thể, `operation_id` ổn định và `responses` cho các lỗi đã biết. Không dùng `dict`, `object` hoặc `Any` làm public API response nếu có thể mô hình hóa schema.
+- Request/response Pydantic DTO phải có type đầy đủ và metadata `Field` cần thiết. Path/query parameter dùng `Annotated` cùng `Path`, `Query` hoặc `Header` khi cần constraints/description.
+- Frontend **MUST NOT** tự định nghĩa lại Backend API Request/Response DTO. API types/client **MUST** sinh từ FastAPI OpenAPI; generated source **MUST NOT** chỉnh sửa thủ công. View model/UI state riêng được phép đặt ngoài thư mục generated và map tường minh với generated types.
+
+### 0.4. Quy tắc đặt tên file, folder và identifier
+
+**Frontend**
+
+- Folder và file kỹ thuật dùng `kebab-case`; React component dùng `PascalCase.tsx`; file do shadcn registry quản lý giữ tên lowercase của registry; test dùng hậu tố `.test.ts` hoặc `.test.tsx`.
+- Component, type và interface dùng `PascalCase`; function và variable dùng `camelCase`; hằng số dùng `UPPER_SNAKE_CASE`.
+- Boolean bắt đầu bằng `is`, `has`, `should` hoặc `can`; event handler nội bộ dùng `handle*`; callback prop dùng `on*`; hàm API dùng động từ + danh từ.
+- Namespace i18n và filename feature dùng `kebab-case`. Translation key phẳng dùng `UPPER_SNAKE_CASE`; không tạo object key lồng nhau.
+
+**Backend**
+
+- Package, module, function và variable dùng `snake_case`; class, exception và DTO dùng `PascalCase`; hằng số và enum value dùng `UPPER_SNAKE_CASE`; private member bắt đầu bằng `_`.
+- Interface giữ convention dự án `IName` và file `i_<name>.py`; test đặt theo hành vi với dạng `test_<behavior>.py`.
+- Tên phải diễn tả trách nhiệm hoặc nghiệp vụ; không dùng tên mơ hồ như `helper`, `manager`, `data` nếu thiếu ngữ cảnh.
+
+### 0.5. Quy tắc comment và tài liệu API
+
+- Viết tiếng Việt cho exported/public API và logic nội bộ không hiển nhiên. Generated code, migration và component do shadcn registry quản lý được miễn.
+- Frontend dùng TSDoc/JSDoc: mô tả mục đích; `@param` cho từng tham số; `@returns` cho giá trị trả về; `@throws` cho lỗi chủ động hoặc được propagate; `@remarks` cho side effect; `@template` cho generic; và `@example` khi cách dùng không rõ. Không thêm tag không áp dụng chỉ để đủ hình thức.
+- Backend dùng Google-style docstring với `Args`, `Returns`, `Raises`, `Yields` khi phù hợp. Public method phải nêu business/system exception có thể phát sinh.
+- Không comment từng biến hoặc diễn giải lại code hiển nhiên. Comment phải giải thích contract, lý do thiết kế, side effect hoặc ràng buộc khó nhận ra từ code.
+
+### 0.6. Ưu tiên thư viện được duy trì
+
+- Trước khi tự viết parser, serializer, formatter, validator cú pháp, crypto hoặc protocol client, phải đánh giá thư viện chuẩn/được duy trì sẵn có cho cả FE và BE.
+- Ưu tiên thư viện có public API rõ ràng, type/type hint, license phù hợp, release còn được duy trì và test corpus tốt. Phiên bản phải được pin bằng lockfile hoặc khoảng version hẹp.
+- Bọc dependency bằng adapter/facade nhỏ để model và exception bên thứ ba không leak qua application boundary.
+- Chỉ tự triển khai sau khi có ADR ghi rõ vì sao không có thư viện phù hợp, yêu cầu đặc thù và chi phí bảo trì; không copy hoặc fork grammar vào repo khi chưa được duyệt.
+- Domain được phép phụ thuộc một parser/validator thuần, deterministic và không I/O khi facade đó hiện thực trực tiếp invariant định dạng. Framework, persistence và network library vẫn bị cấm trong Domain.
+
+---
+
 ## I. Yêu Cầu Kỹ Thuật Backend (Python & Clean Architecture)
 
 ### 1. Nguyên Tắc Kiến Trúc Clean Architecture
@@ -16,18 +84,16 @@ Tài liệu này tổng hợp toàn bộ các quy định kỹ thuật, kiến t
 - **Tầng Application:**
   - Chứa các kịch bản sử dụng (Use Cases), xử lý luồng nghiệp vụ.
   - Gọi tầng Domain để thực thi các quy tắc nghiệp vụ.
-  - Gọi tầng Infrastruture để thực thi các nghiệp vụ liên quan đến DB hoặc gọi các dịch vụ bên ngoài.
-  - Luôn có một file I[Ten_usecase]Service.py để định nghĩa interface của usecase và 1 file implement interface của usecase nằm trong cùng một folder và đặt tên theo quy tắc [Ten_usecase]Service.py.
+  - Chỉ gọi repository/service interface; không import hoặc gọi trực tiếp concrete Infrastructure implementation.
+  - Mỗi module có một interface service, một service implementation và hai package `input/`, `output/`; không tách mỗi method thành một file service.
 - **Tầng Infrastructure & Presentation:**
   - `infrastructure`: Hiện thực hóa các interface (kết nối DB, gọi API ngoài, cấu hình LangGraph/LangChain).
   - `presentation`: Tiếp nhận request từ client, điều hướng bằng FastAPI router và trả về kết quả. Tuyệt đối **KHÔNG** viết logic nghiệp vụ trong này.
 
 ### 2. Chuẩn Viết Code Python
 - **Type Hints bắt buộc 100%:** Tất cả các hàm, tham số và giá trị trả về đều phải có type hint rõ ràng.
-- **Giới hạn kích thước hàm:**
-  - Mỗi hàm dài **tối đa 30 dòng**. Nếu dài hơn, bắt buộc phải tách hàm nhỏ.
-  - Mỗi hàm nhận **tối đa 3 tham số**. Nếu cần truyền nhiều hơn, hãy gom thành Pydantic Schema.
-- **Docstring chuẩn chỉ:** Viết mô tả ngắn gọn bằng tiếng Việt cho tất cả các hàm và class.
+- **Giới hạn kích thước:** Tuân thủ duy nhất các giới hạn function/file và quy tắc chọn input model tại Mục 0.1.
+- **Docstring chuẩn chỉ:** Tuân thủ quy tắc Google-style tại Mục 0.5.
 - **Quy tắc đặt tên (Naming Conventions):**
   - File và Hàm: Dùng `snake_case` (ví dụ: `analyze_query.py`, `def calculate_score()`).
   - Class: Dùng `PascalCase` (ví dụ: `class AgentState:`).
@@ -84,6 +150,7 @@ Tài liệu này tổng hợp toàn bộ các quy định kỹ thuật, kiến t
   ```bash
   ruff check src/ tests/
   ```
+
 - Phải có unit test cho mọi hàm xử lý và pass toàn bộ test khi chạy `pytest`.
 
 ### 6. Quy Định Thiết Kế DTO (Data Transfer Objects) & Common DTO
@@ -222,7 +289,7 @@ Mã nguồn Frontend trong `src/` được chia thành các phân vùng chính:
 - **Tái sử dụng code đúng cách:** Nếu một component hoặc logic cần dùng ở 2 feature trở lên, bắt buộc phải chuyển component/logic đó sang thư mục `src/common/`.
 
 ### 3. Quy Ước Code TypeScript & Comment
-- **Bắt buộc Comment tiếng Việt:** Mọi component, custom hook và function được tạo ra phải có comment giải thích ngắn gọn bằng tiếng Việt ở phía trên để đồng đội dễ đọc hiểu.
+- **Comment và TSDoc:** Tuân thủ Mục 0.5; ưu tiên tài liệu contract cho public API và không comment code hiển nhiên.
 - **Strict TypeScript:** Bắt buộc định nghĩa type/interface rõ ràng cho props và dữ liệu. Không dùng kiểu `any`, `unknown` tùy tiện.
 
 ### 4. Framework & Styling
@@ -233,14 +300,21 @@ Mã nguồn Frontend trong `src/` được chia thành các phân vùng chính:
 
 ### 5. Quy Định Chuẩn Cho Đa Ngôn Ngữ & Quản Lý Chuỗi Văn Bản (Frontend i18n Guidelines)
 - **CẤM Hardcode Văn Bản Hiển Thị Trong Code UI & Logic:**
-  - **CẤM HOÀN TOÀN** hardcode trực tiếp các chuỗi văn bản (tiếng Việt hay tiếng Anh) trong các file JSX/TSX/TS (`<span>`, `<button>`, `title`, `placeholder`, `aria-label`, alert, toast message, error message...).
-  - 100% văn bản hiển thị cho người dùng phải được lấy thông qua chìa khóa dịch (translation key) của thư viện `react-i18next`.
+  - **NEVER hardcode UI text.** Tuyệt đối không hardcode trực tiếp các chuỗi văn bản (tiếng Việt hay tiếng Anh) trong các file JSX/TSX/TS (`<span>`, `<button>`, `title`, `placeholder`, `aria-label`, alert, toast message, error message...).
+  - 100% văn bản hiển thị cho người dùng phải được lấy thông qua `useTranslation()` / `useTranslations()`.
+  - **Quy ước đặt tên Translation Keys (Naming Conventions):**
+    - `BTN_[ACTION]`: Cho các nút bấm/actions (ví dụ: `BTN_SAVE`, `BTN_CANCEL`, `BTN_SUBMIT`).
+    - `TXT_[NAME]`: Cho các tiêu đề, đoạn văn, văn bản chung (ví dụ: `TXT_WELCOME`, `TXT_DESCRIPTION`).
+    - `MSG_[TYPE]`: Cho các câu thông báo trạng thái/hệ thống (ví dụ: `MSG_SUCCESS`, `MSG_ERROR_NETWORK`).
+    - `[FIELD]_LABEL`: Cho nhãn của các trường input/form (ví dụ: `USERNAME_LABEL`, `PROJECT_NAME_LABEL`).
+    - `[FIELD]_PLACEHOLDER`: Cho văn bản placeholder gợi ý nhập (ví dụ: `EMAIL_PLACEHOLDER`, `SEARCH_PLACEHOLDER`).
+    - Thêm đầy đủ key còn thiếu vào file JSON tương ứng trong `src/common/i18n/locales/`.
 
-- **Quy Tắc Phân Tầng & Quản Lý Namespace JSON (`src/common/locales/`):**
+- **Quy Tắc Phân Tầng & Quản Lý Namespace JSON (`src/common/i18n/locales/`):**
   - **Dùng chung (`common.json`):** Chứa các nhãn giao diện, nút bấm, trạng thái, phân trang được sử dụng ở 2 feature trở lên (*Lưu, Hủy, Xóa, Tìm kiếm, Đang tải, Trang...*).
   - **Thông báo (`notifications.json`):** Chứa toàn bộ nội dung tiêu đề và thông điệp Toast/Alert/Modal thông báo tác vụ (*thành công, thất bại, cảnh báo, bắt đầu tác vụ...*).
   - **Mã lỗi Backend (`errors.json`):** Chứa bản dịch tương ứng 1-1 cho tất cả mã lỗi `ErrorCode` được trả về từ Backend API (`INVALID_INPUT_SCHEMA`, `PROJECT_NOT_FOUND`, `UNAUTHORIZED`...).
-  - **Theo từng Feature (`{featureName}.json`):** Mọi văn bản chỉ thuộc về duy nhất một tính năng nghiệp vụ cụ thể bắt buộc phải nằm trong namespace tương ứng của feature đó (ví dụ: `projectInit.json`, `hitlEditor.json`, `sandboxDeployment.json`).
+  - **Theo từng Feature (`{feature-name}.json`):** Mọi văn bản chỉ thuộc về duy nhất một tính năng nghiệp vụ cụ thể bắt buộc phải nằm trong namespace kebab-case tương ứng (ví dụ: `project-init.json`, `hitl-editor.json`, `sandbox-deployment.json`).
 
 - **Quy Định Phát Thông Báo Qua Custom Hook (`useAppNotification`):**
   - **CẤM** hardcode câu chữ khi hiển thị thông báo thành công hoặc báo lỗi trong các hàm xử lý sự kiện hoặc API callbacks (`onSuccess`, `onError`, `catch`).
@@ -254,6 +328,25 @@ Mã nguồn Frontend trong `src/` được chia thành các phân vùng chính:
 - **Định Dạng Dữ Liệu Động & Chuyển Đổi Ngôn Ngữ:**
   - Các tham số biến đổi trong câu chữ (ví dụ: số lượng file, tên file, thời gian) bắt buộc phải dùng cú pháp nội hàm `{{paramName}}` của i18next thay vì cộng chuỗi thủ công.
   - Chuyển đổi ngôn ngữ phải thông qua component `LanguageSwitcher` hoặc instance `i18n.changeLanguage()`.
+
+### 6. Quy Ước Đặt Tên Trong React (Naming Conventions)
+- **Internal Event Handlers:** `handle[Action][Object]` (ví dụ: `handleSaveQuestion`, `handleCloseModal`, `handleSubmitForm`).
+- **Props / Callbacks (nhận từ Component cha):** `on[Action][Object]` (ví dụ: `onSave`, `onClose`, `onSelectProject`).
+- **Boolean States:** Bắt đầu bằng `is`, `has`, `should`, `can` (ví dụ: `isLoading`, `hasError`, `shouldShowModal`, `canEdit`).
+- **Mutations / API Functions:** Dạng `Verb + Noun` (ví dụ: `createQuestion`, `updateUser`, `deleteProject`).
+
+### 7. Quy Chuẩn UI / UX (UI/UX Rules)
+- **Hover Effects:** Bất kỳ phần tử nào có thể click được (*Clickable elements*) **BẮT BUỘC** phải có `cursor: pointer` và hiệu ứng tương tác `hover` rõ ràng.
+- **Loading States:**
+  - **BẮT BUỘC** sử dụng **Skeleton Loaders** cho trạng thái tải dữ liệu ban đầu (initial data fetching).
+  - **TUYỆT ĐỐI KHÔNG** chặn toàn màn hình bằng một spinner khổng lồ (massive spinner).
+- **Empty / Error States:** Mọi bảng (table) hoặc danh sách (list) **BẮT BUỘC** phải có:
+  - **Empty State:** Hình minh họa (Illustration) + Đoạn văn mô tả (Text hướng dẫn).
+  - **Error State:** Thông báo lỗi thân thiện + Nút thử lại (Retry action).
+- **Form Validation (Frontend):**
+  - Tất cả các form **BẮT BUỘC** phải được validate bằng **Zod schemas** (import từ `api/models/` hoặc thư mục schemas tương ứng).
+  - Bắt lỗi validation ngay tại client side và hiển thị thông điệp lỗi trực tiếp ngay bên dưới trường nhập liệu tương ứng.
+- **Tái sử dụng Component từ shadcn/ui:** Nếu cần sử dụng các common UI components, hãy cài đặt trực tiếp từ `shadcn/ui` (ví dụ: `button`, `dialog`, `badge`, `textarea`...), **KHÔNG** tạo mới thủ công lặp lại.
 
 ---
 

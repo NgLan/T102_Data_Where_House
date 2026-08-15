@@ -1,0 +1,21 @@
+{
+  "INVALID_INPUT_SCHEMA": "Invalid input data format.",
+  "PROJECT_NOT_FOUND": "The requested project was not found.",
+  "DATA_MODEL_NOT_FOUND": "No Data Model was found for this project.",
+  "DATA_MODEL_CONTEXT_REQUIRED": "There is no current project from which to load a Data Model.",
+  "INVALID_DBML_CONTENT": "The DBML content is invalid.",
+  "INVALID_DATA_MODEL": "The Data Model does not belong to the current project.",
+  "REVISION_CONFLICT": "The Data Model was updated by another operation.",
+  "FILE_TOO_LARGE": "File size exceeds allowed limit (maximum 20MB).",
+  "UNSUPPORTED_FILE_TYPE": "Unsupported file format. Please upload Excel (.xlsx) files only.",
+  "MAX_FILES_EXCEEDED": "Number of uploaded files exceeds the limit of 20 files.",
+  "DATABASE_ERROR": "Database query or connection error.",
+  "LLM_ERROR": "Error communicating with AI Agent model.",
+  "UNAUTHORIZED": "You are not authorized to perform this operation.",
+  "INTERNAL_SERVER_ERROR": "Internal server error. Please contact technical support.",
+  "FORBIDDEN": "You do not have permission to perform this action.",
+  "PERMISSION_DENIED": "You do not have permission to perform this action.",
+  "NETWORK_ERROR": "The server could not be reached.",
+  "TIMEOUT_ERROR": "The request took too long to complete.",
+  "UNKNOWN_ERROR": "An unknown error occurred."
+}

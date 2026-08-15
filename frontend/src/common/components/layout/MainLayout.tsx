@@ -2,32 +2,31 @@
  * Presentation Component: Main Layout không có AppHeader
  */
 
-import React from 'react';
+import type { ReactNode } from 'react';
+import { cn } from '@/common/lib/utils';
 
 export interface MainLayoutProps {
-  children: React.ReactNode;
+  children: ReactNode;
+  isFullWidth?: boolean;
+  isFlush?: boolean;
 }
 
-export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
+/** Cung cấp khung hiển thị và vùng cuộn dùng chung cho các feature screen.
+ * @param props Nội dung màn hình và lựa chọn chiều rộng.
+ * @returns Layout có nền, vùng cuộn và content container responsive.
+ */
+export function MainLayout({ children, isFullWidth = false, isFlush = false }: MainLayoutProps) {
   return (
-    <div
-      className="font-sans bg-slate-50/90 text-slate-900 flex flex-col overflow-hidden min-h-screen relative"
-      style={{ height: '100vh' }}
-    >
-      {/* Background ambient lighting */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl pointer-events-none -z-10" />
-      <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-indigo-400/10 rounded-full blur-3xl pointer-events-none -z-10" />
-
-      {/* Main Content Area */}
-      <main
-        className="flex-1 overflow-y-auto px-6 py-5 flex flex-col screen-animate"
-      >
-        <div className="max-w-7xl mx-auto w-full flex-1 flex flex-col">
+    <div className="relative flex h-dvh flex-col overflow-hidden bg-slate-50/90 font-sans text-slate-900">
+      <div className="pointer-events-none absolute left-1/4 top-0 -z-10 size-96 rounded-full bg-blue-400/10 blur-3xl" />
+      <div className="pointer-events-none absolute right-1/4 top-1/3 -z-10 size-96 rounded-full bg-indigo-400/10 blur-3xl" />
+      <main className={cn('flex min-h-0 flex-1 flex-col animate-in fade-in slide-in-from-bottom-2 duration-300', isFlush ? 'overflow-hidden p-0' : 'overflow-y-auto p-2 sm:px-6 sm:py-5')}>
+        <div className={cn('flex min-h-0 w-full flex-1 flex-col', !isFlush && 'mx-auto', isFullWidth ? 'max-w-none' : 'max-w-7xl')}>
           {children}
         </div>
       </main>
     </div>
   );
-};
+}
 
 

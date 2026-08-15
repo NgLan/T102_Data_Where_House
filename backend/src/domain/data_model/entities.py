@@ -3,6 +3,7 @@
 from dataclasses import dataclass, field
 from uuid import uuid4
 
+from src.common.exceptions.business import BusinessException
 from src.domain.data_model.enums import DataModelChangeStatus
 from src.domain.data_model.rules import (
     validate_change_status_transition,
@@ -33,7 +34,7 @@ class DataModel(BaseEntity):
 
         try:
             validate_revision_match(change.base_revision, self.revision)
-        except Exception:
+        except BusinessException:
             change.mark_conflicted()
             raise
 
@@ -41,6 +42,14 @@ class DataModel(BaseEntity):
         self.revision += 1
         self.mark_updated()
         change.mark_accepted()
+
+    def update_dbml(self, dbml: str, base_revision: int) -> None:
+        """Cập nhật snapshot DBML sau khi kiểm tra revision và cú pháp."""
+        validate_revision_match(base_revision, self.revision)
+        validate_dbml(dbml)
+        self.dbml = dbml
+        self.revision += 1
+        self.mark_updated()
 
 
 @dataclass
