@@ -6,12 +6,16 @@ import commonVi from '../locales/vi/common.json';
 import notificationsVi from '../locales/vi/notifications.json';
 import errorsVi from '../locales/vi/errors.json';
 import projectInitVi from '../locales/vi/projectInit.json';
+import sandboxDeploymentVi from '../locales/vi/sandboxDeployment.json';
+import hitlEditorVi from '../locales/vi/hitlEditor.json';
 
 // Import tài nguyên ngôn ngữ Tiếng Anh
 import commonEn from '../locales/en/common.json';
 import notificationsEn from '../locales/en/notifications.json';
 import errorsEn from '../locales/en/errors.json';
 import projectInitEn from '../locales/en/projectInit.json';
+import sandboxDeploymentEn from '../locales/en/sandboxDeployment.json';
+import hitlEditorEn from '../locales/en/hitlEditor.json';
 
 /**
  * Cấu hình tập trung các nguồn tài nguyên đa ngôn ngữ (Resources).
@@ -24,12 +28,16 @@ export const resources = {
     notifications: notificationsVi,
     errors: errorsVi,
     projectInit: projectInitVi,
+    sandboxDeployment: sandboxDeploymentVi,
+    hitlEditor: hitlEditorVi,
   },
   en: {
     common: commonEn,
     notifications: notificationsEn,
     errors: errorsEn,
     projectInit: projectInitEn,
+    sandboxDeployment: sandboxDeploymentEn,
+    hitlEditor: hitlEditorEn,
   },
 } as const;
 
