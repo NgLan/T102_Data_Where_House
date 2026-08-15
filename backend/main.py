@@ -15,6 +15,7 @@ from src.common.middleware import (
     setup_cors_middleware,
 )
 from src.infrastructure.database.init_db import init_db
+from src.presentation.api.router import api_router
 
 logger = get_logger(__name__)
 
@@ -77,8 +78,8 @@ def create_app() -> FastAPI:
     # 3. Đăng ký hệ thống xử lý ngoại lệ tập trung (Global Exception Handlers)
     register_exception_handlers(app)
 
-    # 3. Đăng ký hệ thống xử lý ngoại lệ tập trung (Global Exception Handlers)
-    register_exception_handlers(app)
+    # 4. Đăng ký hệ thống định tuyến API (API Routers)
+    app.include_router(api_router)
 
     @app.get("/health", tags=["Health Check"])
     async def health_check() -> dict[str, str]:

@@ -1,0 +1,31 @@
+{
+  "ddl_editor": {
+    "title": "Data Warehouse DDL Script",
+    "badge_editable": "Editable",
+    "footer_meta": "Target schema: {{schemaName}} • {{tableCount}} tables • Revision {{revision}}",
+    "loading": "Generating DDL from the data model...",
+    "empty": "No DDL yet. Pick a target database to generate the script."
+  },
+  "dialect": {
+    "label": "Target database",
+    "postgresql": "PostgreSQL",
+    "snowflake": "Snowflake",
+    "bigquery": "BigQuery"
+  },
+  "actions": {
+    "format": "Format SQL",
+    "copy": "Copy DDL",
+    "download_doc": "Download data doc (.md)",
+    "download_sql": "Download .sql",
+    "downloading": "Preparing file..."
+  },
+  "warnings": {
+    "title": "Compatibility warnings for {{dialect}}",
+    "count": "{{count}} warnings when converting to {{dialect}}"
+  },
+  "notifications": {
+    "copy_success": "DDL script copied to clipboard.",
+    "download_success": "Downloaded {{fileName}}.",
+    "generate_failed": "Could not generate DDL from the current data model."
+  }
+}

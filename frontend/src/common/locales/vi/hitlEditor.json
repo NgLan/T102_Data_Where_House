@@ -1,0 +1,36 @@
+{
+  "tabs": {
+    "attributes": "Thuộc tính bảng",
+    "diff": "Đề xuất thay đổi"
+  },
+  "diff": {
+    "title": "So sánh DBML đề xuất",
+    "mode_unified": "Gộp",
+    "mode_split": "Tách đôi",
+    "column_current": "DBML hiện hành",
+    "column_proposed": "DBML đề xuất",
+    "base_revision": "Base revision {{revision}}",
+    "current_revision": "Revision hiện tại {{revision}}",
+    "stats": "+{{added}} / −{{removed}}",
+    "loading": "Đang tải nội dung đề xuất...",
+    "empty": "Chưa có đề xuất thay đổi nào đang chờ duyệt cho mô hình này.",
+    "no_change": "Đề xuất không làm thay đổi nội dung DBML hiện tại.",
+    "load_failed": "Không tải được nội dung đề xuất thay đổi."
+  },
+  "status": {
+    "PROPOSED": "Đang chờ duyệt",
+    "ACCEPTED": "Đã chấp nhận",
+    "REJECTED": "Đã từ chối",
+    "CONFLICTED": "Xung đột revision"
+  },
+  "outdated_warning": {
+    "title": "Đề xuất đã lỗi thời",
+    "message": "Đề xuất này dựa trên revision {{baseRevision}} nhưng mô hình dữ liệu hiện đã ở revision {{currentRevision}}. Áp dụng ngay sẽ gây xung đột — hãy yêu cầu AI tạo lại đề xuất trên mô hình mới nhất."
+  },
+  "review": {
+    "hint": "Xác nhận áp dụng đề xuất thay đổi vào Data Model chính thức (Human-in-the-Loop)",
+    "retry": "Yêu cầu AI làm lại",
+    "reject": "Hủy bỏ (Reject)",
+    "accept": "Áp dụng thay đổi (Accept)"
+  }
+}
