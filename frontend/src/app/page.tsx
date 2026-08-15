@@ -77,15 +77,6 @@ export default function HomePage() {
   const {
     ddlCode,
     setDdlCode,
-    dialect,
-    handleDialectChange,
-    schemaName,
-    tableCount,
-    ddlWarnings,
-    isGeneratingDdl,
-    ddlErrorCode,
-    revision,
-    hasDataModel,
     hostConnection,
     setHostConnection,
     databaseSchema,
@@ -255,15 +246,6 @@ export default function HomePage() {
             <DdlCodeEditor
               ddlCode={ddlCode}
               onChange={setDdlCode}
-              dialect={dialect}
-              onDialectChange={handleDialectChange}
-              schemaName={schemaName}
-              tableCount={tableCount}
-              revision={revision}
-              warnings={ddlWarnings}
-              errorCode={ddlErrorCode}
-              isGenerating={isGeneratingDdl}
-              isDownloadDisabled={!hasDataModel || isGeneratingDdl}
               onFormat={handleFormatDdl}
               onCopy={handleCopyDdl}
               onDownloadDoc={handleDownloadDoc}
