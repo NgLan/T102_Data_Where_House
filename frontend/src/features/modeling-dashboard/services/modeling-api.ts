@@ -6,17 +6,6 @@ import { apiClient } from '@/api/http/client';
 import { API_ENDPOINTS } from '@/api/http/endpoints';
 import { ErdGenerationResponseDto, InsightItemDto } from '@/api/model/erd.dto';
 import { ApiResponse } from '@/api/model/common-response.dto';
-import { DataModelResponseDto } from '../types/modeling.types';
-
-/**
- * Lấy mô hình dữ liệu hiện hành (DBML + revision) của một dự án
- */
-export async function fetchProjectDataModelApi(projectId: string): Promise<DataModelResponseDto> {
-  const response: ApiResponse<DataModelResponseDto> = await apiClient.get(
-    API_ENDPOINTS.DATA_MODEL_BY_PROJECT(projectId)
-  );
-  return response.data;
-}
 
 /**
  * Gửi cập nhật DBML code để AI sinh lại sơ đồ ERD

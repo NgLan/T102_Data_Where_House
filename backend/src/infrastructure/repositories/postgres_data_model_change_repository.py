@@ -26,11 +26,9 @@ class PostgresDataModelChangeRepository(IDataModelChangeRepository):
         return DataModelChangeMapper.to_domain(model) if model else None
 
     async def list_by_data_model(self, data_model_id: EntityID) -> list[DataModelChange]:
-        """Danh sách các đề xuất thay đổi thuộc một mô hình dữ liệu (mới nhất trước)."""
-        stmt = (
-            select(DataModelChangeModel)
-            .where(DataModelChangeModel.data_model_id == data_model_id)
-            .order_by(DataModelChangeModel.created_at.desc())
+        """Danh sách các đề xuất thay đổi thuộc một mô hình dữ liệu."""
+        stmt = select(DataModelChangeModel).where(
+            DataModelChangeModel.data_model_id == data_model_id
         )
         result = await self._session.execute(stmt)
         models = result.scalars().all()

@@ -2,10 +2,9 @@
  * Custom Hook quản lý DBML DSL, ERD Canvas Zoom/Pan & double-click trigger HITL Modal
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useProjectStore } from '@/common/stores/useProjectStore';
 import { ErdTableNodeDto } from '@/api/model/erd.dto';
-import { fetchProjectDataModelApi } from '../services/modeling-api';
 
 const INITIAL_DBML = `// Định nghĩa Fact & Dimension Tables
 Table Fact_Rides {
@@ -71,40 +70,10 @@ const INITIAL_TABLES: ErdTableNodeDto[] = [
 
 export function useErdModeling() {
   const openHitlModal = useProjectStore((state) => state.openHitlModal);
-  const projectId = useProjectStore((state) => state.projectId);
-  const setDataModel = useProjectStore((state) => state.setDataModel);
 
   const [dbmlCode, setDbmlCode] = useState<string>(INITIAL_DBML);
   const [tables] = useState<ErdTableNodeDto[]>(INITIAL_TABLES);
   const [zoomLevel, setZoomLevel] = useState<number>(100);
-  const [isLoadingDataModel, setIsLoadingDataModel] = useState<boolean>(false);
-  const [dataModelErrorCode, setDataModelErrorCode] = useState<string | null>(null);
-
-  /**
-   * Nạp mô hình dữ liệu chính thức của dự án từ Backend và đưa vào store dùng chung.
-   * Đây là nguồn dữ liệu cho cả màn hình Xuất DDL (T-030) và khung so sánh đề xuất (T-031).
-   */
-  const loadDataModel = useCallback(async () => {
-    if (!projectId) return;
-
-    setIsLoadingDataModel(true);
-    setDataModelErrorCode(null);
-    try {
-      const result = await fetchProjectDataModelApi(projectId);
-      setDbmlCode(result.dbml);
-      setDataModel({ id: result.id, dbml: result.dbml, revision: result.revision });
-    } catch (error) {
-      const errorCode = (error as { error_code?: string })?.error_code ?? 'UNKNOWN_ERROR';
-      setDataModelErrorCode(errorCode);
-      setDataModel(null);
-    } finally {
-      setIsLoadingDataModel(false);
-    }
-  }, [projectId, setDataModel]);
-
-  useEffect(() => {
-    void loadDataModel();
-  }, [loadDataModel]);
 
   // Xử lý zoom canvas
   const handleZoomIn = () => setZoomLevel((prev) => Math.min(prev + 10, 150));
@@ -120,9 +89,6 @@ export function useErdModeling() {
     setDbmlCode,
     tables,
     zoomLevel,
-    isLoadingDataModel,
-    dataModelErrorCode,
-    reloadDataModel: loadDataModel,
     handleZoomIn,
     handleZoomOut,
     handleTableDoubleClick,
