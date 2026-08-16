@@ -15,10 +15,14 @@ from src.common.middleware import (
     setup_cors_middleware,
 )
 from src.infrastructure.database.init_db import init_db
+<<<<<<< HEAD
 from src.presentation.api.router import router as api_router
 from src.presentation.dtos.common import ApiErrorResponse
 from src.presentation.dtos.health import HealthResponse
 from src.presentation.routing import ApiResponseRoute
+=======
+from src.presentation.api.router import api_router
+>>>>>>> 726f1f1 (feat: add content analysis and view DDL code features)
 
 logger = get_logger(__name__)
 
@@ -81,7 +85,10 @@ def create_app() -> FastAPI:
 
     # 3. Đăng ký hệ thống xử lý ngoại lệ tập trung (Global Exception Handlers)
     register_exception_handlers(app)
+<<<<<<< HEAD
 
+=======
+>>>>>>> 726f1f1 (feat: add content analysis and view DDL code features)
     app.include_router(api_router)
 
     @app.get(
