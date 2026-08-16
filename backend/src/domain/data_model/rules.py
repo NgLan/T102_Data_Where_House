@@ -1,6 +1,5 @@
 """Quy tắc nghiệp vụ cho miền Mô hình Dữ liệu (Data Model)."""
 
-from json import loads
 from lark_dbml import loads
 from lark_dbml.lark_dbml_standalone import UnexpectedInput
 from src.common.exceptions.business import BusinessException
@@ -9,8 +8,12 @@ from src.domain.data_model.enums import DataModelChangeStatus
 
 
 def validate_dbml(dbml: str) -> None:
-    """Kiểm tra nội dung và cú pháp DBML.
-    
+    """Kiểm tra nội dung và **cú pháp** DBML.
+
+    Chỉ kiểm cú pháp. Các quy tắc ngữ nghĩa của kho dữ liệu (grain, surrogate key,
+    fact chỉ chứa measure, FK mồ côi) KHÔNG được kiểm ở đây — `lark_dbml` parse qua
+    được cả DBML trùng tên bảng lẫn DBML có Ref trỏ tới bảng không tồn tại.
+
     Args:
         dbml: Nội dung DBML cần xác thực.
 
@@ -24,7 +27,10 @@ def validate_dbml(dbml: str) -> None:
         )
     try:
         loads(dbml)
-    except (UnexpectedInput, Exception) as exc:
+    except UnexpectedInput as exc:
+        # Chỉ bắt lỗi cú pháp. Trước đây mệnh đề này còn bắt cả `Exception`, khiến mọi
+        # lỗi lập trình (TypeError, AttributeError...) cũng bị quy thành "DBML không
+        # hợp lệ" — rất khó gỡ vì hàm này nằm trong vòng retry của DWDesignAgent.
         raise BusinessException(
             code=ErrorCode.INVALID_DBML_CONTENT,
             message="Nội dung DBML không hợp lệ.",

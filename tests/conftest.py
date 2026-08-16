@@ -11,6 +11,7 @@ backend_path = Path(__file__).parent.parent / "backend"
 if str(backend_path) not in sys.path:
     sys.path.insert(0, str(backend_path))
 
+# E402 có chủ đích: `main` chỉ import được sau khi backend/ đã nằm trong sys.path ở trên.
 from main import app  # noqa: E402
 
 

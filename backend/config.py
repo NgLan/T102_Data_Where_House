@@ -57,6 +57,10 @@ class Settings(BaseSettings):
     model_name: str
     llm_temperature: float = Field(ge=0.0, le=2.0)
     max_tokens: int = Field(ge=1)
+<<<<<<< HEAD
+=======
+    # Thời gian chờ tối đa một lời gọi LLM (giây) — NFR2 giới hạn 45 giây cho cả pipeline
+>>>>>>> d3fd3dc (feat(agents): Fix agents)
     llm_request_timeout_seconds: float = Field(default=60.0, gt=0)
 
     # =========================================================================

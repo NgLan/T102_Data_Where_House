@@ -2,7 +2,11 @@
 
 from abc import ABC, abstractmethod
 
-from src.application.data_models.input import GetDataModelInput, UpdateDataModelInput
+from src.application.data_models.input import (
+    GenerateDataModelInput,
+    GetDataModelInput,
+    UpdateDataModelInput,
+)
 from src.application.data_models.output import DataModelOutput
 
 
@@ -17,4 +21,9 @@ class IDataModelService(ABC):
     @abstractmethod
     async def update_data_model(self, data: UpdateDataModelInput) -> DataModelOutput:
         """Cập nhật Data Model bằng optimistic locking."""
+        raise NotImplementedError
+
+    @abstractmethod
+    async def generate_data_model(self, data: GenerateDataModelInput) -> DataModelOutput:
+        """Chạy pipeline AI sinh Data Model từ yêu cầu và nguồn dữ liệu của dự án."""
         raise NotImplementedError

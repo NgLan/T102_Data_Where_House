@@ -1,4 +1,4 @@
-"""Application service duy nhất của module Data Source."""
+"""Application service duy nhất cho module Data Source."""
 
 from dataclasses import dataclass
 

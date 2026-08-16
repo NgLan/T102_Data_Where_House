@@ -2,7 +2,7 @@
 
 from uuid import UUID
 from fastapi import APIRouter
-from src.application.data_models.input import GetDataModelInput
+from src.application.data_models.input import GenerateDataModelInput, GetDataModelInput
 from src.presentation.dependencies.data_models import DataModelServiceDependency
 from src.presentation.dtos.common import ApiErrorResponse
 from src.presentation.dtos.data_models.request import (
@@ -151,3 +151,25 @@ async def revise_data_model_with_ai(
         message="AI Agent đã tạo đề xuất thay đổi thành công.",
         data=ChangeProposalDetailResponse.model_validate(result.model_dump()),
     )
+
+
+@router.post(
+    "/generate",
+    response_model=DataModelResponse,
+    operation_id="generateDataModel",
+    responses={
+        404: {"model": ApiErrorResponse},
+        422: {"model": ApiErrorResponse},
+        500: {"model": ApiErrorResponse},
+        502: {"model": ApiErrorResponse},
+    },
+)
+async def generate_data_model(
+    project_id: ProjectIdPath,
+    service: DataModelServiceDependency,
+) -> DataModelResponse:
+    """Chạy pipeline 4 agent sinh mô hình dữ liệu từ yêu cầu và nguồn dữ liệu (T-019)."""
+    output = await service.generate_data_model(
+        GenerateDataModelInput(project_id=project_id)
+    )
+    return DataModelResponse.from_application(output)

@@ -20,3 +20,10 @@ class UpdateDataModelInput:
     data_model_id: EntityID
     dbml: str
     base_revision: int
+
+
+@dataclass(frozen=True)
+class GenerateDataModelInput:
+    """Dữ liệu đầu vào để AI sinh Data Model từ yêu cầu và nguồn dữ liệu của dự án."""
+
+    project_id: EntityID

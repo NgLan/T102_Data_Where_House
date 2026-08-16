@@ -8,7 +8,9 @@ on:
 
 jobs:
   lint-and-test:
-    runs-on: self-hosted
+    # ubuntu-latest thay cho self-hosted: repo không có self-hosted runner nào đăng ký
+    # nên job trước đây không bao giờ chạy, khiến CI không chặn được PR hỏng.
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
@@ -22,8 +24,15 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      # Settings có nhiều trường bắt buộc không mặc định và .env bị gitignore,
+      # nên CI phải dựng .env từ file mẫu. Bước này đồng thời canh cho .env.example
+      # luôn đủ trường: thiếu một biến là CI đỏ ngay.
+      - name: Prepare environment file
+        run: cp .env.example .env
+
+      # Mã nguồn thật nằm ở backend/, không phải src/ (thư mục src/ ở gốc đã được xoá).
       - name: Lint with ruff
-        run: ruff check src/ tests/
+        run: ruff check backend/ tests/
 
       - name: Run tests
         run: pytest tests/ -v --tb=short

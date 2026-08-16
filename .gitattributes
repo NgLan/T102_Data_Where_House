@@ -1,0 +1,5 @@
+# Shell scripts must keep LF endings even when checked out on Windows.
+# Git Bash treats a trailing CR as part of the token, so a CRLF setup_hooks.sh
+# installs the pre-push hook as "pre-push\r" — a name git never runs, which
+# silently disables AI log submission.
+*.sh text eol=lf

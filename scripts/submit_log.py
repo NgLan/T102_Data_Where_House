@@ -20,12 +20,47 @@ import urllib.request
 from datetime import UTC, datetime
 from pathlib import Path
 
-try:
-    from dotenv import load_dotenv
 
-    load_dotenv()
-except ImportError:
-    pass
+def _load_env() -> None:
+    """Populate os.environ from .env.
+
+    python-dotenv is preferred, but the pre-push hook runs whatever Python the
+    launcher finds on PATH — often a bare system/msys2 interpreter with no
+    access to the project venv's site-packages. Swallowing the ImportError left
+    AI_LOG_SERVER empty and made every push silently skip submission, so fall
+    back to a minimal parser that needs no third-party package.
+    """
+    try:
+        from dotenv import load_dotenv
+
+        load_dotenv()
+        return
+    except ImportError:
+        pass
+
+    # Hooks may run from a subdirectory, so also look next to the repo root.
+    for env_file in (Path.cwd() / ".env", Path(__file__).resolve().parent.parent / ".env"):
+        if not env_file.is_file():
+            continue
+        for raw in env_file.read_text(encoding="utf-8", errors="replace").splitlines():
+            line = raw.strip()
+            if not line or line.startswith("#"):
+                continue
+            if line.startswith("export "):
+                line = line[len("export ") :].lstrip()
+            key, sep, value = line.partition("=")
+            if not sep:
+                continue
+            key = key.strip()
+            value = value.strip()
+            if len(value) >= 2 and value[0] == value[-1] and value[0] in ("'", '"'):
+                value = value[1:-1]
+            # Real environment wins, matching python-dotenv's default.
+            os.environ.setdefault(key, value)
+        return
+
+
+_load_env()
 
 SERVER_URL = os.environ.get("AI_LOG_SERVER", "")
 API_KEY = os.environ.get("AI_LOG_API_KEY", "")
@@ -71,7 +106,11 @@ def _restore_pending(pending: Path) -> None:
 
 def main():
     if not SERVER_URL:
-        print("[ai-log] AI_LOG_SERVER not set — skipping submission.", file=sys.stderr)
+        print(
+            "[ai-log] AI_LOG_SERVER not set — skipping submission. "
+            "Add AI_LOG_SERVER / AI_LOG_API_KEY to .env (see .env.example).",
+            file=sys.stderr,
+        )
         sys.exit(0)
 
     if not LOG_FILE.exists() or LOG_FILE.stat().st_size == 0:

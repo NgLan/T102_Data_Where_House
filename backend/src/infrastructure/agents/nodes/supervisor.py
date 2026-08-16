@@ -9,27 +9,27 @@ from langgraph.graph import END
 from src.common.exceptions.business import BusinessException
 from src.common.logging import get_logger
 from src.common.utils.string import truncate
+from src.domain.data_model.rules import validate_dbml
 from src.infrastructure.agents.constants import (
     DESIGN_NODE,
     MAX_REVISION_ATTEMPTS,
     MAX_VALIDATION_ERROR_LENGTH,
 )
-from src.infrastructure.agents.state import DwDesignState
-from src.infrastructure.codegen.dbml_parser import parse_dbml
+from src.infrastructure.agents.state import DwPipelineState
 from src.infrastructure.security.pii_guard import PiiGuard
 
 logger = get_logger(__name__)
 
 _RESIDUAL_PII_ERROR = (
     "DBML còn sót mã ẩn danh PII (dạng `pii_field_NN`). Bạn đã đổi tên các mã này — "
-    "hãy giữ nguyên chúng y hệt như trong mô hình đầu vào."
+    "hãy giữ nguyên chúng y hệt như trong dữ liệu đầu vào."
 )
 
 
 def build_validate_node(pii_guard: PiiGuard):
     """Tạo node kiểm định gắn với bộ che PII đang dùng."""
 
-    async def validate_node(state: DwDesignState) -> DwDesignState:
+    async def validate_node(state: DwPipelineState) -> DwPipelineState:
         """Kiểm định DBML: trước hết soát mã ẩn danh còn sót, sau đó kiểm tra cú pháp."""
         proposed_dbml = state.get("proposed_dbml", "")
         attempts = state.get("attempts", 0)
@@ -41,12 +41,10 @@ def build_validate_node(pii_guard: PiiGuard):
             return {"validation_error": _RESIDUAL_PII_ERROR}
 
         try:
-            parse_dbml(proposed_dbml)
+            validate_dbml(proposed_dbml)
         except BusinessException as exc:
             logger.warning(
-                "dbml_validation_failed attempt=%d error=%s",
-                attempts,
-                exc.message,
+                "dbml_validation_failed attempt=%d error=%s", attempts, exc.message
             )
             return {"validation_error": truncate(exc.message, MAX_VALIDATION_ERROR_LENGTH)}
 
@@ -56,15 +54,13 @@ def build_validate_node(pii_guard: PiiGuard):
     return validate_node
 
 
-def should_retry(state: DwDesignState) -> str:
+def should_retry(state: DwPipelineState) -> str:
     """Quyết định tuyến đi tiếp: sinh lại DBML hay kết thúc đồ thị."""
     if not state.get("validation_error"):
         return END
 
     if state.get("attempts", 0) >= MAX_REVISION_ATTEMPTS:
-        logger.error(
-            "dbml_revision_exhausted attempts=%d", state.get("attempts", 0)
-        )
+        logger.error("dbml_generation_exhausted attempts=%d", state.get("attempts", 0))
         return END
 
     return DESIGN_NODE

@@ -181,8 +181,16 @@ def main():
     log_dir.mkdir(exist_ok=True)
     log_file = log_dir / "session.jsonl"
 
-    with open(log_file, "a", encoding="utf-8") as f:
-        f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+    # Single O_APPEND write instead of a buffered text write: PostToolUse fires
+    # on every tool call and parallel tool use means several hook processes can
+    # append at the same time. Buffered writes interleave and leave corrupt
+    # half-lines that submit_log.py then silently drops.
+    payload = (json.dumps(entry, ensure_ascii=False) + "\n").encode("utf-8")
+    fd = os.open(log_file, os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o644)
+    try:
+        os.write(fd, payload)
+    finally:
+        os.close(fd)
 
     # Output valid JSON (required by some tools like Gemini)
     print(json.dumps({"status": "logged"}))

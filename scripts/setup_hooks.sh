@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 # Install git pre-push hook for AI log submission (POSIX / Git Bash).
 # Run once after cloning: bash scripts/setup_hooks.sh
+#
+# NOTE: this file must stay LF-only (enforced by .gitattributes). With CRLF,
+# bash reads HOOK_FILE as ".git/hooks/pre-push\r" and installs a hook under a
+# name git never executes, so logs silently stop being submitted.
 set -e
 
 HOOK_FILE=".git/hooks/pre-push"

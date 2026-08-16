@@ -25,8 +25,8 @@ from src.common.middleware import RequestIDMiddleware
 
 
 def test_get_logger():
-    """Test get_logger trả về Logger instance hợp lệ."""
-    logger = get_logger(__name__)
+    """Test get_logger trả về Logger instance hợp lệ, giữ nguyên tên được truyền vào."""
+    logger = get_logger("test.module")
     assert isinstance(logger, logging.Logger)
     assert logger.name == "test.module"
 

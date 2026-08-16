@@ -60,6 +60,9 @@ RESIDUAL_PLACEHOLDER_REGEX: Final[re.Pattern[str]] = re.compile(
 )
 
 # Nhận diện tên cột ở đầu mỗi dòng khai báo trong khối `Table { ... }` của DBML.
+# Nhận diện mọi token định danh (tên bảng, tên cột) trong văn bản bất kỳ.
+_IDENTIFIER_REGEX: Final[re.Pattern[str]] = re.compile(r"\b[A-Za-z_][A-Za-z0-9_]*\b")
+
 _COLUMN_LINE_REGEX: Final[re.Pattern[str]] = re.compile(
     r"^(?P<indent>\s+)(?P<name>[A-Za-z_][A-Za-z0-9_]*)(?=\s+\S)"
 )
@@ -104,19 +107,42 @@ class PiiGuard:
         if not self._enabled or not dbml:
             return MaskedPayload(text=dbml)
 
-        original_to_placeholder: dict[str, str] = {}
-        for column_name in self._collect_sensitive_columns(dbml):
-            index = len(original_to_placeholder) + 1
-            original_to_placeholder[column_name] = PLACEHOLDER_TEMPLATE.format(index=index)
+        return self._apply_placeholders(dbml, self._collect_sensitive_columns(dbml))
 
-        masked_text = dbml
+    def _apply_placeholders(self, text: str, originals: list[str]) -> MaskedPayload:
+        """Thay danh sách định danh gốc bằng mã ẩn danh và dựng bảng ánh xạ ngược."""
+        original_to_placeholder: dict[str, str] = {}
+        for name in originals:
+            index = len(original_to_placeholder) + 1
+            original_to_placeholder[name] = PLACEHOLDER_TEMPLATE.format(index=index)
+
+        masked_text = text
         for original, placeholder in original_to_placeholder.items():
             masked_text = re.sub(rf"\b{re.escape(original)}\b", placeholder, masked_text)
 
-        mapping = {placeholder: original for original, placeholder in original_to_placeholder.items()}
+        mapping = {
+            placeholder: original for original, placeholder in original_to_placeholder.items()
+        }
         if mapping:
             logger.info("pii_schema_masked fields=%d", len(mapping))
         return MaskedPayload(text=masked_text, mapping=mapping)
+
+    def mask_identifiers(self, text: str) -> MaskedPayload:
+        """Che mọi định danh nhạy cảm xuất hiện BẤT KỲ ĐÂU trong văn bản (có hoàn nguyên).
+
+        Khác `mask_schema` vốn chỉ quét dòng khai báo cột của DBML, hàm này quét toàn bộ
+        token định danh nên dùng được cho văn xuôi mô tả nguồn dữ liệu và cho JSON schema —
+        đây mới là dạng đầu vào của các agent trong pipeline sinh mô hình.
+        """
+        if not self._enabled or not text:
+            return MaskedPayload(text=text)
+
+        originals: list[str] = []
+        for token in _IDENTIFIER_REGEX.findall(text):
+            if self._is_sensitive_column(token) and token not in originals:
+                originals.append(token)
+
+        return self._apply_placeholders(text, originals)
 
     def mask_free_text(self, text: str) -> str:
         """Che các giá trị PII xuất hiện trong văn bản tự do (che một chiều)."""
