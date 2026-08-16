@@ -22,6 +22,6 @@ client.interceptors.error.use((error, response) =>
   handleApiError(error, { status: response?.status }),
 );
 
-/** Shared generated client configured at the frontend application boundary. */
+/** Generated client dùng chung, được cấu hình tại application boundary của Frontend. */
 export { client as apiClient };
 export * from './generated';

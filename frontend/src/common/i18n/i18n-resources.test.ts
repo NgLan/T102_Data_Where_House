@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
 import { resources } from './i18n';
 
 const INTERPOLATION_PATTERN = /{{\s*([A-Za-z][A-Za-z0-9]*)\s*}}/g;
@@ -32,6 +33,16 @@ describe('i18n resources', () => {
     for (const key of MODELING_DYNAMIC_KEYS) {
       expect(resources.vi['modeling-dashboard'][key]).toBeTruthy();
       expect(resources.en['modeling-dashboard'][key]).toBeTruthy();
+    }
+  });
+
+  it('dịch đầy đủ mọi Backend ErrorCode cho cả VI và EN', () => {
+    const source = readFileSync('../backend/src/common/exceptions/error_codes.py', 'utf8');
+    const codes = [...source.matchAll(/^\s+([A-Z][A-Z0-9_]+)\s*=\s*"/gm)]
+      .map((match) => match[1]);
+    for (const code of codes) {
+      expect(resources.vi.errors).toHaveProperty(code);
+      expect(resources.en.errors).toHaveProperty(code);
     }
   });
 });

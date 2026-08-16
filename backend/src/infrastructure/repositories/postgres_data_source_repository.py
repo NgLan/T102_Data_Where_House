@@ -1,60 +1,73 @@
-"""Triển khai PostgreSQL Repository cho thực thể DataSource."""
+"""PostgreSQL repository cho DataSource."""
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.domain.data_source.entities import DataSource
 from src.domain.data_source.repository import IDataSourceRepository
 from src.domain.shared.types import EntityID
+from src.infrastructure.database.error_translation import translate_database_errors
 from src.infrastructure.database.mappers.data_source_mapper import DataSourceMapper
 from src.infrastructure.database.models.data_source import DataSourceModel
 from typing_extensions import override
 
 
 class PostgresDataSourceRepository(IDataSourceRepository):
-    """Triển khai IDataSourceRepository sử dụng AsyncSession và DataSourceMapper."""
+    """Lưu trữ DataSource bằng SQLAlchemy AsyncSession."""
 
     def __init__(self, session: AsyncSession) -> None:
-        """Khởi tạo repository với SQLAlchemy AsyncSession."""
-        self._session: AsyncSession = session
+        """Khởi tạo repository với session dùng chung transaction."""
+        self._session = session
 
     @override
+    @translate_database_errors
     async def get_by_id(self, entity_id: EntityID) -> DataSource | None:
-        """Lấy Nguồn dữ liệu theo ID."""
-        stmt = select(DataSourceModel).where(DataSourceModel.id == entity_id)
-        result = await self._session.execute(stmt)
-        model = result.scalar_one_or_none()
+        """Lấy DataSource theo ID."""
+        model = await self._session.get(DataSourceModel, entity_id)
         return DataSourceMapper.to_domain(model) if model else None
 
     @override
+    @translate_database_errors
     async def list_by_project(self, project_id: EntityID) -> list[DataSource]:
-        """Lấy danh sách nguồn dữ liệu thuộc một dự án."""
-        stmt = select(DataSourceModel).where(DataSourceModel.project_id == project_id)
-        result = await self._session.execute(stmt)
-        models = result.scalars().all()
-        return [DataSourceMapper.to_domain(m) for m in models]
+        """Lấy DataSource thuộc một Project."""
+        statement = select(DataSourceModel).where(DataSourceModel.project_id == project_id)
+        result = await self._session.execute(statement)
+        return [DataSourceMapper.to_domain(model) for model in result.scalars().all()]
 
     @override
-    async def save(self, entity: DataSource) -> DataSource:
-        """Lưu (tạo mới hoặc cập nhật) thực thể DataSource."""
-        stmt = select(DataSourceModel).where(DataSourceModel.id == entity.id)
-        result = await self._session.execute(stmt)
-        existing_model = result.scalar_one_or_none()
+    @translate_database_errors
+    async def count_by_project_ids(
+        self,
+        project_ids: tuple[EntityID, ...],
+    ) -> dict[EntityID, int]:
+        """Đếm DataSource theo Project bằng một aggregate query."""
+        if not project_ids:
+            return {}
+        statement = (
+            select(DataSourceModel.project_id, func.count(DataSourceModel.id))
+            .where(DataSourceModel.project_id.in_(project_ids))
+            .group_by(DataSourceModel.project_id)
+        )
+        result = await self._session.execute(statement)
+        return {project_id: count for project_id, count in result.all()}
 
-        if existing_model:
-            model = DataSourceMapper.update_model(existing_model, entity)
-        else:
+    @override
+    @translate_database_errors
+    async def save(self, entity: DataSource) -> DataSource:
+        """Lưu mới hoặc cập nhật DataSource."""
+        model = await self._session.get(DataSourceModel, entity.id)
+        if model is None:
             model = DataSourceMapper.to_model(entity)
             self._session.add(model)
-
+        else:
+            DataSourceMapper.update_model(model, entity)
         await self._session.flush()
         return DataSourceMapper.to_domain(model)
 
     @override
+    @translate_database_errors
     async def delete(self, entity_id: EntityID) -> bool:
-        """Xóa thực thể DataSource theo ID."""
-        stmt = select(DataSourceModel).where(DataSourceModel.id == entity_id)
-        result = await self._session.execute(stmt)
-        model = result.scalar_one_or_none()
+        """Xóa DataSource theo ID."""
+        model = await self._session.get(DataSourceModel, entity_id)
         if model is None:
             return False
         await self._session.delete(model)

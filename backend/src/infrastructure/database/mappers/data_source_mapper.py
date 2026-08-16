@@ -26,64 +26,84 @@ class DataSourceMapper:
         for table in schema.tables:
             cols_data = []
             for col in table.columns:
-                cols_data.append({
-                    "name": col.name,
-                    "data_type": col.data_type,
-                    "primary_key": col.primary_key,
-                    "nullable": col.nullable,
-                    "unique": col.unique,
-                    "foreign_key_reference": col.foreign_key_reference,
-                    "default_value": col.default_value,
-                    "constraints": list(col.constraints),
-                    "description": col.description,
-                })
+                cols_data.append(
+                    {
+                        "name": col.name,
+                        "data_type": col.data_type,
+                        "primary_key": col.primary_key,
+                        "nullable": col.nullable,
+                        "unique": col.unique,
+                        "foreign_key_reference": col.foreign_key_reference,
+                        "default_value": col.default_value,
+                        "constraints": list(col.constraints),
+                        "description": col.description,
+                        "options": list(col.options),
+                    }
+                )
             tables_data.append({"name": table.name, "columns": cols_data})
 
         rels_data = []
         for rel in schema.relationships:
-            rel_type = (
-                str(rel.type.value)
-                if hasattr(rel.type, "value")
-                else rel.type
+            rels_data.append(
+                {
+                    "from_column": rel.from_column,
+                    "to_column": rel.to_column,
+                    "type": rel.type.value,
+                }
             )
-            rels_data.append({
-                "from_column": rel.from_column,
-                "to_column": rel.to_column,
-                "type": rel_type,
-            })
 
         return {"tables": tables_data, "relationships": rels_data}
 
     @staticmethod
     def dict_to_schema_metadata(data: dict[str, Any] | None) -> SchemaMetadata | None:
-        """Chuyển đổi dict JSONB từ database sang SchemaMetadata Value Object."""
-        if not data:
+        """Chuyển đổi dict JSONB từ database sang SchemaMetadata Value Object (bảo vệ lỗi KeyError)."""
+        if not data or not isinstance(data, dict):
             return None
 
         tables_list = []
         for tbl in data.get("tables", []):
+            if not isinstance(tbl, dict) or "name" not in tbl:
+                continue
             cols_list = []
             for col in tbl.get("columns", []):
-                cols_list.append(ColumnMetadata(
-                    name=col["name"],
-                    data_type=col["data_type"],
-                    primary_key=col.get("primary_key", False),
-                    nullable=col.get("nullable", True),
-                    unique=col.get("unique", False),
-                    foreign_key_reference=col.get("foreign_key_reference"),
-                    default_value=col.get("default_value"),
-                    constraints=tuple(col.get("constraints", ())),
-                    description=col.get("description"),
-                ))
+                if not isinstance(col, dict) or "name" not in col:
+                    continue
+                cols_list.append(
+                    ColumnMetadata(
+                        name=col["name"],
+                        data_type=col.get("data_type", "TEXT"),
+                        primary_key=col.get("primary_key", False),
+                        nullable=col.get("nullable", True),
+                        unique=col.get("unique", False),
+                        foreign_key_reference=col.get("foreign_key_reference"),
+                        default_value=col.get("default_value"),
+                        constraints=tuple(col.get("constraints", ())),
+                        description=col.get("description"),
+                        options=tuple(col.get("options", ())),
+                    )
+                )
             tables_list.append(TableMetadata(name=tbl["name"], columns=tuple(cols_list)))
 
         rels_list = []
         for rel in data.get("relationships", []):
-            rels_list.append(RelationshipMetadata(
-                from_column=rel["from_column"],
-                to_column=rel["to_column"],
-                type=RelationshipType(rel["type"]),
-            ))
+            if not isinstance(rel, dict):
+                continue
+            from_col = rel.get("from_column") or rel.get("from_col") or rel.get("source_column") or ""
+            to_col = rel.get("to_column") or rel.get("to_col") or rel.get("target_column") or ""
+            rel_type_str = rel.get("type", "MANY_TO_ONE")
+            try:
+                rel_type = RelationshipType(rel_type_str)
+            except (ValueError, KeyError):
+                rel_type = RelationshipType.MANY_TO_ONE
+
+            if from_col and to_col:
+                rels_list.append(
+                    RelationshipMetadata(
+                        from_column=str(from_col),
+                        to_column=str(to_col),
+                        type=rel_type,
+                    )
+                )
 
         return SchemaMetadata(tables=tuple(tables_list), relationships=tuple(rels_list))
 
@@ -110,7 +130,7 @@ class DataSourceMapper:
             project_id=entity.project_id,
             name=entity.name,
             location=entity.location,
-            type=str(entity.type.value if hasattr(entity.type, "value") else entity.type),
+            type=entity.type.value,
             description=entity.description,
             schema_metadata=cls.schema_metadata_to_dict(entity.schema_metadata),
             created_at=entity.created_at,
@@ -120,12 +140,10 @@ class DataSourceMapper:
     @classmethod
     def update_model(cls, model: DataSourceModel, entity: DataSource) -> DataSourceModel:
         """Cập nhật dữ liệu từ DataSource Entity sang DataSourceModel đã tồn tại."""
-        model.project_id = entity.project_id
         model.name = entity.name
         model.location = entity.location
-        model.type = str(entity.type.value if hasattr(entity.type, "value") else entity.type)
+        model.type = entity.type.value
         model.description = entity.description
         model.schema_metadata = cls.schema_metadata_to_dict(entity.schema_metadata)
-        model.created_at = entity.created_at
         model.updated_at = entity.updated_at
         return model

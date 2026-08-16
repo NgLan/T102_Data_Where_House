@@ -13,7 +13,7 @@ from src.domain.data_model import (
     DataModelChangeStatus,
 )
 from src.domain.data_source import ColumnMetadata, DataSource, DataSourceType, SchemaMetadata, TableMetadata
-from src.domain.project import Project, ProjectMember, ProjectRole, ProjectStatus
+from src.domain.project import Project, ProjectDetails, ProjectMember, ProjectRole, ProjectStatus
 from src.domain.project_session import (
     AgentResultMetadata,
     AgentResultStatus,
@@ -211,38 +211,60 @@ def test_project_create_owner_member() -> None:
 def test_project_invalid_name() -> None:
     """Project name rỗng ném lỗi INVALID_PROJECT_NAME."""
     with pytest.raises(BusinessException) as exc_info:
-        Project(name="   ", requirement="Nội dung yêu cầu")
+        Project(name="   ", requirement="Nội dung yêu cầu", user_id=uuid4())
     assert exc_info.value.code == ErrorCode.INVALID_PROJECT_NAME
 
 
 def test_project_name_too_long() -> None:
     """Project name vượt quá 255 ký tự ném lỗi PROJECT_NAME_TOO_LONG."""
     with pytest.raises(BusinessException) as exc_info:
-        Project(name="a" * 256, requirement="Nội dung yêu cầu")
+        Project(name="a" * 256, requirement="Nội dung yêu cầu", user_id=uuid4())
     assert exc_info.value.code == ErrorCode.PROJECT_NAME_TOO_LONG
 
 
 def test_project_invalid_requirement() -> None:
     """Project requirement rỗng ném lỗi INVALID_PROJECT_REQUIREMENT."""
     with pytest.raises(BusinessException) as exc_info:
-        Project(name="Tên dự án", requirement="  ")
+        Project(name="Tên dự án", requirement="  ", user_id=uuid4())
     assert exc_info.value.code == ErrorCode.INVALID_PROJECT_REQUIREMENT
 
 
 def test_project_status_transitions() -> None:
     """Kiểm tra chuyển đổi trạng thái dự án giữa ACTIVE, ANALYZING và ARCHIVED (bao gồm unarchive)."""
-    project = Project(name="Dự án cũ", requirement="Yêu cầu cũ")
+    project = Project(
+        name="Dự án cũ",
+        requirement="Yêu cầu cũ hợp lệ",
+        user_id=uuid4(),
+    )
     assert project.status == ProjectStatus.ACTIVE
 
     project.update_status(ProjectStatus.ANALYZING)
     assert project.status == ProjectStatus.ANALYZING
 
+    with pytest.raises(BusinessException) as exc_info:
+        project.update_status(ProjectStatus.ARCHIVED)
+    assert exc_info.value.code == ErrorCode.INVALID_PROJECT_STATUS_TRANSITION
+
+    project.update_status(ProjectStatus.ACTIVE)
     project.update_status(ProjectStatus.ARCHIVED)
     assert project.status == ProjectStatus.ARCHIVED
 
     # Kiểm tra khôi phục lại trạng thái ACTIVE từ ARCHIVED
     project.update_status(ProjectStatus.ACTIVE)
     assert project.status == ProjectStatus.ACTIVE
+
+
+def test_archived_project_rejects_content_update() -> None:
+    """Project ARCHIVED chỉ được kích hoạt lại, không cho sửa nội dung."""
+    project = Project(
+        name="Dự án lưu trữ",
+        requirement="Yêu cầu nghiệp vụ hợp lệ",
+        user_id=uuid4(),
+    )
+    project.update_status(ProjectStatus.ARCHIVED)
+    with pytest.raises(BusinessException) as exc_info:
+        project.update_info(ProjectDetails("Tên dự án mới", "Yêu cầu mới hợp lệ"))
+    assert exc_info.value.code == ErrorCode.INVALID_PROJECT_STATUS_TRANSITION
 
 
 # ===================================================================

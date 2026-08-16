@@ -45,6 +45,9 @@ Các quy tắc trong mục này có mức ưu tiên cao nhất. Nếu nội dung
 **Frontend**
 
 - Folder và file kỹ thuật dùng `kebab-case`; React component dùng `PascalCase.tsx`; file do shadcn registry quản lý giữ tên lowercase của registry; test dùng hậu tố `.test.ts` hoặc `.test.tsx`.
+- Feature screen công khai đặt trực tiếp tại root feature với tên `PascalCase.tsx` (ví dụ `ProjectInitScreen.tsx`); `index.ts` chỉ re-export public API. Không đặt screen entry trong `components/`.
+- Feature lớn phải tách thành các sub-feature folder `kebab-case` theo nghiệp vụ. Mỗi sub-feature chỉ tạo các layer cần dùng như `components/`, `hooks/`, `services/`, `schemas/`, `constants/`; không gom toàn bộ feature vào một bộ folder kỹ thuật phẳng ở root.
+- File React component trong mọi cấp dùng `PascalCase.tsx`; file hook, service, schema, constants và utility dùng `kebab-case.ts`. Tên file test bám đúng tên source và thêm `.test` trước extension.
 - Component, type và interface dùng `PascalCase`; function và variable dùng `camelCase`; hằng số dùng `UPPER_SNAKE_CASE`.
 - Boolean bắt đầu bằng `is`, `has`, `should` hoặc `can`; event handler nội bộ dùng `handle*`; callback prop dùng `on*`; hàm API dùng động từ + danh từ.
 - Namespace i18n và filename feature dùng `kebab-case`. Translation key phẳng dùng `UPPER_SNAKE_CASE`; không tạo object key lồng nhau.
@@ -281,7 +284,7 @@ Mã nguồn Frontend trong `src/` được chia thành các phân vùng chính:
 - `src/app/`: Chỉ dùng cho định tuyến (Routing) theo chuẩn Next.js App Router (`page.tsx`, `layout.tsx`). Khung hiển thị trang gọi đến các module trong `features/`.
 - `src/features/`: Chứa toàn bộ logic nghiệp vụ cốt lõi, chia theo từng tính năng độc lập.
 - `src/common/`: Chứa các tài nguyên dùng chung cho toàn dự án (UI components như `shadcn/ui`, global hooks, hàm tiện ích utils, global stores).
-- `src/api/`: Khởi tạo cấu hình axios/fetch client dùng chung và các kiểu dữ liệu API gốc.
+- `src/api/`: Chỉ chứa cấu hình shared client, public barrel và code sinh từ Backend OpenAPI trong `generated/`. Không viết tay request/response DTO cho endpoint đã có trong OpenAPI; adapter legacy chỉ được giữ tạm cho endpoint chưa có generated operation và không được dùng cho code mới.
 
 ### 2. Nguyên Tắc Đóng Gói (Colocation) & Cấm Gọi Chéo
 - **Mỗi Feature là một module độc lập:** Tất cả component, hook, helper chỉ phục vụ cho một tính năng thì phải nằm gọn bên trong thư mục của feature đó (ví dụ: `src/features/hitl-editor/`).

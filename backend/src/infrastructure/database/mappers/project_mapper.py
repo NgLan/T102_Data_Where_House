@@ -33,7 +33,7 @@ class ProjectMapper:
             user_id=entity.user_id,
             description=entity.description,
             domain=entity.domain,
-            status=str(entity.status.value if hasattr(entity.status, "value") else entity.status),
+            status=entity.status.value,
             created_at=entity.created_at,
             updated_at=entity.updated_at,
         )
@@ -43,10 +43,8 @@ class ProjectMapper:
         """Cập nhật dữ liệu từ Project Entity sang ProjectModel đã tồn tại."""
         model.name = entity.name
         model.requirement = entity.requirement
-        model.user_id = entity.user_id
         model.description = entity.description
         model.domain = entity.domain
-        model.status = str(entity.status.value if hasattr(entity.status, "value") else entity.status)
-        model.created_at = entity.created_at
+        model.status = entity.status.value
         model.updated_at = entity.updated_at
         return model

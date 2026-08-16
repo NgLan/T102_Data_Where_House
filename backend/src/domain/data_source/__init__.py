@@ -2,6 +2,11 @@
 
 from src.domain.data_source.entities import DataSource
 from src.domain.data_source.enums import DataSourceType, RelationshipType
+from src.domain.data_source.file_parser import (
+    IFileParserService,
+    ParsedDataSourceResult,
+    ParsedRequirementResult,
+)
 from src.domain.data_source.repository import IDataSourceRepository
 from src.domain.data_source.rules import validate_data_source_fields
 from src.domain.data_source.value_objects import (
@@ -20,5 +25,8 @@ __all__: list[str] = [
     "ColumnMetadata",
     "RelationshipMetadata",
     "IDataSourceRepository",
+    "IFileParserService",
+    "ParsedDataSourceResult",
+    "ParsedRequirementResult",
     "validate_data_source_fields",
 ]

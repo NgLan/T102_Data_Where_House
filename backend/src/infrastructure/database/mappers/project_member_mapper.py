@@ -28,7 +28,7 @@ class ProjectMemberMapper:
             id=entity.id,
             project_id=entity.project_id,
             user_id=entity.user_id,
-            role=str(entity.role.value if hasattr(entity.role, "value") else entity.role),
+            role=entity.role.value,
             joined_at=entity.joined_at,
             created_at=entity.created_at,
             updated_at=entity.updated_at,
@@ -37,10 +37,6 @@ class ProjectMemberMapper:
     @staticmethod
     def update_model(model: ProjectMemberModel, entity: ProjectMember) -> ProjectMemberModel:
         """Cập nhật dữ liệu từ ProjectMember Entity sang ProjectMemberModel đã tồn tại."""
-        model.project_id = entity.project_id
-        model.user_id = entity.user_id
-        model.role = str(entity.role.value if hasattr(entity.role, "value") else entity.role)
-        model.joined_at = entity.joined_at
-        model.created_at = entity.created_at
+        model.role = entity.role.value
         model.updated_at = entity.updated_at
         return model

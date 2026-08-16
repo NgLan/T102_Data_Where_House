@@ -6,6 +6,375 @@
     "version": "1.0.0"
   },
   "paths": {
+    "/api/v1/projects": {
+      "get": {
+        "tags": [
+          "Projects"
+        ],
+        "summary": "List Projects",
+        "description": "Liệt kê Project mà người dùng hiện tại được phép truy cập.",
+        "operationId": "listProjects",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_list_ProjectSummaryResponse__"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Projects"
+        ],
+        "summary": "Create Project",
+        "description": "Tạo Project và OWNER membership trong một transaction.",
+        "operationId": "createProject",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProjectRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_ProjectResponse_"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}": {
+      "get": {
+        "tags": [
+          "Projects"
+        ],
+        "summary": "Get Project",
+        "description": "Lấy chi tiết một Project sau khi kiểm tra membership.",
+        "operationId": "getProject",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID của Project",
+              "title": "Project Id"
+            },
+            "description": "ID của Project"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_ProjectResponse_"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Projects"
+        ],
+        "summary": "Update Project",
+        "description": "Thay thế thông tin Project do OWNER sở hữu.",
+        "operationId": "updateProject",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID của Project",
+              "title": "Project Id"
+            },
+            "description": "ID của Project"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProjectRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_ProjectResponse_"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Projects"
+        ],
+        "summary": "Delete Project",
+        "description": "Xóa Project do OWNER sở hữu cùng toàn bộ artifact liên quan.",
+        "operationId": "deleteProject",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID của Project",
+              "title": "Project Id"
+            },
+            "description": "ID của Project"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/api/v1/projects/{project_id}/data-model": {
       "get": {
         "tags": [
@@ -156,6 +525,485 @@
         }
       }
     },
+    "/api/v1/projects/{project_id}/data-sources": {
+      "get": {
+        "tags": [
+          "Data Sources"
+        ],
+        "summary": "List Data Sources",
+        "description": "Liệt kê nguồn nếu người dùng là thành viên dự án.",
+        "operationId": "listProjectDataSources",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID dự án chứa nguồn dữ liệu",
+              "title": "Project Id"
+            },
+            "description": "ID dự án chứa nguồn dữ liệu"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_DataSourceListResponse_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/data-sources/upload": {
+      "post": {
+        "tags": [
+          "Data Sources"
+        ],
+        "summary": "Upload Data Sources",
+        "description": "Upload và phân tích batch file nếu người dùng là OWNER.",
+        "operationId": "uploadProjectDataSources",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID dự án chứa nguồn dữ liệu",
+              "title": "Project Id"
+            },
+            "description": "ID dự án chứa nguồn dữ liệu"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_uploadProjectDataSources"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_UploadDataSourcesResponse_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/data-sources/{data_source_id}/preview": {
+      "get": {
+        "tags": [
+          "Data Sources"
+        ],
+        "summary": "Get Data Source Preview",
+        "description": "Đọc preview CSV theo yêu cầu, không lưu bản sao trong database.",
+        "operationId": "getProjectDataSourcePreview",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID dự án chứa nguồn dữ liệu",
+              "title": "Project Id"
+            },
+            "description": "ID dự án chứa nguồn dữ liệu"
+          },
+          {
+            "name": "data_source_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID nguồn dữ liệu",
+              "title": "Data Source Id"
+            },
+            "description": "ID nguồn dữ liệu"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_DataSourcePreviewResponse_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/data-sources/{data_source_id}/column": {
+      "patch": {
+        "tags": [
+          "Data Sources"
+        ],
+        "summary": "Update Data Source Column",
+        "description": "Cập nhật kiểu và options của một cột nếu người dùng là OWNER.",
+        "operationId": "updateProjectDataSourceColumn",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID dự án chứa nguồn dữ liệu",
+              "title": "Project Id"
+            },
+            "description": "ID dự án chứa nguồn dữ liệu"
+          },
+          {
+            "name": "data_source_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID nguồn dữ liệu",
+              "title": "Data Source Id"
+            },
+            "description": "ID nguồn dữ liệu"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateDataSourceColumnRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_DataSourceResponse_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/data-sources/{data_source_id}": {
+      "delete": {
+        "tags": [
+          "Data Sources"
+        ],
+        "summary": "Delete Data Source",
+        "description": "Xóa nguồn và file vật lý nếu người dùng là OWNER.",
+        "operationId": "deleteProjectDataSource",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID dự án chứa nguồn dữ liệu",
+              "title": "Project Id"
+            },
+            "description": "ID dự án chứa nguồn dữ liệu"
+          },
+          {
+            "name": "data_source_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID nguồn dữ liệu",
+              "title": "Data Source Id"
+            },
+            "description": "ID nguồn dữ liệu"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/health": {
       "get": {
         "tags": [
@@ -282,6 +1130,144 @@
         "type": "object",
         "title": "ApiResponse[DataModelResponse]"
       },
+      "ApiResponse_DataSourceListResponse_": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "Trạng thái phản hồi (luôn là 'success' đối với 2xx)",
+            "default": "success"
+          },
+          "code": {
+            "type": "integer",
+            "title": "Code",
+            "description": "HTTP Status Code (mặc định 200)",
+            "default": 200
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Thông điệp phản hồi cho người dùng",
+            "default": "Xử lý thành công"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DataSourceListResponse"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Dữ liệu payload chính trả về"
+          },
+          "meta": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ResponseMeta"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Metadata chung đi kèm phản hồi (request_id, timestamp... nếu có)"
+          }
+        },
+        "type": "object",
+        "title": "ApiResponse[DataSourceListResponse]"
+      },
+      "ApiResponse_DataSourcePreviewResponse_": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "Trạng thái phản hồi (luôn là 'success' đối với 2xx)",
+            "default": "success"
+          },
+          "code": {
+            "type": "integer",
+            "title": "Code",
+            "description": "HTTP Status Code (mặc định 200)",
+            "default": 200
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Thông điệp phản hồi cho người dùng",
+            "default": "Xử lý thành công"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DataSourcePreviewResponse"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Dữ liệu payload chính trả về"
+          },
+          "meta": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ResponseMeta"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Metadata chung đi kèm phản hồi (request_id, timestamp... nếu có)"
+          }
+        },
+        "type": "object",
+        "title": "ApiResponse[DataSourcePreviewResponse]"
+      },
+      "ApiResponse_DataSourceResponse_": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "Trạng thái phản hồi (luôn là 'success' đối với 2xx)",
+            "default": "success"
+          },
+          "code": {
+            "type": "integer",
+            "title": "Code",
+            "description": "HTTP Status Code (mặc định 200)",
+            "default": 200
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Thông điệp phản hồi cho người dùng",
+            "default": "Xử lý thành công"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DataSourceResponse"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Dữ liệu payload chính trả về"
+          },
+          "meta": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ResponseMeta"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Metadata chung đi kèm phản hồi (request_id, timestamp... nếu có)"
+          }
+        },
+        "type": "object",
+        "title": "ApiResponse[DataSourceResponse]"
+      },
       "ApiResponse_HealthResponse_": {
         "properties": {
           "status": {
@@ -327,6 +1313,216 @@
         },
         "type": "object",
         "title": "ApiResponse[HealthResponse]"
+      },
+      "ApiResponse_ProjectResponse_": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "Trạng thái phản hồi (luôn là 'success' đối với 2xx)",
+            "default": "success"
+          },
+          "code": {
+            "type": "integer",
+            "title": "Code",
+            "description": "HTTP Status Code (mặc định 200)",
+            "default": 200
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Thông điệp phản hồi cho người dùng",
+            "default": "Xử lý thành công"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProjectResponse"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Dữ liệu payload chính trả về"
+          },
+          "meta": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ResponseMeta"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Metadata chung đi kèm phản hồi (request_id, timestamp... nếu có)"
+          }
+        },
+        "type": "object",
+        "title": "ApiResponse[ProjectResponse]"
+      },
+      "ApiResponse_UploadDataSourcesResponse_": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "Trạng thái phản hồi (luôn là 'success' đối với 2xx)",
+            "default": "success"
+          },
+          "code": {
+            "type": "integer",
+            "title": "Code",
+            "description": "HTTP Status Code (mặc định 200)",
+            "default": 200
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Thông điệp phản hồi cho người dùng",
+            "default": "Xử lý thành công"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UploadDataSourcesResponse"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Dữ liệu payload chính trả về"
+          },
+          "meta": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ResponseMeta"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Metadata chung đi kèm phản hồi (request_id, timestamp... nếu có)"
+          }
+        },
+        "type": "object",
+        "title": "ApiResponse[UploadDataSourcesResponse]"
+      },
+      "ApiResponse_list_ProjectSummaryResponse__": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "Trạng thái phản hồi (luôn là 'success' đối với 2xx)",
+            "default": "success"
+          },
+          "code": {
+            "type": "integer",
+            "title": "Code",
+            "description": "HTTP Status Code (mặc định 200)",
+            "default": 200
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Thông điệp phản hồi cho người dùng",
+            "default": "Xử lý thành công"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/ProjectSummaryResponse"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data",
+            "description": "Dữ liệu payload chính trả về"
+          },
+          "meta": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ResponseMeta"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Metadata chung đi kèm phản hồi (request_id, timestamp... nếu có)"
+          }
+        },
+        "type": "object",
+        "title": "ApiResponse[list[ProjectSummaryResponse]]"
+      },
+      "Body_uploadProjectDataSources": {
+        "properties": {
+          "files": {
+            "items": {
+              "type": "string",
+              "contentMediaType": "application/octet-stream"
+            },
+            "type": "array",
+            "title": "Files",
+            "description": "Tối đa 20 file CSV hoặc DOCX"
+          }
+        },
+        "type": "object",
+        "required": [
+          "files"
+        ],
+        "title": "Body_uploadProjectDataSources"
+      },
+      "CreateProjectRequest": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 3,
+            "title": "Name",
+            "description": "Tên Project"
+          },
+          "requirement": {
+            "type": "string",
+            "minLength": 10,
+            "title": "Requirement",
+            "description": "Yêu cầu nghiệp vụ thô"
+          },
+          "domain": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Domain",
+            "description": "Lĩnh vực nghiệp vụ"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "description": "Mô tả Project"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "requirement"
+        ],
+        "title": "CreateProjectRequest",
+        "description": "Payload tạo Project mới."
       },
       "DataModelResponse": {
         "properties": {
@@ -379,6 +1575,178 @@
         "title": "DataModelResponse",
         "description": "Snapshot Data Model trả về cho Frontend editor."
       },
+      "DataSourceColumnResponse": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "data_type": {
+            "type": "string",
+            "title": "Data Type"
+          },
+          "nullable": {
+            "type": "boolean",
+            "title": "Nullable"
+          },
+          "primary_key": {
+            "type": "boolean",
+            "title": "Primary Key"
+          },
+          "options": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Options"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "data_type",
+          "nullable",
+          "primary_key"
+        ],
+        "title": "DataSourceColumnResponse",
+        "description": "Metadata một cột nguồn."
+      },
+      "DataSourceListResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/DataSourceResponse"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "can_edit": {
+            "type": "boolean",
+            "title": "Can Edit"
+          }
+        },
+        "type": "object",
+        "required": [
+          "can_edit"
+        ],
+        "title": "DataSourceListResponse",
+        "description": "Danh sách nguồn kèm quyền chỉnh sửa của actor."
+      },
+      "DataSourcePreviewResponse": {
+        "properties": {
+          "rows": {
+            "items": {
+              "additionalProperties": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Rows"
+          },
+          "total_rows": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Total Rows"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_rows"
+        ],
+        "title": "DataSourcePreviewResponse",
+        "description": "Preview đọc lười từ file nguồn."
+      },
+      "DataSourceResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "project_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Project Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "type": {
+            "type": "string",
+            "title": "Type"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "tables": {
+            "items": {
+              "$ref": "#/components/schemas/DataSourceTableResponse"
+            },
+            "type": "array",
+            "title": "Tables"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "project_id",
+          "name",
+          "type",
+          "description"
+        ],
+        "title": "DataSourceResponse",
+        "description": "Nguồn dữ liệu hiển thị trên Frontend."
+      },
+      "DataSourceTableResponse": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "columns": {
+            "items": {
+              "$ref": "#/components/schemas/DataSourceColumnResponse"
+            },
+            "type": "array",
+            "title": "Columns"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "DataSourceTableResponse",
+        "description": "Metadata một bảng nguồn."
+      },
+      "DataSourceType": {
+        "type": "string",
+        "enum": [
+          "CSV",
+          "EXCEL",
+          "JSON",
+          "SQL",
+          "TEXT"
+        ],
+        "title": "DataSourceType",
+        "description": "Định dạng loại Nguồn dữ liệu (Data Source Type)."
+      },
       "ErrorDetail": {
         "properties": {
           "field": {
@@ -423,6 +1791,320 @@
         ],
         "title": "HealthResponse",
         "description": "Trạng thái hoạt động và môi trường hiện tại của Backend."
+      },
+      "ProjectColumnResponse": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Tên cột"
+          },
+          "data_type": {
+            "type": "string",
+            "title": "Data Type",
+            "description": "Kiểu dữ liệu"
+          },
+          "nullable": {
+            "type": "boolean",
+            "title": "Nullable",
+            "description": "Cột cho phép NULL"
+          },
+          "primary_key": {
+            "type": "boolean",
+            "title": "Primary Key",
+            "description": "Cột là khóa chính"
+          },
+          "options": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Options",
+            "description": "Giá trị OPTION"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "data_type",
+          "nullable",
+          "primary_key"
+        ],
+        "title": "ProjectColumnResponse",
+        "description": "Metadata cột nguồn trả về cho client."
+      },
+      "ProjectDataSourceResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id",
+            "description": "ID nguồn dữ liệu"
+          },
+          "project_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Project Id",
+            "description": "ID Project sở hữu"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Tên nguồn dữ liệu"
+          },
+          "type": {
+            "$ref": "#/components/schemas/DataSourceType",
+            "description": "Loại nguồn dữ liệu"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "description": "Mô tả nguồn dữ liệu"
+          },
+          "tables": {
+            "items": {
+              "$ref": "#/components/schemas/ProjectTableResponse"
+            },
+            "type": "array",
+            "title": "Tables",
+            "description": "Metadata bảng"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "project_id",
+          "name",
+          "type",
+          "description",
+          "tables"
+        ],
+        "title": "ProjectDataSourceResponse",
+        "description": "Nguồn dữ liệu thuộc Project, không chứa storage location."
+      },
+      "ProjectResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id",
+            "description": "ID Project"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Tên Project"
+          },
+          "requirement": {
+            "type": "string",
+            "title": "Requirement",
+            "description": "Yêu cầu nghiệp vụ"
+          },
+          "user_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "User Id",
+            "description": "ID người tạo Project"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ProjectStatus",
+            "description": "Trạng thái Project"
+          },
+          "domain": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Domain",
+            "description": "Lĩnh vực nghiệp vụ"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "description": "Mô tả Project"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "description": "Thời điểm tạo"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At",
+            "description": "Thời điểm cập nhật"
+          },
+          "data_source_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Data Source Count",
+            "description": "Số nguồn dữ liệu thuộc Project"
+          },
+          "data_sources": {
+            "items": {
+              "$ref": "#/components/schemas/ProjectDataSourceResponse"
+            },
+            "type": "array",
+            "title": "Data Sources",
+            "description": "Nguồn dữ liệu"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "requirement",
+          "user_id",
+          "status",
+          "domain",
+          "description",
+          "created_at",
+          "updated_at",
+          "data_source_count",
+          "data_sources"
+        ],
+        "title": "ProjectResponse",
+        "description": "Payload chi tiết Project."
+      },
+      "ProjectStatus": {
+        "type": "string",
+        "enum": [
+          "ACTIVE",
+          "ANALYZING",
+          "ARCHIVED"
+        ],
+        "title": "ProjectStatus",
+        "description": "Trạng thái hoạt động của Dự án."
+      },
+      "ProjectSummaryResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id",
+            "description": "ID Project"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Tên Project"
+          },
+          "requirement": {
+            "type": "string",
+            "title": "Requirement",
+            "description": "Yêu cầu nghiệp vụ"
+          },
+          "user_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "User Id",
+            "description": "ID người tạo Project"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ProjectStatus",
+            "description": "Trạng thái Project"
+          },
+          "domain": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Domain",
+            "description": "Lĩnh vực nghiệp vụ"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "description": "Mô tả Project"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "description": "Thời điểm tạo"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At",
+            "description": "Thời điểm cập nhật"
+          },
+          "data_source_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Data Source Count",
+            "description": "Số nguồn dữ liệu thuộc Project"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "requirement",
+          "user_id",
+          "status",
+          "domain",
+          "description",
+          "created_at",
+          "updated_at",
+          "data_source_count"
+        ],
+        "title": "ProjectSummaryResponse",
+        "description": "Payload gọn cho danh sách Project."
+      },
+      "ProjectTableResponse": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Tên bảng"
+          },
+          "columns": {
+            "items": {
+              "$ref": "#/components/schemas/ProjectColumnResponse"
+            },
+            "type": "array",
+            "title": "Columns",
+            "description": "Danh sách cột"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "columns"
+        ],
+        "title": "ProjectTableResponse",
+        "description": "Metadata bảng nguồn trả về cho client."
       },
       "ResponseMeta": {
         "properties": {
@@ -486,6 +2168,133 @@
         ],
         "title": "UpdateDataModelRequest",
         "description": "Payload lưu snapshot DBML với revision gốc của client."
+      },
+      "UpdateDataSourceColumnRequest": {
+        "properties": {
+          "table_name": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Table Name"
+          },
+          "column_name": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Column Name"
+          },
+          "data_type": {
+            "type": "string",
+            "enum": [
+              "TEXT",
+              "NUMBER",
+              "DATETIME",
+              "BOOLEAN",
+              "OPTION"
+            ],
+            "title": "Data Type"
+          },
+          "options": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 200,
+            "title": "Options"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "table_name",
+          "column_name",
+          "data_type"
+        ],
+        "title": "UpdateDataSourceColumnRequest",
+        "description": "Payload chỉnh kiểu dữ liệu và options của một cột."
+      },
+      "UpdateProjectRequest": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 3,
+            "title": "Name",
+            "description": "Tên Project"
+          },
+          "requirement": {
+            "type": "string",
+            "minLength": 10,
+            "title": "Requirement",
+            "description": "Yêu cầu nghiệp vụ thô"
+          },
+          "domain": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Domain",
+            "description": "Lĩnh vực nghiệp vụ"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "description": "Mô tả Project"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "requirement"
+        ],
+        "title": "UpdateProjectRequest",
+        "description": "Payload thay thế thông tin thuộc Project."
+      },
+      "UploadDataSourcesResponse": {
+        "properties": {
+          "data_sources": {
+            "items": {
+              "$ref": "#/components/schemas/DataSourceResponse"
+            },
+            "type": "array",
+            "title": "Data Sources"
+          },
+          "extracted_requirement_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Extracted Requirement Text"
+          },
+          "total_files_processed": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Total Files Processed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_files_processed"
+        ],
+        "title": "UploadDataSourcesResponse",
+        "description": "Kết quả một batch upload."
       }
     }
   }

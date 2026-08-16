@@ -1,19 +1,14 @@
-import { ModelingDashboardScreen } from '@/features/modeling-dashboard';
-import { ProjectInitScreen } from '@/features/project-init/components/ProjectInitScreen';
-import { SandboxDeploymentScreen } from '@/features/sandbox-deployment/components/SandboxDeploymentScreen';
-import { parseWorkflowStep } from '@/common/routing/workflow-routing';
+import { MainLayout } from '@/common/components/layout/MainLayout';
+import { ProjectManagementScreen } from '@/features/project-management';
 
-interface HomePageProps {
-  searchParams: Promise<{ step?: string | string[] }>;
-}
-
-/** Điều hướng route gốc tới feature screen được chọn qua query `step`.
- * @param props Search params do Next.js App Router cung cấp.
- * @returns Feature screen tương ứng hoặc Project Init khi query không hợp lệ.
+/**
+ * Trang chủ (/): Project Management Hub (Danh sách tất cả các dự án)
+ * Đóng vai trò làm Dashboard quản lý danh sách dự án DWH, tìm kiếm và tạo dự án mới.
  */
-export default async function HomePage({ searchParams }: HomePageProps) {
-  const step = parseWorkflowStep((await searchParams).step);
-  if (step === 'modeling') return <ModelingDashboardScreen />;
-  if (step === 'sandbox') return <SandboxDeploymentScreen />;
-  return <ProjectInitScreen />;
+export default function HomePage() {
+  return (
+    <MainLayout>
+      <ProjectManagementScreen />
+    </MainLayout>
+  );
 }

@@ -10,7 +10,7 @@ T = TypeVar("T")
 
 class ApiResponse(BaseModel, Generic[T]):
     """Khung phản hồi thành công chuẩn cho toàn bộ hệ thống API.
-    
+
     Tuân theo chuẩn Section III.3 của TECHNICAL_CODING_GUIDELINES.md:
     {
         "status": "success",

@@ -43,6 +43,7 @@ async def get_async_db_session() -> AsyncGenerator[AsyncSession, None]:
     session: AsyncSession = get_async_session_factory()()
     try:
         yield session
+        await session.commit()
     except SQLAlchemyError as exc:
         logger.error("Xảy ra lỗi CSDL bất đồng bộ: %s", exc)
         await session.rollback()
@@ -50,6 +51,9 @@ async def get_async_db_session() -> AsyncGenerator[AsyncSession, None]:
             code=ErrorCode.DATABASE_ERROR,
             message="Xảy ra lỗi thao tác CSDL bất đồng bộ.",
         ) from exc
+    except Exception:
+        await session.rollback()
+        raise
     finally:
         await session.close()
 
@@ -59,6 +63,7 @@ def get_sync_db_session() -> Generator[Session, None, None]:
     session: Session = get_sync_session_factory()()
     try:
         yield session
+        session.commit()
     except SQLAlchemyError as exc:
         logger.error("Xảy ra lỗi CSDL đồng bộ: %s", exc)
         session.rollback()
@@ -66,5 +71,8 @@ def get_sync_db_session() -> Generator[Session, None, None]:
             code=ErrorCode.DATABASE_ERROR,
             message="Xảy ra lỗi thao tác CSDL đồng bộ.",
         ) from exc
+    except Exception:
+        session.rollback()
+        raise
     finally:
         session.close()

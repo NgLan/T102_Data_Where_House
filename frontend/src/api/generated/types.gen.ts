@@ -69,6 +69,102 @@ export type ApiResponseDataModelResponse = {
 };
 
 /**
+ * ApiResponse[DataSourceListResponse]
+ */
+export type ApiResponseDataSourceListResponse = {
+    /**
+     * Status
+     *
+     * Trạng thái phản hồi (luôn là 'success' đối với 2xx)
+     */
+    status?: string;
+    /**
+     * Code
+     *
+     * HTTP Status Code (mặc định 200)
+     */
+    code?: number;
+    /**
+     * Message
+     *
+     * Thông điệp phản hồi cho người dùng
+     */
+    message?: string;
+    /**
+     * Dữ liệu payload chính trả về
+     */
+    data?: DataSourceListResponse | null;
+    /**
+     * Metadata chung đi kèm phản hồi (request_id, timestamp... nếu có)
+     */
+    meta?: ResponseMeta | null;
+};
+
+/**
+ * ApiResponse[DataSourcePreviewResponse]
+ */
+export type ApiResponseDataSourcePreviewResponse = {
+    /**
+     * Status
+     *
+     * Trạng thái phản hồi (luôn là 'success' đối với 2xx)
+     */
+    status?: string;
+    /**
+     * Code
+     *
+     * HTTP Status Code (mặc định 200)
+     */
+    code?: number;
+    /**
+     * Message
+     *
+     * Thông điệp phản hồi cho người dùng
+     */
+    message?: string;
+    /**
+     * Dữ liệu payload chính trả về
+     */
+    data?: DataSourcePreviewResponse | null;
+    /**
+     * Metadata chung đi kèm phản hồi (request_id, timestamp... nếu có)
+     */
+    meta?: ResponseMeta | null;
+};
+
+/**
+ * ApiResponse[DataSourceResponse]
+ */
+export type ApiResponseDataSourceResponse = {
+    /**
+     * Status
+     *
+     * Trạng thái phản hồi (luôn là 'success' đối với 2xx)
+     */
+    status?: string;
+    /**
+     * Code
+     *
+     * HTTP Status Code (mặc định 200)
+     */
+    code?: number;
+    /**
+     * Message
+     *
+     * Thông điệp phản hồi cho người dùng
+     */
+    message?: string;
+    /**
+     * Dữ liệu payload chính trả về
+     */
+    data?: DataSourceResponse | null;
+    /**
+     * Metadata chung đi kèm phản hồi (request_id, timestamp... nếu có)
+     */
+    meta?: ResponseMeta | null;
+};
+
+/**
  * ApiResponse[HealthResponse]
  */
 export type ApiResponseHealthResponse = {
@@ -98,6 +194,148 @@ export type ApiResponseHealthResponse = {
      * Metadata chung đi kèm phản hồi (request_id, timestamp... nếu có)
      */
     meta?: ResponseMeta | null;
+};
+
+/**
+ * ApiResponse[ProjectResponse]
+ */
+export type ApiResponseProjectResponse = {
+    /**
+     * Status
+     *
+     * Trạng thái phản hồi (luôn là 'success' đối với 2xx)
+     */
+    status?: string;
+    /**
+     * Code
+     *
+     * HTTP Status Code (mặc định 200)
+     */
+    code?: number;
+    /**
+     * Message
+     *
+     * Thông điệp phản hồi cho người dùng
+     */
+    message?: string;
+    /**
+     * Dữ liệu payload chính trả về
+     */
+    data?: ProjectResponse | null;
+    /**
+     * Metadata chung đi kèm phản hồi (request_id, timestamp... nếu có)
+     */
+    meta?: ResponseMeta | null;
+};
+
+/**
+ * ApiResponse[UploadDataSourcesResponse]
+ */
+export type ApiResponseUploadDataSourcesResponse = {
+    /**
+     * Status
+     *
+     * Trạng thái phản hồi (luôn là 'success' đối với 2xx)
+     */
+    status?: string;
+    /**
+     * Code
+     *
+     * HTTP Status Code (mặc định 200)
+     */
+    code?: number;
+    /**
+     * Message
+     *
+     * Thông điệp phản hồi cho người dùng
+     */
+    message?: string;
+    /**
+     * Dữ liệu payload chính trả về
+     */
+    data?: UploadDataSourcesResponse | null;
+    /**
+     * Metadata chung đi kèm phản hồi (request_id, timestamp... nếu có)
+     */
+    meta?: ResponseMeta | null;
+};
+
+/**
+ * ApiResponse[list[ProjectSummaryResponse]]
+ */
+export type ApiResponseListProjectSummaryResponse = {
+    /**
+     * Status
+     *
+     * Trạng thái phản hồi (luôn là 'success' đối với 2xx)
+     */
+    status?: string;
+    /**
+     * Code
+     *
+     * HTTP Status Code (mặc định 200)
+     */
+    code?: number;
+    /**
+     * Message
+     *
+     * Thông điệp phản hồi cho người dùng
+     */
+    message?: string;
+    /**
+     * Data
+     *
+     * Dữ liệu payload chính trả về
+     */
+    data?: Array<ProjectSummaryResponse> | null;
+    /**
+     * Metadata chung đi kèm phản hồi (request_id, timestamp... nếu có)
+     */
+    meta?: ResponseMeta | null;
+};
+
+/**
+ * Body_uploadProjectDataSources
+ */
+export type BodyUploadProjectDataSources = {
+    /**
+     * Files
+     *
+     * Tối đa 20 file CSV hoặc DOCX
+     */
+    files: Array<Blob | File>;
+};
+
+/**
+ * CreateProjectRequest
+ *
+ * Payload tạo Project mới.
+ */
+export type CreateProjectRequest = {
+    /**
+     * Name
+     *
+     * Tên Project
+     */
+    name: string;
+    /**
+     * Requirement
+     *
+     * Yêu cầu nghiệp vụ thô
+     */
+    requirement: string;
+    /**
+     * Domain
+     *
+     * Lĩnh vực nghiệp vụ
+     */
+    domain?: string | null;
+    /**
+     * Description
+     *
+     * Mô tả Project
+     */
+    description?: string | null;
 };
 
 /**
@@ -145,6 +383,123 @@ export type DataModelResponse = {
 };
 
 /**
+ * DataSourceColumnResponse
+ *
+ * Metadata một cột nguồn.
+ */
+export type DataSourceColumnResponse = {
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Data Type
+     */
+    data_type: string;
+    /**
+     * Nullable
+     */
+    nullable: boolean;
+    /**
+     * Primary Key
+     */
+    primary_key: boolean;
+    /**
+     * Options
+     */
+    options?: Array<string>;
+};
+
+/**
+ * DataSourceListResponse
+ *
+ * Danh sách nguồn kèm quyền chỉnh sửa của actor.
+ */
+export type DataSourceListResponse = {
+    /**
+     * Items
+     */
+    items?: Array<DataSourceResponse>;
+    /**
+     * Can Edit
+     */
+    can_edit: boolean;
+};
+
+/**
+ * DataSourcePreviewResponse
+ *
+ * Preview đọc lười từ file nguồn.
+ */
+export type DataSourcePreviewResponse = {
+    /**
+     * Rows
+     */
+    rows?: Array<{
+        [key: string]: string | null;
+    }>;
+    /**
+     * Total Rows
+     */
+    total_rows: number;
+};
+
+/**
+ * DataSourceResponse
+ *
+ * Nguồn dữ liệu hiển thị trên Frontend.
+ */
+export type DataSourceResponse = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Project Id
+     */
+    project_id: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Type
+     */
+    type: string;
+    /**
+     * Description
+     */
+    description: string | null;
+    /**
+     * Tables
+     */
+    tables?: Array<DataSourceTableResponse>;
+};
+
+/**
+ * DataSourceTableResponse
+ *
+ * Metadata một bảng nguồn.
+ */
+export type DataSourceTableResponse = {
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Columns
+     */
+    columns?: Array<DataSourceColumnResponse>;
+};
+
+/**
+ * DataSourceType
+ *
+ * Định dạng loại Nguồn dữ liệu (Data Source Type).
+ */
+export type DataSourceType = 'CSV' | 'EXCEL' | 'JSON' | 'SQL' | 'TEXT';
+
+/**
  * ErrorDetail
  *
  * Chi tiết validation của một trường request.
@@ -182,6 +537,251 @@ export type HealthResponse = {
      * Môi trường chạy hiện tại
      */
     env: string;
+};
+
+/**
+ * ProjectColumnResponse
+ *
+ * Metadata cột nguồn trả về cho client.
+ */
+export type ProjectColumnResponse = {
+    /**
+     * Name
+     *
+     * Tên cột
+     */
+    name: string;
+    /**
+     * Data Type
+     *
+     * Kiểu dữ liệu
+     */
+    data_type: string;
+    /**
+     * Nullable
+     *
+     * Cột cho phép NULL
+     */
+    nullable: boolean;
+    /**
+     * Primary Key
+     *
+     * Cột là khóa chính
+     */
+    primary_key: boolean;
+    /**
+     * Options
+     *
+     * Giá trị OPTION
+     */
+    options?: Array<string>;
+};
+
+/**
+ * ProjectDataSourceResponse
+ *
+ * Nguồn dữ liệu thuộc Project, không chứa storage location.
+ */
+export type ProjectDataSourceResponse = {
+    /**
+     * Id
+     *
+     * ID nguồn dữ liệu
+     */
+    id: string;
+    /**
+     * Project Id
+     *
+     * ID Project sở hữu
+     */
+    project_id: string;
+    /**
+     * Name
+     *
+     * Tên nguồn dữ liệu
+     */
+    name: string;
+    /**
+     * Loại nguồn dữ liệu
+     */
+    type: DataSourceType;
+    /**
+     * Description
+     *
+     * Mô tả nguồn dữ liệu
+     */
+    description: string | null;
+    /**
+     * Tables
+     *
+     * Metadata bảng
+     */
+    tables: Array<ProjectTableResponse>;
+};
+
+/**
+ * ProjectResponse
+ *
+ * Payload chi tiết Project.
+ */
+export type ProjectResponse = {
+    /**
+     * Id
+     *
+     * ID Project
+     */
+    id: string;
+    /**
+     * Name
+     *
+     * Tên Project
+     */
+    name: string;
+    /**
+     * Requirement
+     *
+     * Yêu cầu nghiệp vụ
+     */
+    requirement: string;
+    /**
+     * User Id
+     *
+     * ID người tạo Project
+     */
+    user_id: string;
+    /**
+     * Trạng thái Project
+     */
+    status: ProjectStatus;
+    /**
+     * Domain
+     *
+     * Lĩnh vực nghiệp vụ
+     */
+    domain: string | null;
+    /**
+     * Description
+     *
+     * Mô tả Project
+     */
+    description: string | null;
+    /**
+     * Created At
+     *
+     * Thời điểm tạo
+     */
+    created_at: string;
+    /**
+     * Updated At
+     *
+     * Thời điểm cập nhật
+     */
+    updated_at: string;
+    /**
+     * Data Source Count
+     *
+     * Số nguồn dữ liệu thuộc Project
+     */
+    data_source_count: number;
+    /**
+     * Data Sources
+     *
+     * Nguồn dữ liệu
+     */
+    data_sources: Array<ProjectDataSourceResponse>;
+};
+
+/**
+ * ProjectStatus
+ *
+ * Trạng thái hoạt động của Dự án.
+ */
+export type ProjectStatus = 'ACTIVE' | 'ANALYZING' | 'ARCHIVED';
+
+/**
+ * ProjectSummaryResponse
+ *
+ * Payload gọn cho danh sách Project.
+ */
+export type ProjectSummaryResponse = {
+    /**
+     * Id
+     *
+     * ID Project
+     */
+    id: string;
+    /**
+     * Name
+     *
+     * Tên Project
+     */
+    name: string;
+    /**
+     * Requirement
+     *
+     * Yêu cầu nghiệp vụ
+     */
+    requirement: string;
+    /**
+     * User Id
+     *
+     * ID người tạo Project
+     */
+    user_id: string;
+    /**
+     * Trạng thái Project
+     */
+    status: ProjectStatus;
+    /**
+     * Domain
+     *
+     * Lĩnh vực nghiệp vụ
+     */
+    domain: string | null;
+    /**
+     * Description
+     *
+     * Mô tả Project
+     */
+    description: string | null;
+    /**
+     * Created At
+     *
+     * Thời điểm tạo
+     */
+    created_at: string;
+    /**
+     * Updated At
+     *
+     * Thời điểm cập nhật
+     */
+    updated_at: string;
+    /**
+     * Data Source Count
+     *
+     * Số nguồn dữ liệu thuộc Project
+     */
+    data_source_count: number;
+};
+
+/**
+ * ProjectTableResponse
+ *
+ * Metadata bảng nguồn trả về cho client.
+ */
+export type ProjectTableResponse = {
+    /**
+     * Name
+     *
+     * Tên bảng
+     */
+    name: string;
+    /**
+     * Columns
+     *
+     * Danh sách cột
+     */
+    columns: Array<ProjectColumnResponse>;
 };
 
 /**
@@ -229,6 +829,292 @@ export type UpdateDataModelRequest = {
      */
     base_revision: number;
 };
+
+/**
+ * UpdateDataSourceColumnRequest
+ *
+ * Payload chỉnh kiểu dữ liệu và options của một cột.
+ */
+export type UpdateDataSourceColumnRequest = {
+    /**
+     * Table Name
+     */
+    table_name: string;
+    /**
+     * Column Name
+     */
+    column_name: string;
+    /**
+     * Data Type
+     */
+    data_type: 'TEXT' | 'NUMBER' | 'DATETIME' | 'BOOLEAN' | 'OPTION';
+    /**
+     * Options
+     */
+    options?: Array<string>;
+};
+
+/**
+ * UpdateProjectRequest
+ *
+ * Payload thay thế thông tin thuộc Project.
+ */
+export type UpdateProjectRequest = {
+    /**
+     * Name
+     *
+     * Tên Project
+     */
+    name: string;
+    /**
+     * Requirement
+     *
+     * Yêu cầu nghiệp vụ thô
+     */
+    requirement: string;
+    /**
+     * Domain
+     *
+     * Lĩnh vực nghiệp vụ
+     */
+    domain?: string | null;
+    /**
+     * Description
+     *
+     * Mô tả Project
+     */
+    description?: string | null;
+};
+
+/**
+ * UploadDataSourcesResponse
+ *
+ * Kết quả một batch upload.
+ */
+export type UploadDataSourcesResponse = {
+    /**
+     * Data Sources
+     */
+    data_sources?: Array<DataSourceResponse>;
+    /**
+     * Extracted Requirement Text
+     */
+    extracted_requirement_text?: string | null;
+    /**
+     * Total Files Processed
+     */
+    total_files_processed: number;
+};
+
+export type ListProjectsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/projects';
+};
+
+export type ListProjectsErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
+};
+
+export type ListProjectsError = ListProjectsErrors[keyof ListProjectsErrors];
+
+export type ListProjectsResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseListProjectSummaryResponse;
+};
+
+export type ListProjectsResponse = ListProjectsResponses[keyof ListProjectsResponses];
+
+export type CreateProjectData = {
+    body: CreateProjectRequest;
+    path?: never;
+    query?: never;
+    url: '/api/v1/projects';
+};
+
+export type CreateProjectErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
+};
+
+export type CreateProjectError = CreateProjectErrors[keyof CreateProjectErrors];
+
+export type CreateProjectResponses = {
+    /**
+     * Successful Response
+     */
+    201: ApiResponseProjectResponse;
+};
+
+export type CreateProjectResponse = CreateProjectResponses[keyof CreateProjectResponses];
+
+export type DeleteProjectData = {
+    body?: never;
+    path: {
+        /**
+         * Project Id
+         *
+         * ID của Project
+         */
+        project_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}';
+};
+
+export type DeleteProjectErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
+};
+
+export type DeleteProjectError = DeleteProjectErrors[keyof DeleteProjectErrors];
+
+export type DeleteProjectResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type DeleteProjectResponse = DeleteProjectResponses[keyof DeleteProjectResponses];
+
+export type GetProjectData = {
+    body?: never;
+    path: {
+        /**
+         * Project Id
+         *
+         * ID của Project
+         */
+        project_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}';
+};
+
+export type GetProjectErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
+};
+
+export type GetProjectError = GetProjectErrors[keyof GetProjectErrors];
+
+export type GetProjectResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseProjectResponse;
+};
+
+export type GetProjectResponse = GetProjectResponses[keyof GetProjectResponses];
+
+export type UpdateProjectData = {
+    body: UpdateProjectRequest;
+    path: {
+        /**
+         * Project Id
+         *
+         * ID của Project
+         */
+        project_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}';
+};
+
+export type UpdateProjectErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
+};
+
+export type UpdateProjectError = UpdateProjectErrors[keyof UpdateProjectErrors];
+
+export type UpdateProjectResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseProjectResponse;
+};
+
+export type UpdateProjectResponse = UpdateProjectResponses[keyof UpdateProjectResponses];
 
 export type GetDataModelData = {
     body?: never;
@@ -313,6 +1199,264 @@ export type UpdateDataModelResponses = {
 };
 
 export type UpdateDataModelResponse = UpdateDataModelResponses[keyof UpdateDataModelResponses];
+
+export type ListProjectDataSourcesData = {
+    body?: never;
+    path: {
+        /**
+         * Project Id
+         *
+         * ID dự án chứa nguồn dữ liệu
+         */
+        project_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}/data-sources';
+};
+
+export type ListProjectDataSourcesErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
+};
+
+export type ListProjectDataSourcesError = ListProjectDataSourcesErrors[keyof ListProjectDataSourcesErrors];
+
+export type ListProjectDataSourcesResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseDataSourceListResponse;
+};
+
+export type ListProjectDataSourcesResponse = ListProjectDataSourcesResponses[keyof ListProjectDataSourcesResponses];
+
+export type UploadProjectDataSourcesData = {
+    body: BodyUploadProjectDataSources;
+    path: {
+        /**
+         * Project Id
+         *
+         * ID dự án chứa nguồn dữ liệu
+         */
+        project_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}/data-sources/upload';
+};
+
+export type UploadProjectDataSourcesErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
+};
+
+export type UploadProjectDataSourcesError = UploadProjectDataSourcesErrors[keyof UploadProjectDataSourcesErrors];
+
+export type UploadProjectDataSourcesResponses = {
+    /**
+     * Successful Response
+     */
+    201: ApiResponseUploadDataSourcesResponse;
+};
+
+export type UploadProjectDataSourcesResponse = UploadProjectDataSourcesResponses[keyof UploadProjectDataSourcesResponses];
+
+export type GetProjectDataSourcePreviewData = {
+    body?: never;
+    path: {
+        /**
+         * Project Id
+         *
+         * ID dự án chứa nguồn dữ liệu
+         */
+        project_id: string;
+        /**
+         * Data Source Id
+         *
+         * ID nguồn dữ liệu
+         */
+        data_source_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}/data-sources/{data_source_id}/preview';
+};
+
+export type GetProjectDataSourcePreviewErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
+};
+
+export type GetProjectDataSourcePreviewError = GetProjectDataSourcePreviewErrors[keyof GetProjectDataSourcePreviewErrors];
+
+export type GetProjectDataSourcePreviewResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseDataSourcePreviewResponse;
+};
+
+export type GetProjectDataSourcePreviewResponse = GetProjectDataSourcePreviewResponses[keyof GetProjectDataSourcePreviewResponses];
+
+export type UpdateProjectDataSourceColumnData = {
+    body: UpdateDataSourceColumnRequest;
+    path: {
+        /**
+         * Project Id
+         *
+         * ID dự án chứa nguồn dữ liệu
+         */
+        project_id: string;
+        /**
+         * Data Source Id
+         *
+         * ID nguồn dữ liệu
+         */
+        data_source_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}/data-sources/{data_source_id}/column';
+};
+
+export type UpdateProjectDataSourceColumnErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
+};
+
+export type UpdateProjectDataSourceColumnError = UpdateProjectDataSourceColumnErrors[keyof UpdateProjectDataSourceColumnErrors];
+
+export type UpdateProjectDataSourceColumnResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseDataSourceResponse;
+};
+
+export type UpdateProjectDataSourceColumnResponse = UpdateProjectDataSourceColumnResponses[keyof UpdateProjectDataSourceColumnResponses];
+
+export type DeleteProjectDataSourceData = {
+    body?: never;
+    path: {
+        /**
+         * Project Id
+         *
+         * ID dự án chứa nguồn dữ liệu
+         */
+        project_id: string;
+        /**
+         * Data Source Id
+         *
+         * ID nguồn dữ liệu
+         */
+        data_source_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}/data-sources/{data_source_id}';
+};
+
+export type DeleteProjectDataSourceErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
+};
+
+export type DeleteProjectDataSourceError = DeleteProjectDataSourceErrors[keyof DeleteProjectDataSourceErrors];
+
+export type DeleteProjectDataSourceResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type DeleteProjectDataSourceResponse = DeleteProjectDataSourceResponses[keyof DeleteProjectDataSourceResponses];
 
 export type HealthCheckData = {
     body?: never;

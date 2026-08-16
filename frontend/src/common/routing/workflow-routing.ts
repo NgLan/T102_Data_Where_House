@@ -13,8 +13,12 @@ export function parseWorkflowStep(value: string | readonly string[] | undefined)
 
 /** Tạo URL điều hướng chuẩn cho một bước workflow.
  * @param step Bước đích hợp lệ.
- * @returns URL root có query `step` đã encode.
+ * @param projectId (Tùy chọn) ID dự án nếu đang ở trong không gian làm việc dự án.
+ * @returns URL có query `step` đã encode.
  */
-export function createWorkflowHref(step: WorkflowStep): string {
+export function createWorkflowHref(step: WorkflowStep, projectId?: string | null): string {
+  if (projectId) {
+    return `/projects/${projectId}?step=${encodeURIComponent(step)}`;
+  }
   return `/?step=${encodeURIComponent(step)}`;
 }

@@ -5,7 +5,6 @@ import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Skeleton } from "@/common/components/ui/skeleton";
 import { useAppNotification } from "@/common/hooks/use-app-notification";
-import { useProjectStore } from "@/common/stores/use-project-store";
 import { DBMLEditor } from "../dbml-editor/components/DBMLEditor";
 import { ERDCanvas } from "../erd-canvas/components/ERDCanvas";
 import { DataModelInspector } from "../model-inspector/components/DataModelInspector";
@@ -13,13 +12,17 @@ import { useModelingWorkspace } from "../hooks/use-modeling-workspace";
 import { useWorkspaceShortcuts } from "../hooks/use-workspace-shortcuts";
 import { ModelingWorkspaceHeader } from "./ModelingWorkspaceHeader";
 
+interface ModelingWorkspaceProps {
+  projectId: string;
+}
+
 /** Ghép DBML editor, React Flow canvas và inspector cho UC5.1.3.
+ * @param props ID Project cần tải và lưu Data Model.
  * @returns Modeling workspace responsive dùng một canonical DbmlDocument draft.
  */
-export function ModelingWorkspace() {
+export function ModelingWorkspace({ projectId }: ModelingWorkspaceProps) {
   const { getErrorMessage } = useAppNotification();
   const [isInspectorOpen, setIsInspectorOpen] = useState(true);
-  const projectId = useProjectStore((state) => state.projectId);
   const workspace = useModelingWorkspace(projectId);
   const { canSave, isDirty, save, setSelectedTableId, setSelectedReferenceId } =
     workspace;
@@ -39,6 +42,7 @@ export function ModelingWorkspace() {
   return (
     <section className="flex min-h-0 flex-1 flex-col overflow-hidden bg-white">
       <ModelingWorkspaceHeader
+        projectId={projectId}
         canSave={workspace.canSave}
         errorMessage={workspace.errorCode ? getErrorMessage(workspace.errorCode) : null}
         hasProject={Boolean(projectId)}
@@ -61,7 +65,7 @@ export function ModelingWorkspace() {
           />
           <ERDCanvas
             document={workspace.document}
-            projectId={projectId ?? "draft"}
+            projectId={projectId}
             selectedTableId={workspace.selectedTableId}
             selectedReferenceId={workspace.selectedReferenceId}
             onSelectTable={workspace.selectTable}

@@ -1,7 +1,5 @@
 """Unit tests cho Common DTO Layer (src/common/dto)."""
 
-import sys
-
 import pytest
 from pydantic import BaseModel, ValidationError
 from src.common.dto import (
@@ -164,7 +162,6 @@ def test_clean_architecture_isolation():
     import src.common.dto.sorting as s_mod
 
     forbidden_modules = ["fastapi", "sqlalchemy", "redis", "langchain", "langgraph"]
-    loaded_modules = sys.modules.keys()
 
     for mod in [p_mod, r_mod, s_mod]:
         code = open(mod.__file__, encoding="utf-8").read()

@@ -27,6 +27,16 @@ class DataModel(BaseEntity):
         super().__post_init__()
         validate_dbml(self.dbml)
 
+    def update_dbml(self, new_dbml: str, expected_revision: int | None = None) -> None:
+        """Cập nhật nội dung DBML thủ công và tăng revision (Optimistic Concurrency Control)."""
+        validate_dbml(new_dbml)
+        if expected_revision is not None:
+            validate_revision_match(expected_revision, self.revision)
+
+        self.dbml = new_dbml
+        self.revision += 1
+        self.mark_updated()
+
     def apply_change(self, change: "DataModelChange") -> None:
         """Áp dụng đề xuất thay đổi mô hình dữ liệu (Optimistic Concurrency Control)."""
         if change.status != DataModelChangeStatus.PROPOSED:

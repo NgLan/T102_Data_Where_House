@@ -11,11 +11,13 @@ import {
 import { useTranslation } from "react-i18next";
 import { Button } from "@/common/components/ui/button";
 import { createWorkflowHref } from "@/common/routing/workflow-routing";
+import { useProjectStore } from "@/common/stores/use-project-store";
 import type { WorkspaceStatus } from "../types/modeling-workspace-types";
 import { ReloadSnapshotButton } from "./ReloadSnapshotButton";
 import { SaveDataModelButton } from "./SaveDataModelButton";
 
 interface ModelingWorkspaceHeaderProps {
+  projectId?: string | null;
   canSave: boolean;
   errorMessage: string | null;
   hasProject: boolean;
@@ -30,10 +32,12 @@ interface ModelingWorkspaceHeaderProps {
 /** Hiển thị điều hướng và các action toàn cục của Modeling Workspace. */
 export function ModelingWorkspaceHeader(props: ModelingWorkspaceHeaderProps) {
   const { t } = useTranslation("modeling-dashboard");
+  const storedProjectId = useProjectStore((state) => state.projectId);
+  const projectId = props.projectId || storedProjectId;
   return (
     <header className="flex flex-wrap items-center gap-2 border-b bg-white px-3 py-2">
       <Button asChild variant="outline" size="sm">
-        <Link href={createWorkflowHref("project-init")}>
+        <Link href={createWorkflowHref("project-init", projectId)}>
           <ArrowLeft />
           {t("BTN_RECONFIGURE")}
         </Link>
@@ -60,7 +64,7 @@ export function ModelingWorkspaceHeader(props: ModelingWorkspaceHeaderProps) {
         onSave={props.onSave}
       />
       <Button asChild size="sm">
-        <Link href={createWorkflowHref("sandbox")}>
+        <Link href={createWorkflowHref("sandbox", projectId)}>
           <Rocket />
           {t("BTN_RUN_SANDBOX")}
         </Link>

@@ -20,6 +20,7 @@ class ColumnMetadata(BaseValueObject):
     # Danh sách các ràng buộc khác của cột (VD: age >= 0, age <= 120, ...)
     constraints: tuple[str, ...] = field(default_factory=tuple)
     description: str | None = None # Mô tả chi tiết về ý nghĩa của cột
+    options: tuple[str, ...] = field(default_factory=tuple) # Danh mục các giá trị cho phép nếu là OPTION
 
 
 @dataclass(frozen=True)
@@ -50,3 +51,45 @@ class SchemaMetadata(BaseValueObject):
 
     tables: tuple[TableMetadata, ...] = field(default_factory=tuple)
     relationships: tuple[RelationshipMetadata, ...] = field(default_factory=tuple)
+
+    def update_column(
+        self,
+        table_name: str,
+        column_name: str,
+        data_type: str,
+        options: tuple[str, ...],
+    ) -> "SchemaMetadata | None":
+        """Tạo schema mới với một cột đã được cập nhật bất biến."""
+        tables: list[TableMetadata] = []
+        found = False
+        for table in self.tables:
+            columns = []
+            for column in table.columns:
+                if table.name == table_name and column.name == column_name:
+                    column = _replace_column(column, data_type, options)
+                    found = True
+                columns.append(column)
+            tables.append(TableMetadata(name=table.name, columns=tuple(columns)))
+        if not found:
+            return None
+        return SchemaMetadata(tables=tuple(tables), relationships=self.relationships)
+
+
+def _replace_column(
+    column: ColumnMetadata,
+    data_type: str,
+    options: tuple[str, ...],
+) -> ColumnMetadata:
+    """Giữ nguyên metadata không được phép chỉnh từ màn hình khởi tạo."""
+    return ColumnMetadata(
+        name=column.name,
+        data_type=data_type,
+        primary_key=column.primary_key,
+        nullable=column.nullable,
+        unique=column.unique,
+        foreign_key_reference=column.foreign_key_reference,
+        default_value=column.default_value,
+        constraints=column.constraints,
+        description=column.description,
+        options=options if data_type == "OPTION" else (),
+    )

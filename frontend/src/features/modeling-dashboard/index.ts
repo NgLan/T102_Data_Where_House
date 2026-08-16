@@ -1,1 +1,1 @@
-export { ModelingDashboardScreen } from './components/ModelingDashboardScreen';
+export { ModelingDashboardScreen } from './ModelingDashboardScreen';

@@ -2,13 +2,10 @@ import datetime
 import os
 import uuid
 
-from src.common.logging import get_logger
-
-logger = get_logger(__name__)
-
 from src.agents.prompts import (
     DESIGN_AGENT_SYSTEM_PROMPT,
 )
+from src.common.logging import get_logger
 from src.models.schema_agent import (
     AntiPatternWarning,
     DataModelSchema,
@@ -22,6 +19,9 @@ from src.models.schema_agent import (
     TableDefinition,
     ValidateSchemaRequest,
 )
+
+logger = get_logger(__name__)
+
 
 
 class SchemaAgentPipeline:

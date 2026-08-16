@@ -30,21 +30,21 @@ describe('ModelingWorkspace', () => {
 
   it('hiển thị skeleton khi tải snapshot lần đầu', () => {
     mocks.status = 'loading';
-    render(<ModelingWorkspace />);
+    render(<ModelingWorkspace projectId="project-1" />);
     expect(screen.getByLabelText('TXT_LOADING')).toBeInTheDocument();
   });
 
   it('hiển thị lỗi thân thiện và cho phép thử tải lại', () => {
     mocks.status = 'conflict';
     mocks.errorCode = 'REVISION_CONFLICT';
-    render(<ModelingWorkspace />);
+    render(<ModelingWorkspace projectId="project-1" />);
     expect(screen.getByRole('alert')).toHaveTextContent('REVISION_CONFLICT');
     fireEvent.click(screen.getByRole('button', { name: /BTN_RELOAD_LATEST/ }));
     expect(mocks.load).toHaveBeenCalledOnce();
   });
 
   it('cho phép đóng và mở lại inspector', () => {
-    render(<ModelingWorkspace />);
+    render(<ModelingWorkspace projectId="project-1" />);
     expect(screen.getByText('INSPECTOR')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'BTN_HIDE_INSPECTOR' }));
     expect(screen.queryByText('INSPECTOR')).not.toBeInTheDocument();

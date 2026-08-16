@@ -1,60 +1,72 @@
-"""Triển khai PostgreSQL Repository cho thực thể ProjectMember."""
+"""PostgreSQL repository cho ProjectMember."""
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.domain.project.entities import ProjectMember
 from src.domain.project.repository import IProjectMemberRepository
 from src.domain.shared.types import EntityID
+from src.infrastructure.database.error_translation import translate_database_errors
 from src.infrastructure.database.mappers.project_member_mapper import ProjectMemberMapper
 from src.infrastructure.database.models.project_member import ProjectMemberModel
 from typing_extensions import override
 
 
 class PostgresProjectMemberRepository(IProjectMemberRepository):
-    """Triển khai IProjectMemberRepository sử dụng SQLAlchemy AsyncSession và ProjectMemberMapper."""
+    """Lưu trữ ProjectMember bằng SQLAlchemy AsyncSession."""
 
     def __init__(self, session: AsyncSession) -> None:
-        """Khởi tạo repository với SQLAlchemy AsyncSession."""
-        self._session: AsyncSession = session
+        """Khởi tạo repository với session dùng chung transaction."""
+        self._session = session
 
     @override
+    @translate_database_errors
     async def get_by_id(self, entity_id: EntityID) -> ProjectMember | None:
-        """Lấy thành viên dự án theo ID."""
-        stmt = select(ProjectMemberModel).where(ProjectMemberModel.id == entity_id)
-        result = await self._session.execute(stmt)
+        """Lấy membership theo ID."""
+        model = await self._session.get(ProjectMemberModel, entity_id)
+        return ProjectMemberMapper.to_domain(model) if model else None
+
+    @override
+    @translate_database_errors
+    async def list_by_project(self, project_id: EntityID) -> list[ProjectMember]:
+        """Lấy danh sách membership của Project."""
+        statement = select(ProjectMemberModel).where(ProjectMemberModel.project_id == project_id)
+        result = await self._session.execute(statement)
+        return [ProjectMemberMapper.to_domain(model) for model in result.scalars().all()]
+
+    @override
+    @translate_database_errors
+    async def get_by_project_and_user(
+        self,
+        project_id: EntityID,
+        user_id: EntityID,
+    ) -> ProjectMember | None:
+        """Lấy membership theo khóa nghiệp vụ Project/User."""
+        statement = select(ProjectMemberModel).where(
+            ProjectMemberModel.project_id == project_id,
+            ProjectMemberModel.user_id == user_id,
+        )
+        result = await self._session.execute(statement)
         model = result.scalar_one_or_none()
         return ProjectMemberMapper.to_domain(model) if model else None
 
     @override
-    async def list_by_project(self, project_id: EntityID) -> list[ProjectMember]:
-        """Danh sách thành viên thuộc một dự án."""
-        stmt = select(ProjectMemberModel).where(ProjectMemberModel.project_id == project_id)
-        result = await self._session.execute(stmt)
-        models = result.scalars().all()
-        return [ProjectMemberMapper.to_domain(m) for m in models]
-
-    @override
+    @translate_database_errors
     async def save(self, entity: ProjectMember) -> ProjectMember:
-        """Lưu (tạo mới hoặc cập nhật) thực thể ProjectMember."""
-        stmt = select(ProjectMemberModel).where(ProjectMemberModel.id == entity.id)
-        result = await self._session.execute(stmt)
-        existing_model = result.scalar_one_or_none()
-
-        if existing_model:
-            model = ProjectMemberMapper.update_model(existing_model, entity)
-        else:
+        """Lưu mới hoặc cập nhật membership."""
+        model = await self._session.get(ProjectMemberModel, entity.id)
+        if model is None:
             model = ProjectMemberMapper.to_model(entity)
             self._session.add(model)
-
+        else:
+            ProjectMemberMapper.update_model(model, entity)
         await self._session.flush()
         return ProjectMemberMapper.to_domain(model)
 
     @override
+    @translate_database_errors
     async def delete(self, entity_id: EntityID) -> bool:
-        """Xóa thực thể ProjectMember theo ID."""
-        stmt = select(ProjectMemberModel).where(ProjectMemberModel.id == entity_id)
-        result = await self._session.execute(stmt)
-        model = result.scalar_one_or_none()
+        """Xóa membership theo ID."""
+        model = await self._session.get(ProjectMemberModel, entity_id)
         if model is None:
             return False
         await self._session.delete(model)

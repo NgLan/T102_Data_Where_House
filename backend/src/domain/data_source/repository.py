@@ -14,3 +14,11 @@ class IDataSourceRepository(IBaseRepository[DataSource]):
     async def list_by_project(self, project_id: EntityID) -> list[DataSource]:
         """Lấy danh sách nguồn dữ liệu thuộc một dự án."""
         pass
+
+    @abstractmethod
+    async def count_by_project_ids(
+        self,
+        project_ids: tuple[EntityID, ...],
+    ) -> dict[EntityID, int]:
+        """Đếm nguồn dữ liệu theo Project mà không tải entity."""
+        pass

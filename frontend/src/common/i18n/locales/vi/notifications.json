@@ -8,6 +8,8 @@
   "MSG_PROJECT_FILE_DELETED": "Đã xóa file {{fileName}} thành công.",
   "MSG_PROJECT_ANALYSIS_STARTED": "Đã bắt đầu phân tích file tài liệu bằng AI Agent...",
   "MSG_PROJECT_ANALYSIS_COMPLETED": "Phân tích tài liệu thành công. Đã chuyển sang bước tiếp theo.",
+  "MSG_PROJECT_CREATED": "Đã tạo dự án thành công.",
+  "MSG_PROJECT_DELETED": "Đã xóa dự án thành công.",
   "MSG_SANDBOX_EXECUTION_SUCCESS": "Thực thi kịch bản DDL thành công.",
   "MSG_SANDBOX_EXECUTION_FAILED": "Lỗi khi chạy kịch bản DDL trên Sandbox environment.",
   "MSG_DATA_MODEL_SAVED": "Đã lưu Data Model thành công ở revision {{revision}}.",

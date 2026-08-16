@@ -8,6 +8,8 @@
   "MSG_PROJECT_FILE_DELETED": "File {{fileName}} deleted successfully.",
   "MSG_PROJECT_ANALYSIS_STARTED": "AI Agent started analyzing requirement documents...",
   "MSG_PROJECT_ANALYSIS_COMPLETED": "Document analysis completed successfully.",
+  "MSG_PROJECT_CREATED": "Project created successfully.",
+  "MSG_PROJECT_DELETED": "Project deleted successfully.",
   "MSG_SANDBOX_EXECUTION_SUCCESS": "DDL script executed successfully.",
   "MSG_SANDBOX_EXECUTION_FAILED": "Failed to execute DDL script on Sandbox environment.",
   "MSG_DATA_MODEL_SAVED": "Data Model saved successfully at revision {{revision}}.",

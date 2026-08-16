@@ -91,6 +91,7 @@ async def test_repository_delete_returns_false_when_entity_is_missing(implementa
     result = MagicMock()
     result.scalar_one_or_none.return_value = None
     session.execute.return_value = result
+    session.get.return_value = None
 
     repository = implementation(session)
 
@@ -107,6 +108,7 @@ async def test_repository_delete_returns_true_after_deletion(implementation: typ
     model = MagicMock()
     result.scalar_one_or_none.return_value = model
     session.execute.return_value = result
+    session.get.return_value = model
 
     repository = implementation(session)
 

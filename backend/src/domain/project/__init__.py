@@ -3,7 +3,7 @@
 from src.domain.project.entities import Project, ProjectMember
 from src.domain.project.enums import ProjectRole, ProjectStatus
 from src.domain.project.repository import IProjectMemberRepository, IProjectRepository
-from src.domain.project.rules import validate_project_fields
+from src.domain.project.value_objects import ProjectDetails
 
 __all__: list[str] = [
     "Project",
@@ -12,5 +12,5 @@ __all__: list[str] = [
     "ProjectRole",
     "IProjectRepository",
     "IProjectMemberRepository",
-    "validate_project_fields",
+    "ProjectDetails",
 ]

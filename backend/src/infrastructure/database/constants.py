@@ -1,4 +1,4 @@
-"""Hằng số định nghĩa giới hạn độ dài trường dữ liệu trong CSDL."""
+from uuid import UUID
 
 MAX_USERNAME_LENGTH = 100
 MAX_EMAIL_LENGTH = 255
@@ -12,3 +12,8 @@ MAX_METRIC_LENGTH = 255
 MAX_DIMENSION_LENGTH = 255
 MAX_GRANULARITY_LENGTH = 50
 MAX_AGGREGATION_LENGTH = 50
+
+# Mock identity for MVP. Keep this aligned with the first user in sample_data.sql.
+DEFAULT_USER_ID: UUID = UUID("a678ac27-3077-5ef2-8919-5218b2e48791")
+DEFAULT_USER_NAME: str = "annv"
+DEFAULT_USER_EMAIL: str = "an.nguyen@dataworks.vn"

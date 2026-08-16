@@ -49,11 +49,11 @@ describe('useModelingWorkspace', () => {
 
     expect(getDataModel).toHaveBeenCalledWith(expect.objectContaining({
       client: expect.anything(), path: { project_id: 'project-1' },
-      responseStyle: 'data', throwOnError: true,
+      responseStyle: 'fields', throwOnError: true,
     }));
     expect(updateDataModel).toHaveBeenCalledWith(expect.objectContaining({
       body: expect.objectContaining({ data_model_id: 'model-1', base_revision: 3 }),
-      path: { project_id: 'project-1' }, responseStyle: 'data', throwOnError: true,
+      path: { project_id: 'project-1' }, responseStyle: 'fields', throwOnError: true,
     }));
   });
 
@@ -62,7 +62,7 @@ describe('useModelingWorkspace', () => {
     const { result } = renderHook(() => useModelingWorkspace('project-1'));
 
     await waitFor(() => expect(result.current.status).toBe('error'));
-    expect(result.current.errorCode).toBe('INVALID_DBML_CONTENT');
+    expect(result.current.errorCode).toBe('INVALID_API_RESPONSE');
   });
 
   it('giữ error_code generated khi Backend trả 404', async () => {
