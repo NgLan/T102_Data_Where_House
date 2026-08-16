@@ -1,6 +1,7 @@
 """Application service duy nhất cho module Data Model."""
 
 from src.application.common.unit_of_work import IUnitOfWork
+from src.application.data_models.artifact_generator import IDataModelArtifactGenerator
 from src.application.data_models.i_data_model_service import IDataModelService
 from src.application.data_models.input import (
     GenerateDataModelInput,
@@ -8,6 +9,12 @@ from src.application.data_models.input import (
     UpdateDataModelInput,
 )
 from src.application.data_models.output import DataModelOutput
+from src.application.data_models.insight_analyzer import IDataModelInsightAnalyzer
+from src.application.data_models.output import (
+    DataModelDdlOutput,
+    DataModelInsightOutput,
+    DataModelOutput,
+)
 from src.common.exceptions.business import BusinessException
 from src.common.exceptions.error_codes import ErrorCode
 from src.common.logging import get_logger
@@ -139,6 +146,36 @@ class DataModelService(IDataModelService):
                 message="Data Model đã được cập nhật bởi một thao tác khác.",
             )
         return updated
+    async def generate_ddl(self, data: GetDataModelInput, dialect: str) -> DataModelDdlOutput:
+        """Sinh DDL đúng revision từ DBML đang được lưu."""
+        current = self._require_current(await self._repository.get_by_project_id(data.project_id))
+        return DataModelDdlOutput(
+            ddl=self._require_artifact_generator().generate_ddl(current.dbml, dialect),
+            dialect=dialect,
+            revision=current.revision,
+        )
+
+    @override
+    async def get_insights(self, data: GetDataModelInput) -> list[DataModelInsightOutput]:
+        """Phân tích trực tiếp DBML hiện tại, không dùng dữ liệu demo frontend."""
+        current = self._require_current(await self._repository.get_by_project_id(data.project_id))
+        if self._insight_analyzer is not None:
+            return await self._insight_analyzer.analyze(current.dbml)
+        return self._require_artifact_generator().analyze(current.dbml)
+
+    def _require_artifact_generator(self) -> IDataModelArtifactGenerator:
+        if self._artifact_generator is None:
+            raise RuntimeError("Data Model artifact generator chưa được cấu hình.")
+        return self._artifact_generator
+
+    @staticmethod
+    def _require_current(current: DataModel | None) -> DataModel:
+        if current is None:
+            raise BusinessException(
+                code=ErrorCode.DATA_MODEL_NOT_FOUND,
+                message="Không tìm thấy Data Model của dự án.",
+            )
+        return current
 
     @staticmethod
     def _get_target(current: DataModel | None, data: UpdateDataModelInput) -> DataModel:

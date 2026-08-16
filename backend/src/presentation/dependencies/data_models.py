@@ -14,6 +14,9 @@ from src.infrastructure.llm.factory import build_chat_model
 from src.infrastructure.repositories.postgres_analytical_requirement_repository import (
     PostgresAnalyticalRequirementRepository,
 )
+from src.infrastructure.codegen.pydbml_artifact_generator import PyDbmlArtifactGenerator
+from src.infrastructure.database.session import get_async_db_session
+from src.infrastructure.llm.data_model_insight_analyzer import LlmDataModelInsightAnalyzer
 from src.infrastructure.repositories.postgres_data_model_repository import (
     PostgresDataModelRepository,
 )

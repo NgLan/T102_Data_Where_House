@@ -21,7 +21,7 @@ export function useProjectInit() {
   const setProjectMeta = useProjectStore((state) => state.setProjectMeta);
 
   const [domain, setDomain] = useState<string>('ride');
-  const [targetDialect, setTargetDialect] = useState<string>('PostgreSQL (Standard DWH)');
+  const [targetDialect, setTargetDialect] = useState<string>('postgresql');
   const [businessDescription, setBusinessDescription] = useState<string>('');
   
   const [excelFileName, setExcelFileName] = useState<string | null>('Sheet1_RawRides.xlsx');

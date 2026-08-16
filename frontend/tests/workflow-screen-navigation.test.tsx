@@ -7,7 +7,8 @@ import { ModelingDashboardScreen } from '@/features/modeling-dashboard/ModelingD
 import { ProjectInitScreen } from '@/features/project-init';
 import { SandboxDeploymentScreen } from '@/features/sandbox-deployment';
 
-const mocks = vi.hoisted(() => ({ push: vi.fn(), saveProject: vi.fn() }));
+const PROJECT_ID = '2f4a682b-78f5-4b3e-8b25-fc9ca3387df0';
+const mocks = vi.hoisted(() => ({ push: vi.fn(), analyzeProject: vi.fn() }));
 
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: mocks.push }) }));
@@ -39,12 +40,12 @@ vi.mock('@/features/sandbox-deployment/components/DdlCodeEditor', () => ({ DdlCo
 vi.mock('@/features/sandbox-deployment/components/SandboxConfigCard', () => ({ SandboxConfigCard: () => null }));
 
 describe('workflow screen navigation', () => {
-  beforeEach(() => { mocks.push.mockReset(); mocks.saveProject.mockResolvedValue(true); });
+  beforeEach(() => { mocks.push.mockReset(); mocks.analyzeProject.mockResolvedValue(PROJECT_ID); });
 
   it('chuyển Project Init sang Modeling sau phân tích', async () => {
-    render(<ProjectInitScreen projectId="project-1" />);
-    fireEvent.click(screen.getByRole('button', { name: 'BTN_SAVE_CONTINUE' }));
-    await waitFor(() => expect(mocks.push).toHaveBeenCalledWith('/projects/project-1?step=modeling'));
+    render(<ProjectInitScreen />);
+    fireEvent.click(screen.getByRole('button', { name: 'analyze' }));
+    await waitFor(() => expect(mocks.push).toHaveBeenCalledWith(`/?step=modeling&project_id=${PROJECT_ID}`));
   });
 
   it('công bố đúng liên kết của Modeling', () => {

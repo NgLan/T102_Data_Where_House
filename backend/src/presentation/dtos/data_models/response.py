@@ -4,7 +4,11 @@ from datetime import datetime
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
-from src.application.data_models.output import DataModelOutput
+from src.application.data_models.output import (
+    DataModelDdlOutput,
+    DataModelInsightOutput,
+    DataModelOutput,
+)
 
 
 class DataModelResponse(BaseModel):
@@ -22,4 +26,34 @@ class DataModelResponse(BaseModel):
     @classmethod
     def from_application(cls, output: DataModelOutput) -> "DataModelResponse":
         """Ánh xạ application output sang response DTO."""
+        return cls.model_validate(output)
+
+
+class DataModelDdlResponse(BaseModel):
+    """DDL sinh từ revision Data Model hiện tại."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    ddl: str
+    dialect: str
+    revision: int = Field(ge=1)
+
+    @classmethod
+    def from_application(cls, output: DataModelDdlOutput) -> "DataModelDdlResponse":
+        return cls.model_validate(output)
+
+
+class DataModelInsightResponse(BaseModel):
+    """Insight cấu trúc của một bảng trong Data Model."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    table_name: str
+    severity: str
+    title: str
+    description: str
+
+    @classmethod
+    def from_application(cls, output: DataModelInsightOutput) -> "DataModelInsightResponse":
         return cls.model_validate(output)

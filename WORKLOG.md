@@ -4,15 +4,13 @@
 
 ---
 
-## [YYYY-MM-DD]
+## [2026-08-16]
 
 | Member | Task | Status | Output | Time |
 |--------|------|--------|--------|------|
-| [Tên] | [mô tả task] | ✅ Done | [link/kết quả] | 2h |
-| [Tên] | [mô tả task] | 🔄 WIP | [mô tả tiến độ] | 1.5h |
-| [Tên] | [mô tả task] | ❌ Blocked | [lý do block] | - |
+| QAnh | Triển khai UC9.1 (Chỉnh sửa cấu hình Sandbox) & UC9.2 (Chạy thử DDL) | ✅ Done | Feature branch `feature/sandbox-config-and-execution`, backend clean architecture & frontend FSD UI | 4h |
 
-**Tổng kết ngày:** [1-2 câu về tiến độ chung]
+**Tổng kết ngày:** Đã hoàn thành 100% tính năng quản lý kết nối CSDL Sandbox, chạy thử DDL thực tế, bắt lỗi SQL log terminal và viết unit test pass 100%.
 
 ---
 

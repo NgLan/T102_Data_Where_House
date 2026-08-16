@@ -29,3 +29,23 @@ class DataModelOutput:
             created_at=data_model.created_at,
             updated_at=data_model.updated_at,
         )
+
+
+@dataclass(frozen=True)
+class DataModelDdlOutput:
+    """DDL được sinh từ một revision Data Model cụ thể."""
+
+    ddl: str
+    dialect: str
+    revision: int
+
+
+@dataclass(frozen=True)
+class DataModelInsightOutput:
+    """Một nhận xét cấu trúc được sinh từ DBML hiện tại."""
+
+    id: str
+    table_name: str
+    severity: str
+    title: str
+    description: str

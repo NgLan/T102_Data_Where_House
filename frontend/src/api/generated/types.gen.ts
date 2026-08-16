@@ -37,6 +37,38 @@ export type ApiErrorResponse = {
 };
 
 /**
+ * ApiResponse[DataModelDdlResponse]
+ */
+export type ApiResponseDataModelDdlResponse = {
+    /**
+     * Status
+     *
+     * Trạng thái phản hồi (luôn là 'success' đối với 2xx)
+     */
+    status?: string;
+    /**
+     * Code
+     *
+     * HTTP Status Code (mặc định 200)
+     */
+    code?: number;
+    /**
+     * Message
+     *
+     * Thông điệp phản hồi cho người dùng
+     */
+    message?: string;
+    /**
+     * Dữ liệu payload chính trả về
+     */
+    data?: DataModelDdlResponse | null;
+    /**
+     * Metadata chung đi kèm phản hồi (request_id, timestamp... nếu có)
+     */
+    meta?: ResponseMeta | null;
+};
+
+/**
  * ApiResponse[DataModelResponse]
  */
 export type ApiResponseDataModelResponse = {
@@ -520,6 +552,62 @@ export type ErrorDetail = {
 };
 
 /**
+ * ExecuteDdlRequest
+ *
+ * DTO Yêu cầu thực thi DDL script lên Sandbox DB.
+ */
+export type ExecuteDdlRequest = {
+    /**
+     * Ddl Script
+     *
+     * Nội dung mã DDL script cần chạy
+     */
+    ddl_script: string;
+};
+
+/**
+ * ExecuteDdlResponse
+ *
+ * DTO Trả về kết quả thực thi DDL script.
+ */
+export type ExecuteDdlResponse = {
+    /**
+     * Success
+     */
+    success: boolean;
+    /**
+     * Executed Statements
+     */
+    executed_statements: number;
+    /**
+     * Succeeded Statements
+     */
+    succeeded_statements: number;
+    /**
+     * Failed Statements
+     */
+    failed_statements: number;
+    /**
+     * Total Duration Ms
+     */
+    total_duration_ms: number;
+    /**
+     * Logs
+     */
+    logs: Array<StatementLogDto>;
+};
+
+/**
+ * HTTPValidationError
+ */
+export type HttpValidationError = {
+    /**
+     * Detail
+     */
+    detail?: Array<ValidationError>;
+};
+
+/**
  * HealthResponse
  *
  * Trạng thái hoạt động và môi trường hiện tại của Backend.
@@ -802,6 +890,183 @@ export type ResponseMeta = {
      * Thời gian tạo phản hồi (ISO 8601 string)
      */
     timestamp?: string | null;
+};
+
+/**
+ * SandboxConfigRequest
+ *
+ * DTO Yêu cầu cấu hình kết nối DB Sandbox.
+ */
+export type SandboxConfigRequest = {
+    /**
+     * Loại CSDL Sandbox
+     */
+    db_type?: SandboxDbType;
+    /**
+     * Host
+     *
+     * Host/IP kết nối
+     */
+    host?: string;
+    /**
+     * Port
+     *
+     * Cổng kết nối DB
+     */
+    port?: number;
+    /**
+     * Database Name
+     *
+     * Tên CSDL
+     */
+    database_name?: string;
+    /**
+     * Username
+     *
+     * Tên đăng nhập
+     */
+    username?: string | null;
+    /**
+     * Password
+     *
+     * Mật khẩu kết nối
+     */
+    password?: string | null;
+    /**
+     * Schema Name
+     *
+     * Schema CSDL
+     */
+    schema_name?: string | null;
+};
+
+/**
+ * SandboxConfigResponse
+ *
+ * DTO Trả về thông tin cấu hình Sandbox DB.
+ */
+export type SandboxConfigResponse = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Project Id
+     */
+    project_id: string;
+    db_type: SandboxDbType;
+    /**
+     * Host
+     */
+    host: string;
+    /**
+     * Port
+     */
+    port: number;
+    /**
+     * Database Name
+     */
+    database_name: string;
+    /**
+     * Username
+     */
+    username?: string | null;
+    /**
+     * Schema Name
+     */
+    schema_name?: string | null;
+    /**
+     * Status
+     */
+    status?: string;
+};
+
+/**
+ * SandboxDbType
+ *
+ * Loại cơ sở dữ liệu Sandbox.
+ */
+export type SandboxDbType = 'POSTGRESQL' | 'BIGQUERY' | 'SNOWFLAKE' | 'MYSQL' | 'SQLITE';
+
+/**
+ * StatementLogDto
+ *
+ * DTO Log dòng thực thi câu lệnh SQL.
+ */
+export type StatementLogDto = {
+    /**
+     * Statement
+     */
+    statement: string;
+    /**
+     * Is Success
+     */
+    is_success: boolean;
+    /**
+     * Execution Time Ms
+     */
+    execution_time_ms: number;
+    /**
+     * Timestamp
+     */
+    timestamp: string;
+    /**
+     * Error Detail
+     */
+    error_detail?: string | null;
+};
+
+/**
+ * TestConnectionRequest
+ *
+ * DTO Yêu cầu kiểm tra kết nối Sandbox DB.
+ */
+export type TestConnectionRequest = {
+    db_type?: SandboxDbType;
+    /**
+     * Host
+     */
+    host?: string;
+    /**
+     * Port
+     */
+    port?: number;
+    /**
+     * Database Name
+     */
+    database_name?: string;
+    /**
+     * Username
+     */
+    username?: string | null;
+    /**
+     * Password
+     */
+    password?: string | null;
+    /**
+     * Schema Name
+     */
+    schema_name?: string | null;
+};
+
+/**
+ * TestConnectionResponse
+ *
+ * DTO Trả về kết quả kiểm tra kết nối Sandbox DB.
+ */
+export type TestConnectionResponse = {
+    /**
+     * Success
+     */
+    success: boolean;
+    /**
+     * Message
+     */
+    message: string;
+    /**
+     * Latency Ms
+     */
+    latency_ms?: number | null;
 };
 
 /**
@@ -1136,7 +1401,7 @@ export type GetDataModelErrors = {
      */
     404: ApiErrorResponse;
     /**
-     * Unprocessable Content
+     * Unprocessable Entity
      */
     422: ApiErrorResponse;
     /**
@@ -1180,7 +1445,7 @@ export type UpdateDataModelErrors = {
      */
     409: ApiErrorResponse;
     /**
-     * Unprocessable Content
+     * Unprocessable Entity
      */
     422: ApiErrorResponse;
     /**

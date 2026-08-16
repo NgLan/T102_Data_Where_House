@@ -48,6 +48,7 @@ export function ModelingWorkspace({ projectId }: ModelingWorkspaceProps) {
         hasProject={Boolean(projectId)}
         isDirty={workspace.isDirty}
         isInspectorOpen={isInspectorOpen}
+        projectId={projectId}
         status={workspace.status}
         onReload={() => void workspace.load()}
         onSave={() => void workspace.save()}

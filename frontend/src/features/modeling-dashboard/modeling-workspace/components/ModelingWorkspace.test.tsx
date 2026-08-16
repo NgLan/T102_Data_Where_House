@@ -37,7 +37,7 @@ describe('ModelingWorkspace', () => {
   it('hiển thị lỗi thân thiện và cho phép thử tải lại', () => {
     mocks.status = 'conflict';
     mocks.errorCode = 'REVISION_CONFLICT';
-    render(<ModelingWorkspace projectId="project-1" />);
+    render(<ModelingWorkspace projectId="86fd6b4e-1822-42db-a847-4d580abead3e" />);
     expect(screen.getByRole('alert')).toHaveTextContent('REVISION_CONFLICT');
     fireEvent.click(screen.getByRole('button', { name: /BTN_RELOAD_LATEST/ }));
     expect(mocks.load).toHaveBeenCalledOnce();

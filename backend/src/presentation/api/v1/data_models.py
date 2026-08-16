@@ -1,7 +1,8 @@
 """REST endpoints cho Data Model hiện tại của dự án."""
 
 from uuid import UUID
-from fastapi import APIRouter
+from typing import Literal
+from fastapi import APIRouter, Query
 from src.application.data_models.input import GenerateDataModelInput, GetDataModelInput
 from src.presentation.dependencies.data_models import DataModelServiceDependency
 from src.presentation.dtos.common import ApiErrorResponse
@@ -9,7 +10,11 @@ from src.presentation.dtos.data_models.request import (
     ProjectIdPath,
     UpdateDataModelRequest,
 )
-from src.presentation.dtos.data_models.response import DataModelResponse
+from src.presentation.dtos.data_models.response import (
+    DataModelDdlResponse,
+    DataModelInsightResponse,
+    DataModelResponse,
+)
 from src.presentation.routing import ApiResponseRoute
 
 from fastapi import APIRouter, Query
@@ -173,3 +178,32 @@ async def generate_data_model(
         GenerateDataModelInput(project_id=project_id)
     )
     return DataModelResponse.from_application(output)
+
+
+@router.get(
+    "/ddl",
+    response_model=DataModelDdlResponse,
+    operation_id="getDataModelDdl",
+)
+async def get_data_model_ddl(
+    project_id: ProjectIdPath,
+    service: DataModelServiceDependency,
+    dialect: Literal["postgresql"] = Query(default="postgresql"),
+) -> DataModelDdlResponse:
+    """Sinh PostgreSQL DDL từ snapshot DBML hiện tại."""
+    output = await service.generate_ddl(GetDataModelInput(project_id=project_id), dialect)
+    return DataModelDdlResponse.from_application(output)
+
+
+@router.get(
+    "/insights",
+    response_model=list[DataModelInsightResponse],
+    operation_id="getDataModelInsights",
+)
+async def get_data_model_insights(
+    project_id: ProjectIdPath,
+    service: DataModelServiceDependency,
+) -> list[DataModelInsightResponse]:
+    """Phân tích DBML hiện tại thành danh sách insight theo bảng."""
+    outputs = await service.get_insights(GetDataModelInput(project_id=project_id))
+    return [DataModelInsightResponse.from_application(item) for item in outputs]

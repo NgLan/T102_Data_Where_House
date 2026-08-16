@@ -7,7 +7,11 @@ from src.application.data_models.input import (
     GetDataModelInput,
     UpdateDataModelInput,
 )
-from src.application.data_models.output import DataModelOutput
+from src.application.data_models.output import (
+    DataModelDdlOutput,
+    DataModelInsightOutput,
+    DataModelOutput,
+)
 
 
 class IDataModelService(ABC):
@@ -26,4 +30,14 @@ class IDataModelService(ABC):
     @abstractmethod
     async def generate_data_model(self, data: GenerateDataModelInput) -> DataModelOutput:
         """Chạy pipeline AI sinh Data Model từ yêu cầu và nguồn dữ liệu của dự án."""
+        raise NotImplementedError
+        
+    @abstractmethod
+    async def generate_ddl(self, data: GetDataModelInput, dialect: str) -> DataModelDdlOutput:
+        """Sinh DDL từ snapshot hiện tại."""
+        raise NotImplementedError
+
+    @abstractmethod
+    async def get_insights(self, data: GetDataModelInput) -> list[DataModelInsightOutput]:
+        """Lấy insight được phân tích từ snapshot hiện tại."""
         raise NotImplementedError

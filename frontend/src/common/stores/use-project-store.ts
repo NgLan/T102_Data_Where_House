@@ -22,7 +22,7 @@ interface ProjectState {
 export const useProjectStore = create<ProjectState>((set) => ({
   projectId: null,
   domain: 'ride',
-  targetDialect: 'PostgreSQL (Standard DWH)',
+  targetDialect: 'postgresql',
   activeTableName: null,
   isHitlModalOpen: false,
 

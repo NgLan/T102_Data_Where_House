@@ -8,6 +8,7 @@ from src.infrastructure.database.models.project import ProjectModel
 from src.infrastructure.database.models.project_member import ProjectMemberModel
 from src.infrastructure.database.models.project_session import ProjectSessionModel
 from src.infrastructure.database.models.requirement import RequirementModel
+from src.infrastructure.database.models.sandbox_config import SandboxConfigModel
 from src.infrastructure.database.models.session_event import SessionEventModel
 from src.infrastructure.database.models.user import UserModel
 
@@ -22,4 +23,5 @@ __all__: list[str] = [
     "SessionEventModel",
     "DataModelModel",
     "DataModelChangeModel",
+    "SandboxConfigModel",
 ]

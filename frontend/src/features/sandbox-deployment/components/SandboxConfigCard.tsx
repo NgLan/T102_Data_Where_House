@@ -3,118 +3,256 @@
  * Glassmorphic panel với Host config, Deploy actions & ExecutionTerminal
  */
 
-import React from 'react';
+import {
+  CheckCircle2,
+  Database,
+  KeyRound,
+  Loader2,
+  Lock,
+  Play,
+  PlugZap,
+  Rocket,
+  Save,
+  Server,
+  Terminal,
+  User,
+  XCircle,
+} from 'lucide-react';
+import type { ReactNode } from 'react';
+import type { SandboxDbType, TerminalLogEntryDto } from '@/api/model/sandbox.dto';
+import { Button } from '@/common/components/ui/button';
+import { Input } from '@/common/components/ui/input';
 import { ExecutionTerminal } from './ExecutionTerminal';
-import { TerminalLogEntryDto } from '@/api/model/sandbox.dto';
-import { Rocket, Server, Database, FlaskConical, Terminal, CheckCircle2, Loader2 } from 'lucide-react';
 
 export interface SandboxConfigCardProps {
+  dbType: SandboxDbType;
+  onDbTypeChange: (value: SandboxDbType) => void;
   host: string;
-  onHostChange: (val: string) => void;
-  database: string;
-  onDatabaseChange: (val: string) => void;
+  onHostChange: (value: string) => void;
+  port: number;
+  onPortChange: (value: number) => void;
+  databaseName: string;
+  onDatabaseNameChange: (value: string) => void;
+  username: string;
+  onUsernameChange: (value: string) => void;
+  password?: string;
+  onPasswordChange?: (value: string) => void;
+  schemaName?: string;
+  onSchemaNameChange?: (value: string) => void;
+
+  isTestingConnection: boolean;
+  connectionStatus: 'idle' | 'success' | 'error';
+  connectionMessage?: string;
+  onTestConnection: () => void;
+
+  isSavingConfig: boolean;
+  isLoading: boolean;
+  isProjectReady: boolean;
+  onSaveConfig: () => void;
+
   logs: TerminalLogEntryDto[];
   isDeploying: boolean;
   onDeploy: () => void;
-  onGenerateTestData: () => void;
 }
 
-export const SandboxConfigCard: React.FC<SandboxConfigCardProps> = ({
-  host,
-  onHostChange,
-  database,
-  onDatabaseChange,
-  logs,
-  isDeploying,
-  onDeploy,
-  onGenerateTestData,
-}) => {
+/** Hiển thị thiết lập cấu hình Sandbox DB (UC9.1), kiểm tra kết nối, thực thi DDL (UC9.2) & Terminal log.
+ * @param props Props chứa state và callbacks của sandbox.
+ * @returns Component giao diện SandboxConfigCard.
+ */
+export function SandboxConfigCard(props: SandboxConfigCardProps) {
   return (
-    <div
-      className="flex flex-col bg-white border border-slate-200/90 rounded-2xl p-5 gap-3.5 shadow-sm"
-      style={{ flex: 3 }}
-    >
-      {/* Panel Header */}
-      <div>
+    <section className="flex flex-[3] flex-col gap-3.5 rounded-2xl border border-slate-200/90 bg-white p-5 shadow-sm overflow-y-auto">
+      <header className="border-b border-slate-100 pb-3">
         <div className="flex items-center justify-between">
-          <h3 className="flex items-center gap-2 text-sm font-bold text-slate-900 m-0">
-            <Rocket className="w-4 h-4 text-blue-600" /> Thử nghiệm Môi trường Sandbox
-          </h3>
-          <span className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Ready
-          </span>
-        </div>
-        <p className="text-xs text-slate-400 m-0 mt-0.5">
-          Tự động tạo schema thử nghiệm để validate DDL & sinh dữ liệu mẫu test query
-        </p>
-      </div>
-
-      {/* Host Connection Input */}
-      <div>
-        <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1">
-          <Server className="w-3.5 h-3.5 text-indigo-600" /> Host Connection
-        </label>
-        <input
-          type="text"
-          value={host}
-          onChange={(e) => onHostChange(e.target.value)}
-          className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs bg-slate-50/50 font-mono text-slate-800 outline-none focus:border-blue-500 focus:bg-white transition"
-        />
-      </div>
-
-      {/* Database & Target Schema Input */}
-      <div>
-        <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1">
-          <Database className="w-3.5 h-3.5 text-violet-600" /> Database & Target Schema
-        </label>
-        <input
-          type="text"
-          value={database}
-          onChange={(e) => onDatabaseChange(e.target.value)}
-          className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs bg-slate-50/50 font-mono text-slate-800 outline-none focus:border-blue-500 focus:bg-white transition"
-        />
-      </div>
-
-      {/* Action Buttons */}
-      <div className="space-y-2 pt-1">
-        <button
-          onClick={onDeploy}
-          disabled={isDeploying}
-          className="w-full py-2.5 px-4 text-xs font-bold rounded-xl border-none text-white cursor-pointer transition-all duration-200 disabled:opacity-60 flex items-center justify-center gap-2 glow-btn-primary shadow-md shadow-blue-500/20"
-        >
-          {isDeploying ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin text-white" />
-              <span>Đang Deploy Sandbox Schema...</span>
-            </>
-          ) : (
-            <>
-              <Rocket className="w-4 h-4" />
-              <span>Exec DDL & Deploy Sandbox</span>
-            </>
+          <h2 className="flex items-center gap-2 text-sm font-bold text-slate-900">
+            <Rocket className="size-4 text-blue-600" />
+            Cấu hình Sandbox Database (UC9.1)
+          </h2>
+          {props.connectionStatus === 'success' && (
+            <span className="flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
+              <CheckCircle2 className="size-3 text-emerald-600" />
+              Kết nối OK
+            </span>
           )}
-        </button>
+          {props.connectionStatus === 'error' && (
+            <span className="flex items-center gap-1 rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-[10px] font-bold text-red-700">
+              <XCircle className="size-3 text-red-600" />
+              Lỗi kết nối
+            </span>
+          )}
+          {props.connectionStatus === 'idle' && (
+            <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-bold text-slate-600">
+              Sẵn sàng
+            </span>
+          )}
+        </div>
+        <p className="mt-0.5 text-xs text-slate-500">
+          Thiết lập kết nối đến Cơ sở dữ liệu Sandbox để chạy thử nghiệm mã DDL.
+        </p>
+        {props.connectionMessage && (
+          <p className="mt-1 text-xs text-slate-600" role="status">{props.connectionMessage}</p>
+        )}
+        {!props.isProjectReady && (
+          <p className="mt-1 text-xs font-medium text-amber-700" role="alert">
+            Hãy tạo project trước khi lưu cấu hình hoặc chạy DDL.
+          </p>
+        )}
+      </header>
 
-        <button
-          onClick={onGenerateTestData}
-          className="w-full py-2 px-3 text-xs font-semibold rounded-xl border border-slate-200 text-slate-700 bg-slate-50 hover:bg-slate-100 cursor-pointer transition-all flex items-center justify-center gap-1.5"
+      {/* Form Cấu hình Sandbox DB */}
+      <div className="grid grid-cols-2 gap-3 text-xs">
+        <div className="col-span-2 space-y-1">
+          <label className="font-bold text-slate-700 flex items-center gap-1.5">
+            <Database className="size-3.5 text-blue-600" />
+            Loại CSDL (Database Engine)
+          </label>
+          <select
+            value={props.dbType}
+            onChange={(e) => props.onDbTypeChange(e.target.value as SandboxDbType)}
+            className="w-full h-9 rounded-md border border-slate-200 bg-white px-3 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="POSTGRESQL">PostgreSQL Database</option>
+          </select>
+        </div>
+
+        <ConfigField
+          id="sandbox-host"
+          icon={<Server className="size-3.5 text-slate-600" />}
+          label="Host / Server IP"
+          value={props.host}
+          onChange={props.onHostChange}
+        />
+
+        <ConfigField
+          id="sandbox-port"
+          icon={<PlugZap className="size-3.5 text-slate-600" />}
+          label="Port"
+          type="number"
+          value={String(props.port)}
+          onChange={(v) => props.onPortChange(Number(v) || 5432)}
+        />
+
+        <ConfigField
+          id="sandbox-db"
+          icon={<Database className="size-3.5 text-slate-600" />}
+          label="Database Name"
+          value={props.databaseName}
+          onChange={props.onDatabaseNameChange}
+        />
+
+        <ConfigField
+          id="sandbox-schema"
+          icon={<Lock className="size-3.5 text-slate-600" />}
+          label="Schema Name"
+          value={props.schemaName ?? 'public'}
+          onChange={(v) => props.onSchemaNameChange?.(v)}
+        />
+
+        <ConfigField
+          id="sandbox-user"
+          icon={<User className="size-3.5 text-slate-600" />}
+          label="Username"
+          value={props.username}
+          onChange={props.onUsernameChange}
+        />
+
+        <ConfigField
+          id="sandbox-pass"
+          icon={<KeyRound className="size-3.5 text-slate-600" />}
+          label="Password"
+          type="password"
+          value={props.password ?? ''}
+          onChange={(v) => props.onPasswordChange?.(v)}
+        />
+      </div>
+
+      {/* Hành động Cấu hình & Test Connection */}
+      <div className="flex gap-2 pt-1 border-t border-slate-100">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="flex-1 text-xs"
+          disabled={props.isTestingConnection || props.isLoading || !props.isProjectReady}
+          onClick={props.onTestConnection}
         >
-          <FlaskConical className="w-3.5 h-3.5 text-emerald-600" />
-          <span>Generates Test Mock Data (100 rows)</span>
-        </button>
+          {props.isTestingConnection ? (
+            <Loader2 className="size-3.5 animate-spin" />
+          ) : (
+            <PlugZap className="size-3.5 text-slate-700" />
+          )}
+          {props.isTestingConnection ? 'Đang thử kết nối...' : 'Kiểm tra kết nối'}
+        </Button>
+
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          className="flex-1 text-xs"
+          disabled={props.isSavingConfig || props.isLoading || !props.isProjectReady}
+          onClick={props.onSaveConfig}
+        >
+          {props.isSavingConfig ? (
+            <Loader2 className="size-3.5 animate-spin" />
+          ) : (
+            <Save className="size-3.5 text-slate-700" />
+          )}
+          Lưu cấu hình DB
+        </Button>
       </div>
 
-      {/* Terminal Output Log Container */}
-      <div className="flex flex-col flex-1 min-h-[220px] pt-1">
-        <label className="flex items-center justify-between text-xs font-bold text-slate-700 mb-1.5">
-          <span className="flex items-center gap-1.5">
-            <Terminal className="w-3.5 h-3.5 text-slate-600" /> Terminal Output Log:
-          </span>
-          <span className="text-[10px] font-mono text-slate-400 font-normal">Console v1.2</span>
-        </label>
-        <ExecutionTerminal logs={logs} />
+      {/* Nút Thực thi DDL (UC9.2) */}
+      <div className="pt-1">
+        <Button
+          type="button"
+          className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs"
+          disabled={props.isDeploying || props.isLoading || !props.isProjectReady}
+          onClick={props.onDeploy}
+        >
+          {props.isDeploying ? (
+            <Loader2 className="size-4 animate-spin mr-1.5" />
+          ) : (
+            <Play className="size-4 fill-white mr-1.5" />
+          )}
+          {props.isDeploying ? 'Đang thực thi DDL...' : 'Thực thi chạy thử DDL (UC9.2)'}
+        </Button>
       </div>
-    </div>
+
+      {/* Terminal Log Output */}
+      <div className="flex min-h-[220px] flex-1 flex-col pt-1">
+        <div className="mb-1.5 flex items-center justify-between text-xs font-bold text-slate-700">
+          <span className="flex items-center gap-1.5">
+            <Terminal className="size-3.5 text-slate-600" />
+            Nhật ký thực thi CLI Terminal
+          </span>
+          <span className="font-mono text-[10px] font-normal text-slate-400">Sandbox Log v1.0</span>
+        </div>
+        <ExecutionTerminal logs={props.logs} />
+      </div>
+    </section>
   );
 };
 
+interface ConfigFieldProps {
+  id: string;
+  icon: ReactNode;
+  label: string;
+  value: string;
+  type?: string;
+  onChange: (value: string) => void;
+}
+
+function ConfigField({ id, icon, label, value, type = 'text', onChange }: ConfigFieldProps) {
+  return (
+    <label htmlFor={id} className="space-y-1 text-xs font-bold text-slate-700">
+      <span className="flex items-center gap-1.5">{icon}{label}</span>
+      <Input
+        id={id}
+        type={type}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="font-mono h-8 text-xs"
+      />
+    </label>
+  );
+}

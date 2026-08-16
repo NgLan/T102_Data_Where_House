@@ -27,6 +27,9 @@ export function ModelingDashboardScreen({ projectId }: ModelingDashboardScreenPr
           insights={insights.insights}
           tableNames={insights.tableNames}
           totalCount={insights.totalCount}
+          isLoading={insights.isLoading}
+          errorMessage={insights.errorMessage}
+          onRetry={insights.reload}
         />
       </div>
     </MainLayout>

@@ -4,10 +4,6 @@ import { I18nProvider } from '@/common/i18n/I18nProvider';
 import { NotificationCenter } from '@/common/components/ui/notification-center';
 import commonVi from '@/common/i18n/locales/vi/common.json';
 import './globals.css';
-import { Geist } from 'next/font/google';
-import { cn } from '@/common/lib/utils';
-
-const geist = Geist({ subsets: ['latin'], variable: '--font-sans' });
 
 export const metadata: Metadata = {
   title: commonVi.TXT_APP_NAME,
@@ -24,7 +20,7 @@ export default function RootLayout({
   children: ReactNode;
 }>) {
   return (
-    <html lang="vi" className={cn('font-sans', geist.variable)}>
+    <html lang="vi" className="font-sans">
       <body className="antialiased">
         <I18nProvider>
           {children}

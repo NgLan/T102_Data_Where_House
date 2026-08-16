@@ -5,6 +5,7 @@ pydantic>=2.10.0
 pydantic-settings>=2.7.0
 python-dotenv>=1.0.0
 typing-extensions>=4.12.0
+cryptography>=44.0.0
 lark-dbml>=0.7,<0.8
 pydbml>=1.2,<1.3
 sqlglot>=29,<30

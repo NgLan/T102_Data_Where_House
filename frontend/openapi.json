@@ -426,7 +426,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content"
+            "description": "Unprocessable Entity"
           },
           "500": {
             "content": {
@@ -501,6 +501,846 @@
               }
             },
             "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/data-model/ddl": {
+      "get": {
+        "tags": [
+          "Data Models"
+        ],
+        "summary": "Get Data Model Ddl",
+        "description": "Sinh PostgreSQL DDL từ snapshot DBML hiện tại.",
+        "operationId": "getDataModelDdl",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID dự án chứa Data Model",
+              "title": "Project Id"
+            },
+            "description": "ID dự án chứa Data Model"
+          },
+          {
+            "name": "dialect",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "const": "postgresql",
+              "type": "string",
+              "default": "postgresql",
+              "title": "Dialect"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_DataModelDdlResponse_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/data-model/insights": {
+      "get": {
+        "tags": [
+          "Data Models"
+        ],
+        "summary": "Get Data Model Insights",
+        "description": "Phân tích DBML hiện tại thành danh sách insight theo bảng.",
+        "operationId": "getDataModelInsights",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID dự án chứa Data Model",
+              "title": "Project Id"
+            },
+            "description": "ID dự án chứa Data Model"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_list_DataModelInsightResponse__"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/sandbox/config": {
+      "get": {
+        "tags": [
+          "Sandbox"
+        ],
+        "summary": "Get Sandbox Config",
+        "description": "Lấy cấu hình Sandbox DB của dự án.",
+        "operationId": "getSandboxConfig",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID dự án",
+              "title": "Project Id"
+            },
+            "description": "ID dự án"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_Union_SandboxConfigResponse__NoneType__"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Sandbox"
+        ],
+        "summary": "Save Sandbox Config",
+        "description": "Lưu hoặc cập nhật thông tin cấu hình Sandbox DB cho dự án.",
+        "operationId": "saveSandboxConfig",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID dự án",
+              "title": "Project Id"
+            },
+            "description": "ID dự án"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SandboxConfigRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_SandboxConfigResponse_"
+                }
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/v1/sandbox/test-connection": {
+      "post": {
+        "tags": [
+          "Sandbox"
+        ],
+        "summary": "Test Sandbox Connection Endpoint",
+        "description": "Kiểm tra thử kết nối đến cơ sở dữ liệu Sandbox.",
+        "operationId": "testSandboxConnection",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TestConnectionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_TestConnectionResponse_"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/sandbox/execute-ddl": {
+      "post": {
+        "tags": [
+          "Sandbox"
+        ],
+        "summary": "Execute Sandbox Ddl Endpoint",
+        "description": "Thực thi mã DDL script trên Sandbox Database đã cấu hình của dự án.",
+        "operationId": "executeSandboxDdl",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID dự án",
+              "title": "Project Id"
+            },
+            "description": "ID dự án"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExecuteDdlRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_ExecuteDdlResponse_"
+                }
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/data-sources": {
+      "get": {
+        "tags": [
+          "Data Sources"
+        ],
+        "summary": "List Data Sources",
+        "description": "Liệt kê nguồn nếu người dùng là thành viên dự án.",
+        "operationId": "listProjectDataSources",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID dự án chứa nguồn dữ liệu",
+              "title": "Project Id"
+            },
+            "description": "ID dự án chứa nguồn dữ liệu"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_DataSourceListResponse_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/data-sources/upload": {
+      "post": {
+        "tags": [
+          "Data Sources"
+        ],
+        "summary": "Upload Data Sources",
+        "description": "Upload và phân tích batch file nếu người dùng là OWNER.",
+        "operationId": "uploadProjectDataSources",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID dự án chứa nguồn dữ liệu",
+              "title": "Project Id"
+            },
+            "description": "ID dự án chứa nguồn dữ liệu"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_uploadProjectDataSources"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_UploadDataSourcesResponse_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/data-sources/{data_source_id}/preview": {
+      "get": {
+        "tags": [
+          "Data Sources"
+        ],
+        "summary": "Get Data Source Preview",
+        "description": "Đọc preview CSV theo yêu cầu, không lưu bản sao trong database.",
+        "operationId": "getProjectDataSourcePreview",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID dự án chứa nguồn dữ liệu",
+              "title": "Project Id"
+            },
+            "description": "ID dự án chứa nguồn dữ liệu"
+          },
+          {
+            "name": "data_source_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID nguồn dữ liệu",
+              "title": "Data Source Id"
+            },
+            "description": "ID nguồn dữ liệu"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_DataSourcePreviewResponse_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/data-sources/{data_source_id}/column": {
+      "patch": {
+        "tags": [
+          "Data Sources"
+        ],
+        "summary": "Update Data Source Column",
+        "description": "Cập nhật kiểu và options của một cột nếu người dùng là OWNER.",
+        "operationId": "updateProjectDataSourceColumn",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID dự án chứa nguồn dữ liệu",
+              "title": "Project Id"
+            },
+            "description": "ID dự án chứa nguồn dữ liệu"
+          },
+          {
+            "name": "data_source_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID nguồn dữ liệu",
+              "title": "Data Source Id"
+            },
+            "description": "ID nguồn dữ liệu"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateDataSourceColumnRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_DataSourceResponse_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/data-sources/{data_source_id}": {
+      "delete": {
+        "tags": [
+          "Data Sources"
+        ],
+        "summary": "Delete Data Source",
+        "description": "Xóa nguồn và file vật lý nếu người dùng là OWNER.",
+        "operationId": "deleteProjectDataSource",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID dự án chứa nguồn dữ liệu",
+              "title": "Project Id"
+            },
+            "description": "ID dự án chứa nguồn dữ liệu"
+          },
+          {
+            "name": "data_source_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID nguồn dữ liệu",
+              "title": "Data Source Id"
+            },
+            "description": "ID nguồn dữ liệu"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
           },
           "422": {
             "content": {
@@ -1083,6 +1923,52 @@
         ],
         "title": "ApiErrorResponse",
         "description": "Error envelope được Global Exception Handler trả về."
+      },
+      "ApiResponse_DataModelDdlResponse_": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "Trạng thái phản hồi (luôn là 'success' đối với 2xx)",
+            "default": "success"
+          },
+          "code": {
+            "type": "integer",
+            "title": "Code",
+            "description": "HTTP Status Code (mặc định 200)",
+            "default": 200
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Thông điệp phản hồi cho người dùng",
+            "default": "Xử lý thành công"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DataModelDdlResponse"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Dữ liệu payload chính trả về"
+          },
+          "meta": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ResponseMeta"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Metadata chung đi kèm phản hồi (request_id, timestamp... nếu có)"
+          }
+        },
+        "type": "object",
+        "title": "ApiResponse[DataModelDdlResponse]"
       },
       "ApiResponse_DataModelResponse_": {
         "properties": {
@@ -1769,6 +2655,78 @@
         "title": "ErrorDetail",
         "description": "Chi tiết validation của một trường request."
       },
+      "ExecuteDdlRequest": {
+        "properties": {
+          "ddl_script": {
+            "type": "string",
+            "maxLength": 1000000,
+            "minLength": 1,
+            "title": "Ddl Script",
+            "description": "Nội dung mã DDL script cần chạy"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ddl_script"
+        ],
+        "title": "ExecuteDdlRequest",
+        "description": "DTO Yêu cầu thực thi DDL script lên Sandbox DB."
+      },
+      "ExecuteDdlResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          },
+          "executed_statements": {
+            "type": "integer",
+            "title": "Executed Statements"
+          },
+          "succeeded_statements": {
+            "type": "integer",
+            "title": "Succeeded Statements"
+          },
+          "failed_statements": {
+            "type": "integer",
+            "title": "Failed Statements"
+          },
+          "total_duration_ms": {
+            "type": "number",
+            "title": "Total Duration Ms"
+          },
+          "logs": {
+            "items": {
+              "$ref": "#/components/schemas/StatementLogDto"
+            },
+            "type": "array",
+            "title": "Logs"
+          }
+        },
+        "type": "object",
+        "required": [
+          "success",
+          "executed_statements",
+          "succeeded_statements",
+          "failed_statements",
+          "total_duration_ms",
+          "logs"
+        ],
+        "title": "ExecuteDdlResponse",
+        "description": "DTO Trả về kết quả thực thi DDL script."
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
       "HealthResponse": {
         "properties": {
           "status": {
@@ -2136,6 +3094,304 @@
         "type": "object",
         "title": "ResponseMeta",
         "description": "Metadata chung đi kèm phản hồi (request_id, timestamp...). Cấm đưa metadata đặc thù LLM/Agent vào đây."
+      },
+      "SandboxConfigRequest": {
+        "properties": {
+          "db_type": {
+            "$ref": "#/components/schemas/SandboxDbType",
+            "description": "Loại CSDL Sandbox",
+            "default": "POSTGRESQL"
+          },
+          "host": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Host",
+            "description": "Host/IP kết nối",
+            "default": "localhost"
+          },
+          "port": {
+            "type": "integer",
+            "maximum": 65535.0,
+            "minimum": 1.0,
+            "title": "Port",
+            "description": "Cổng kết nối DB",
+            "default": 5432
+          },
+          "database_name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Database Name",
+            "description": "Tên CSDL",
+            "default": "sandbox_db"
+          },
+          "username": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Username",
+            "description": "Tên đăng nhập"
+          },
+          "password": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Password",
+            "description": "Mật khẩu kết nối"
+          },
+          "schema_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100,
+                "minLength": 1,
+                "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Schema Name",
+            "description": "Schema CSDL",
+            "default": "public"
+          }
+        },
+        "type": "object",
+        "title": "SandboxConfigRequest",
+        "description": "DTO Yêu cầu cấu hình kết nối DB Sandbox."
+      },
+      "SandboxConfigResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "project_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Project Id"
+          },
+          "db_type": {
+            "$ref": "#/components/schemas/SandboxDbType"
+          },
+          "host": {
+            "type": "string",
+            "title": "Host"
+          },
+          "port": {
+            "type": "integer",
+            "title": "Port"
+          },
+          "database_name": {
+            "type": "string",
+            "title": "Database Name"
+          },
+          "username": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Username"
+          },
+          "schema_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Schema Name",
+            "default": "public"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "default": "CONFIGURED"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "project_id",
+          "db_type",
+          "host",
+          "port",
+          "database_name"
+        ],
+        "title": "SandboxConfigResponse",
+        "description": "DTO Trả về thông tin cấu hình Sandbox DB."
+      },
+      "SandboxDbType": {
+        "type": "string",
+        "enum": [
+          "POSTGRESQL",
+          "BIGQUERY",
+          "SNOWFLAKE",
+          "MYSQL",
+          "SQLITE"
+        ],
+        "title": "SandboxDbType",
+        "description": "Loại cơ sở dữ liệu Sandbox."
+      },
+      "StatementLogDto": {
+        "properties": {
+          "statement": {
+            "type": "string",
+            "title": "Statement"
+          },
+          "is_success": {
+            "type": "boolean",
+            "title": "Is Success"
+          },
+          "execution_time_ms": {
+            "type": "number",
+            "title": "Execution Time Ms"
+          },
+          "timestamp": {
+            "type": "string",
+            "title": "Timestamp"
+          },
+          "error_detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Detail"
+          }
+        },
+        "type": "object",
+        "required": [
+          "statement",
+          "is_success",
+          "execution_time_ms",
+          "timestamp"
+        ],
+        "title": "StatementLogDto",
+        "description": "DTO Log dòng thực thi câu lệnh SQL."
+      },
+      "TestConnectionRequest": {
+        "properties": {
+          "db_type": {
+            "$ref": "#/components/schemas/SandboxDbType",
+            "default": "POSTGRESQL"
+          },
+          "host": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Host",
+            "default": "localhost"
+          },
+          "port": {
+            "type": "integer",
+            "maximum": 65535.0,
+            "minimum": 1.0,
+            "title": "Port",
+            "default": 5432
+          },
+          "database_name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Database Name",
+            "default": "sandbox_db"
+          },
+          "username": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Username"
+          },
+          "password": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Password"
+          },
+          "schema_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100,
+                "minLength": 1,
+                "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Schema Name",
+            "default": "public"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "TestConnectionRequest",
+        "description": "DTO Yêu cầu kiểm tra kết nối Sandbox DB."
+      },
+      "TestConnectionResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "latency_ms": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latency Ms"
+          }
+        },
+        "type": "object",
+        "required": [
+          "success",
+          "message"
+        ],
+        "title": "TestConnectionResponse",
+        "description": "DTO Trả về kết quả kiểm tra kết nối Sandbox DB."
       },
       "UpdateDataModelRequest": {
         "properties": {

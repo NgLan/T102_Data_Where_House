@@ -1,6 +1,6 @@
 "use client";
 
-import { Bot, Filter, Sparkles, X } from "lucide-react";
+import { Bot, Filter, Loader2, RefreshCw, Sparkles, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { AIInsight } from "../types/ai-insight-types";
 import { Button } from "@/common/components/ui/button";
@@ -18,6 +18,9 @@ interface AIInsightsPanelProps {
   insights: AIInsight[];
   tableNames: string[];
   totalCount: number;
+  isLoading: boolean;
+  errorMessage: string | null;
+  onRetry: () => void;
 }
 
 /** Hiển thị drawer AI insights và bộ lọc theo bảng.
@@ -70,7 +73,20 @@ export function AIInsightsPanel(props: AIInsightsPanelProps) {
             </NativeSelect>
           </div>
           <div className="flex max-h-[340px] flex-col gap-2 overflow-y-auto pr-1">
-            {props.insights.length > 0 ? (
+            {props.isLoading ? (
+              <div className="flex items-center justify-center gap-2 p-5 text-xs text-slate-500">
+                <Loader2 className="size-4 animate-spin" />
+                {t("TXT_LOADING")}
+              </div>
+            ) : props.errorMessage ? (
+              <div className="space-y-2 rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-700" role="alert">
+                <p>{props.errorMessage}</p>
+                <Button type="button" size="sm" variant="outline" onClick={props.onRetry}>
+                  <RefreshCw />
+                  {t("BTN_RETRY", "Thử lại")}
+                </Button>
+              </div>
+            ) : props.insights.length > 0 ? (
               props.insights.map((item) => (
                 <AIInsightCard key={item.id} item={item} />
               ))

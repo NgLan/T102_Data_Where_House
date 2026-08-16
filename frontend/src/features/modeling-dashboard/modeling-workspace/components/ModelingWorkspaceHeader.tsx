@@ -23,6 +23,7 @@ interface ModelingWorkspaceHeaderProps {
   hasProject: boolean;
   isDirty: boolean;
   isInspectorOpen: boolean;
+  projectId: string | null;
   status: WorkspaceStatus;
   onReload: () => void;
   onSave: () => void;

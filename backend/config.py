@@ -54,6 +54,7 @@ class Settings(BaseSettings):
     # 5. LLM Configuration (OpenAI / Language Models)
     # =========================================================================
     openai_api_key: str = ""
+    openai_base_url: str = ""
     model_name: str
     llm_temperature: float = Field(ge=0.0, le=2.0)
     max_tokens: int = Field(ge=1)
@@ -146,4 +147,3 @@ class Settings(BaseSettings):
 def get_settings() -> Settings:
     """Khởi tạo và lưu cache cấu hình hệ thống."""
     return Settings()
-
