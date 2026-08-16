@@ -3,7 +3,7 @@
  * Backdrop blur overlay & rounded glass dialog với Attribute Grid + AI Chat
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useProjectStore } from '@/common/stores/useProjectStore';
 import { useHitlEditor } from '../hooks/useHitlEditor';
 import { useAiReprompt } from '../hooks/useAiReprompt';
@@ -11,6 +11,7 @@ import { AttributeDataGrid } from './AttributeDataGrid';
 import { AiRepromptChat } from './AiRepromptChat';
 import { ProposalReviewActions } from './ProposalReviewActions';
 import { Edit3, X, Sparkles, TableProperties, Bot } from 'lucide-react';
+import { useProposalDiff } from '../hooks/useProposalDiff';
 
 export const HitlModal: React.FC = () => {
   const isHitlModalOpen = useProjectStore((state) => state.isHitlModalOpen);
@@ -18,7 +19,31 @@ export const HitlModal: React.FC = () => {
   const closeHitlModal = useProjectStore((state) => state.closeHitlModal);
 
   const { columns, handleAddColumn, handleUpdateColumn, handleDeleteColumn } = useHitlEditor(activeTableName);
-  const { messages, inputText, setInputText, isSending, handleSendMessage } = useAiReprompt();
+  const {
+    proposal,
+    diff,
+    addedCount,
+    removedCount,
+    hasDiff,
+    isOutdated,
+    isLoading: isLoadingProposal,
+    errorCode: proposalErrorCode,
+    isSubmitting,
+    submitErrorCode,
+    acceptProposal,
+    rejectProposal,
+    reloadProposal,
+  } = useProposalDiff();
+
+  const [activeTab, setActiveTab] = useState<HitlTab>('attributes');
+
+  // Gửi xong yêu cầu cho AI thì nạp lại đề xuất và chuyển thẳng sang tab so sánh khác biệt
+  const { messages, inputText, setInputText, isSending, handleSendMessage } = useAiReprompt({
+    onProposalCreated: async () => {
+      await reloadProposal();
+      setActiveTab('diff');
+    },
+  });
 
   if (!isHitlModalOpen) return null;
 
@@ -66,11 +91,35 @@ export const HitlModal: React.FC = () => {
             />
           </div>
 
-          {/* Right Side: AI Re-prompt Chat Panel */}
-          <div className="flex flex-col flex-[4] bg-white rounded-xl border border-slate-200 overflow-hidden shadow-xs">
-            <div className="bg-slate-50/90 px-3.5 py-2.5 border-b border-slate-200/80 flex items-center gap-2 text-xs font-bold text-slate-800">
-              <Bot className="w-4 h-4 text-blue-600" />
-              <span>Trợ lý AI Agent (Re-prompting Bảng)</span>
+              {/* Right Side: AI Re-prompt Chat Panel */}
+              <div className="flex flex-col flex-[4] bg-white rounded-xl border border-slate-200 overflow-hidden shadow-xs">
+                <div className="bg-slate-50/90 px-3.5 py-2.5 border-b border-slate-200/80 flex items-center gap-2 text-xs font-bold text-slate-800">
+                  <Bot className="w-4 h-4 text-blue-600" />
+                  <span>Trợ lý AI Agent (Re-prompting Bảng)</span>
+                </div>
+
+                <AiRepromptChat
+                  messages={messages}
+                  inputText={inputText}
+                  onInputChange={setInputText}
+                  onSendMessage={handleSendMessage}
+                  isSending={isSending}
+                />
+              </div>
+            </>
+          ) : (
+            /* Tab So sánh thay đổi (Diff View) — UC6.1 */
+            <div className="flex flex-1 overflow-hidden">
+              <DbmlDiffViewer
+                proposal={proposal}
+                diff={diff}
+                addedCount={addedCount}
+                removedCount={removedCount}
+                hasDiff={hasDiff}
+                isLoading={isLoadingProposal}
+                errorCode={proposalErrorCode}
+                submitErrorCode={submitErrorCode}
+              />
             </div>
 
             <AiRepromptChat
@@ -85,12 +134,16 @@ export const HitlModal: React.FC = () => {
 
         {/* Footer Actions */}
         <ProposalReviewActions
+          isAcceptDisabled={proposal === null || isOutdated}
+          isRejectDisabled={proposal === null}
+          isSubmitting={isSubmitting}
           onAccept={() => {
-            alert(`Đã áp dụng thay đổi thành công vào ${activeTableName}!`);
-            closeHitlModal();
+            void acceptProposal();
           }}
-          onReject={closeHitlModal}
-          onRetry={() => alert('Đã gửi yêu cầu tạo lại đề xuất cho AI!')}
+          onReject={() => {
+            void rejectProposal();
+          }}
+          onRetry={() => setActiveTab('attributes')}
         />
       </div>
     </div>

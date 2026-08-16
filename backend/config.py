@@ -57,6 +57,7 @@ class Settings(BaseSettings):
     model_name: str
     llm_temperature: float = Field(ge=0.0, le=2.0)
     max_tokens: int = Field(ge=1)
+    llm_request_timeout_seconds: float = Field(default=60.0, gt=0)
 
     # =========================================================================
     # 6. Agent Configuration (LangGraph & Vector Store)
@@ -64,6 +65,9 @@ class Settings(BaseSettings):
     agent_max_iterations: int = Field(ge=1)
     chroma_persist_dir: str
     enable_human_in_the_loop: bool
+    # Che thông tin cá nhân trước khi gửi dữ liệu sang LLM API (FR6.2).
+    # Mặc định luôn BẬT; chỉ tắt khi cần gỡ lỗi chất lượng đầu ra của Agent.
+    pii_masking_enabled: bool = Field(default=True)
 
     # =========================================================================
     # 7. Observability Configuration (Logging & Tracing)

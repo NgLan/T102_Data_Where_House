@@ -16,5 +16,4 @@ export interface ProjectInitFormState {
   domain: string;
   targetDialect: string;
   businessDescription: string;
-  isMaskingEnabled: boolean;
 }

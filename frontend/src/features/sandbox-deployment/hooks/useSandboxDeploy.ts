@@ -2,7 +2,7 @@
  * Custom Hook chứa toàn bộ State & Logic cho Feature Sandbox Deployment
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useState } from 'react';
 import { TerminalLogEntryDto } from '@/api/model/sandbox.dto';
 import { formatSql, copyToClipboard } from '@/common/utils/ddl-formatter';
 import { downloadTextFile } from '@/common/utils/file-helpers';

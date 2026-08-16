@@ -1,49 +1,71 @@
 /**
- * Custom Hook quản lý AI Re-prompting Chat trong HITL Modal
+ * Custom Hook quản lý khung chat yêu cầu AI chỉnh sửa mô hình dữ liệu (UC6 / T-024)
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useProjectStore } from '@/common/stores/useProjectStore';
+import { reviseDataModelWithAiApi } from '../services/hitl-api';
 import { ChatMessage } from '../types/hitl.types';
 
-const INITIAL_MESSAGES: ChatMessage[] = [
-  {
-    id: 'm1',
-    sender: 'ai',
-    text: 'Tui đang mở bảng này để hỗ trợ bạn chỉnh sửa. Bạn muốn thêm cột, đổi kiểu dữ liệu hay tách bảng phụ nào không?',
-    timestamp: '08:30',
-  },
-];
+/** Sinh nhãn thời gian hiển thị cạnh mỗi tin nhắn */
+function nowLabel(): string {
+  return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
 
-export function useAiReprompt() {
-  const [messages, setMessages] = useState<ChatMessage[]>(INITIAL_MESSAGES);
+/** Tạo một tin nhắn mới trong khung chat */
+function buildMessage(sender: ChatMessage['sender'], text: string): ChatMessage {
+  return { id: `${sender}_${Date.now()}_${Math.random()}`, sender, text, timestamp: nowLabel() };
+}
+
+export interface UseAiRepromptOptions {
+  /** Gọi lại sau khi AI tạo xong đề xuất, để khung so sánh khác biệt nạp lại dữ liệu mới */
+  onProposalCreated?: () => void | Promise<void>;
+}
+
+export function useAiReprompt(options: UseAiRepromptOptions = {}) {
+  const { t } = useTranslation('hitlEditor');
+  const { t: tErrors } = useTranslation('errors');
+  const dataModel = useProjectStore((state) => state.dataModel);
+
+  const [messages, setMessages] = useState<ChatMessage[]>([
+    buildMessage('ai', t('chat.greeting')),
+  ]);
   const [inputText, setInputText] = useState<string>('');
   const [isSending, setIsSending] = useState<boolean>(false);
 
-  const handleSendMessage = () => {
-    if (!inputText.trim()) return;
+  /**
+   * Gửi yêu cầu chỉnh sửa cho AI Agent và hiển thị lời giải thích trả về trong khung chat.
+   */
+  const handleSendMessage = async (): Promise<void> => {
+    const instruction = inputText.trim();
+    if (!instruction || isSending) return;
 
-    const userMsg: ChatMessage = {
-      id: `usr_${Date.now()}`,
-      sender: 'user',
-      text: inputText,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    };
+    if (!dataModel) {
+      setMessages((prev) => [...prev, buildMessage('ai', tErrors('DATA_MODEL_NOT_FOUND'))]);
+      return;
+    }
 
-    setMessages((prev) => [...prev, userMsg]);
+    setMessages((prev) => [...prev, buildMessage('user', instruction)]);
     setInputText('');
     setIsSending(true);
 
-    // Giả lập AI trả lời sau 600ms
-    setTimeout(() => {
-      const aiMsg: ChatMessage = {
-        id: `ai_${Date.now()}`,
-        sender: 'ai',
-        text: 'Đã ghi nhận yêu cầu! Tôi đã đề xuất cập nhật lại kiểu dữ liệu và thêm chỉ mục Foreign Key.',
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      };
-      setMessages((prev) => [...prev, aiMsg]);
+    try {
+      const proposal = await reviseDataModelWithAiApi(dataModel.id, instruction);
+      setMessages((prev) => [
+        ...prev,
+        buildMessage('ai', proposal.summary || t('chat.proposal_created')),
+      ]);
+      await options.onProposalCreated?.();
+    } catch (error) {
+      const errorCode = (error as { error_code?: string })?.error_code ?? 'UNKNOWN_ERROR';
+      setMessages((prev) => [
+        ...prev,
+        buildMessage('ai', tErrors(errorCode, { defaultValue: tErrors('UNKNOWN_ERROR') })),
+      ]);
+    } finally {
       setIsSending(false);
-    }, 600);
+    }
   };
 
   return {

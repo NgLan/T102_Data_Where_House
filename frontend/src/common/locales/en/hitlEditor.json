@@ -1,0 +1,44 @@
+{
+  "tabs": {
+    "attributes": "Table attributes",
+    "diff": "Proposed changes"
+  },
+  "diff": {
+    "title": "Proposed DBML comparison",
+    "mode_unified": "Unified",
+    "mode_split": "Split",
+    "column_current": "Current DBML",
+    "column_proposed": "Proposed DBML",
+    "base_revision": "Base revision {{revision}}",
+    "current_revision": "Current revision {{revision}}",
+    "stats": "+{{added}} / −{{removed}}",
+    "loading": "Loading the proposal...",
+    "empty": "There is no pending proposal for this data model yet.",
+    "no_change": "This proposal does not change the current DBML.",
+    "load_failed": "Could not load the proposed changes."
+  },
+  "status": {
+    "PROPOSED": "Pending review",
+    "ACCEPTED": "Accepted",
+    "REJECTED": "Rejected",
+    "CONFLICTED": "Revision conflict"
+  },
+  "outdated_warning": {
+    "title": "Proposal is outdated",
+    "message": "This proposal is based on revision {{baseRevision}} but the data model is now at revision {{currentRevision}}. Applying it now would conflict — ask the AI to regenerate the proposal against the latest model."
+  },
+  "review": {
+    "hint": "Confirm applying this proposal to the official data model (Human-in-the-Loop)",
+    "retry": "Ask AI to retry",
+    "reject": "Reject",
+    "accept": "Accept changes"
+  },
+  "chat": {
+    "greeting": "I have this data model open and ready. Describe the change you want, for example: \"split Dim_Driver into Dim_Driver and Dim_Vehicle\".",
+    "proposal_created": "I created a change proposal. Open the \"Proposed changes\" tab to review it before approving."
+  },
+  "notifications": {
+    "accept_success": "Proposal applied to the data model. Current revision: {{revision}}.",
+    "reject_success": "Proposal rejected. The data model is unchanged."
+  }
+}

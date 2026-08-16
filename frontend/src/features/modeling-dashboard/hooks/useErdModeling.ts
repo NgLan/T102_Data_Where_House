@@ -70,14 +70,46 @@ const INITIAL_TABLES: ErdTableNodeDto[] = [
 
 export function useErdModeling() {
   const openHitlModal = useProjectStore((state) => state.openHitlModal);
+  const projectId = useProjectStore((state) => state.projectId);
+  const setDataModel = useProjectStore((state) => state.setDataModel);
+  const dataModel = useProjectStore((state) => state.dataModel);
 
   const [dbmlCode, setDbmlCode] = useState<string>(INITIAL_DBML);
   const [tables] = useState<ErdTableNodeDto[]>(INITIAL_TABLES);
-  const [zoomLevel, setZoomLevel] = useState<number>(100);
+  // Hệ số phóng to canvas ERD, lưu dạng TỈ LỆ (1 = 100%) đúng với đơn vị mà CSS transform
+  // scale() yêu cầu. Trước đây giá trị này lưu dạng phần trăm (100) khiến canvas bị phóng
+  // to gấp 100 lần, đẩy toàn bộ bảng ra ngoài vùng nhìn thấy nên trông như trống trơn.
+  const [zoomLevel, setZoomLevel] = useState<number>(1);
+  const [isLoadingDataModel, setIsLoadingDataModel] = useState<boolean>(false);
+  const [dataModelErrorCode, setDataModelErrorCode] = useState<string | null>(null);
 
-  // Xử lý zoom canvas
-  const handleZoomIn = () => setZoomLevel((prev) => Math.min(prev + 10, 150));
-  const handleZoomOut = () => setZoomLevel((prev) => Math.max(prev - 10, 70));
+  /**
+   * Đồng bộ lại editor DBML mỗi khi revision của mô hình dữ liệu thay đổi.
+   * Cần thiết vì sau khi người dùng Accept một đề xuất ở HITL Modal, store đã mang DBML mới
+   * nhưng state cục bộ của editor vẫn giữ nội dung cũ.
+   */
+  useEffect(() => {
+    if (dataModel) {
+      setDbmlCode(dataModel.dbml);
+    }
+  }, [dataModel?.revision, dataModel?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  /**
+   * Đồng bộ lại editor DBML mỗi khi revision của mô hình dữ liệu thay đổi.
+   * Cần thiết vì sau khi người dùng Accept một đề xuất ở HITL Modal, store đã mang DBML mới
+   * nhưng state cục bộ của editor vẫn giữ nội dung cũ.
+   */
+  const revision = dataModel?.revision;
+  const currentDbml = dataModel?.dbml;
+  useEffect(() => {
+    if (currentDbml !== undefined) {
+      setDbmlCode(currentDbml);
+    }
+  }, [revision, currentDbml]);
+
+  // Xử lý zoom canvas: mỗi lần bấm đổi 10%, giới hạn trong khoảng 70% - 150%
+  const handleZoomIn = () => setZoomLevel((prev) => Math.min(prev + 0.1, 1.5));
+  const handleZoomOut = () => setZoomLevel((prev) => Math.max(prev - 0.1, 0.7));
 
   // Bắt sự kiện double-click trên thẻ node bảng để kích hoạt mở HITL Modal
   const handleTableDoubleClick = (tableName: string) => {

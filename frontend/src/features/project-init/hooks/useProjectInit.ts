@@ -23,7 +23,6 @@ export function useProjectInit() {
   const [domain, setDomain] = useState<string>('ride');
   const [targetDialect, setTargetDialect] = useState<string>('PostgreSQL (Standard DWH)');
   const [businessDescription, setBusinessDescription] = useState<string>('');
-  const [isMaskingEnabled, setIsMaskingEnabled] = useState<boolean>(true);
   
   const [excelFileName, setExcelFileName] = useState<string | null>('Sheet1_RawRides.xlsx');
   const [excelRows, setExcelRows] = useState<ExcelPreviewRowDto[]>(SAMPLE_EXCEL_ROWS);
@@ -57,8 +56,6 @@ export function useProjectInit() {
     setTargetDialect,
     businessDescription,
     setBusinessDescription,
-    isMaskingEnabled,
-    setIsMaskingEnabled,
     excelFileName,
     excelRows,
     isAnalyzing,
