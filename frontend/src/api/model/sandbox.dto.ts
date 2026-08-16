@@ -3,6 +3,15 @@
  */
 
 /**
+ * Payload cấu hình kết nối Sandbox DB
+ */
+export interface SandboxConfigRequestDto {
+  host: string;
+  database: string;
+  schema: string;
+}
+
+/**
  * Log dòng terminal thực thi
  */
 export interface TerminalLogEntryDto {

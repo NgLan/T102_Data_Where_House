@@ -28,5 +28,3 @@ export function MainLayout({ children, isFullWidth = false, isFlush = false }: M
     </div>
   );
 }
-
-
