@@ -10,7 +10,7 @@ Dự án được xây dựng theo chuẩn **Clean Architecture / DDD (Domain-Dr
 
 - **Tầng Domain & Application**: Python 3.13+, Dataclass Entities, Value Objects, Pure Business Invariants.
 - **Tầng Infrastructure**: FastAPI, SQLAlchemy 2.0 (Async Engine + Mapped API), PostgreSQL 16.
-- **Hệ thống AI Agent**: LangChain / LangGraph (Orchestrator Agent, Requirement Agent, DataSource Agent, DW Design Agent).
+- **Hệ thống AI**: LangChain với workflow tuần tự tại Application; RequirementAgent và DWDesignAgent độc lập provider, mỗi operation gọi LLM đúng một lần.
 - **Containerization & DevOps**: Docker, Docker Compose, Pytest, Ruff Linter.
 
 ---
@@ -83,7 +83,10 @@ copy .env.example .env
 | **`POSTGRES_PORT`** | `5432` / `5434` | Port lắng nghe kết nối CSDL PostgreSQL. |
 | **`POSTGRES_DB`** | `ai20k_db` | Tên cơ sở dữ liệu chính. |
 | **`DATABASE_URL`** | `postgresql+asyncpg://...` | Chuỗi kết nối Async Engine cho SQLAlchemy. |
-| **`OPENAI_API_KEY`** | `sk-...` | API Key kết nối với OpenAI LLMs. |
+| **`LLM_PROVIDER`** | `openai` | Provider: `openai`, `openai_compatible` hoặc `google`. |
+| **`LLM_API_KEY`** | trống | API key dùng chung; có fallback sang biến provider cũ. |
+| **`LLM_BASE_URL`** | trống | Base URL cho OpenAI-compatible/OpenRouter/local. |
+| **`MODEL_NAME`** | provider default | Tên model dùng cho Agent operation. |
 | **`LOG_LEVEL`** | `INFO` | Mức độ ghi log hệ thống (`DEBUG`, `INFO`, `WARNING`, `ERROR`). |
 
 ---
@@ -136,6 +139,24 @@ INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
 
 ---
 
+### Bước 6: Khởi chạy Giao diện Frontend Web ở Port 3000
+
+Mở một cửa sổ Terminal mới để khởi chạy ứng dụng Frontend (Next.js / React / TypeScript):
+
+```bash
+# Di chuyển vào thư mục frontend và cài đặt dependencies
+cd frontend
+npm install
+
+# Khởi chạy Next.js development server
+npm run dev
+```
+
+Sau khi khởi chạy thành công, mở trình duyệt web và truy cập giao diện tại:
+👉 **[http://localhost:3000](http://localhost:3000)**
+
+---
+
 ## 🔍 Truy cập API & Swagger UI Documentation
 
 Sau khi backend khởi chạy thành công ở port **8001**, bạn có thể tương tác và kiểm thử API tại các đường dẫn sau:
@@ -143,6 +164,43 @@ Sau khi backend khởi chạy thành công ở port **8001**, bạn có thể t�
 - **Swagger UI (Interactive API Docs)**: [http://localhost:8001/docs](http://localhost:8001/docs)
 - **ReDoc Documentation**: [http://localhost:8001/redoc](http://localhost:8001/redoc)
 - **Health Check Endpoint**: [http://localhost:8001/health](http://localhost:8001/health)
+
+---
+
+## 🎯 Dữ Liệu Mẫu & Kịch Bản Kiểm Thử Cho Mentor (Sample Data & Test Scenarios)
+
+Dự án cung cấp sẵn bộ dữ liệu mẫu thực tế của **Bài toán Quản lý & Lưu trữ Hồ sơ Bệnh án (Y tế)** để Mentor và người đánh giá có thể chạy thử nghiệm ngay trên giao diện web mà không cần tự chuẩn bị:
+
+### 1. Dữ Liệu Đầu Vào (Input Data Form)
+
+- **Văn bản Yêu cầu Nghiệp vụ (Requirement Text)**:
+  *(Copy trực tiếp đoạn văn bản dưới đây hoặc lấy từ tệp [`eval/sample/YeuCauNghiepVuYTe.md`](eval/sample/YeuCauNghiepVuYTe.md) dán vào ô nhập Requirement trên màn hình khởi tạo dự án)*
+
+  > "Bệnh viện cần xây dựng Kho dữ liệu (Data Warehouse) để quản lý và phân tích hồ sơ bệnh án lưu trữ, phục vụ các mục tiêu sau:
+  > 1. Phân tích tình hình khám chữa bệnh: Theo dõi số lượng bệnh nhân, thời gian điều trị trung bình (tính từ thời gian vào viện đến ngày ra viện) phân theo từng khoa phòng (vào từ khoa nào, ra từ khoa nào), nhóm tuổi và giới tính.
+  > 2. Quản lý đối tượng bệnh nhân: Thống kê cơ cấu bệnh nhân theo diện chi trả (BHYT, BHYT Quân, Miễn phí, Dịch vụ) và loại hình điều trị (Nội trú, Ngoại trú).
+  > 3. Tối ưu hóa công tác lưu trữ hồ sơ: Quản lý vị trí vật lý lưu trữ hồ sơ bệnh án (theo Kho, Tủ, Ngăn, Kệ, Ký hiệu) và trạng thái hồ sơ (đang lưu trữ, chờ đưa vào kho, cần bổ sung xét nghiệm) để phục vụ tra cứu nhanh chóng và bảo mật thông tin cá nhân của bệnh nhân."
+
+- **4 Tệp Dữ Liệu Nguồn CSV Thực Tế (Source Data)**:
+  *(Kéo thả trực tiếp 4 tệp có sẵn trong thư mục `eval/sample/` vào Upload Zone)*
+  - [`eval/sample/DanhSachBenhNhan.csv`](eval/sample/DanhSachBenhNhan.csv)
+  - [`eval/sample/ThongTinBenhNhan.csv`](eval/sample/ThongTinBenhNhan.csv)
+  - [`eval/sample/ThongtinHoSoLuuTru.csv`](eval/sample/ThongtinHoSoLuuTru.csv)
+  - [`eval/sample/DanhSachHoSoLuuTru.csv`](eval/sample/DanhSachHoSoLuuTru.csv)
+
+---
+
+### 2. Kịch Bản Tinh Chỉnh Mô Hình Human-in-the-Loop (HITL Re-prompt)
+
+Sau khi workflow tuần tự hoàn tất phân tích và sinh mô hình DBML đầu tiên, Mentor có thể thử nghiệm tính năng tinh chỉnh bằng ngôn ngữ tự nhiên tại khung **AI Re-prompt**:
+
+- **Câu lệnh mẫu 1 (Tách bảng Dimension Chẩn đoán)**:
+  > "Trong mô hình vừa sinh, hãy tách riêng thông tin chẩn đoán bệnh (chẩn đoán vào viện, chẩn đoán ra viện) thành một bảng Dimension chẩn đoán riêng biệt (gồm mã định danh, tên chẩn đoán, nhóm bệnh) và liên kết khóa ngoại với bảng Fact chứa thông tin hồ sơ/khám chữa bệnh."
+
+- **Câu lệnh mẫu 2 (Bổ sung thuộc tính & Bảng vị trí lưu trữ)**:
+  > "Hãy bổ sung thêm trường `so_ngay_dieu_tri` vào bảng Fact và tạo bảng `Dim_KhoLuuTru` để quản lý thông tin kho, tủ, ngăn, kệ."
+
+*Sau khi gửi lệnh, hệ thống sẽ sinh ra bản ghi đề xuất thay đổi (`data_model_changes`) kèm hiển thị so sánh phiên bản (Diff). Mentor có thể nhấn nút **Accept** để áp dụng hoặc **Reject** để giữ nguyên mô hình.*
 
 ---
 
@@ -161,15 +219,6 @@ curl -X GET "http://localhost:8001/health" -H "accept: application/json"
   "status": "ok",
   "env": "development"
 }
-```
-
-#### Bằng `Python requests`:
-```python
-import requests
-
-response = requests.get("http://localhost:8001/health")
-print(response.status_code)  # 200
-print(response.json())       # {'status': 'ok', 'env': 'development'}
 ```
 
 ---
@@ -276,8 +325,8 @@ P-102/
 │       │   │   ├── models/                 # SQLAlchemy 2.0 ORM Models (10 tables)
 │       │   │   └── session.py              # AsyncSession Generator & Connection Management
 │       │   ├── repositories/               # PostgreSQL Repository Implementations (10 repos)
-│       │   ├── agents/                     # LLM Agent Implementations (Orchestrator, Requirement, DW Design)
-│       │   ├── llm/                        # LLM Client Integrations (OpenAI, LangChain)
+│       │   ├── agents/                     # Requirement/DW Design adapters và DBML validation
+│       │   ├── llm/                        # Provider registry, lazy model và structured invoker
 │       │   ├── cache/                      # Redis Cache Implementations
 │       │   ├── security/                   # Password Hashing & JWT Handlers
 │       │   ├── storage/                    # File & Schema Storage
@@ -298,18 +347,22 @@ P-102/
 │   ├── test_database_models.py             # Tests kiểm thử SQLAlchemy ORM Mapping
 │   ├── test_mappers.py                     # Tests kiểm thử Domain ↔ Persistence Mappers
 │   └── test_repositories.py                # Tests kiểm thử Async Repositories
-├── docs/                                   # 📖 Hướng dẫn Kỹ thuật & Sơ đồ Hệ thống
-│   ├── guide_cho_ca_nhom/                  # Guidebook & Database Specifications
-│   │   ├── database.md                     # Schema DBML chi tiết 10 bảng CSDL
-│   │   ├── data_flow.md                    # Sơ đồ luồng dữ liệu & Agent Execution Flow
-│   │   └── TECHNICAL_CODING_GUIDELINES.md  # Quy chuẩn lập trình bắt buộc
-│   └── architecture_diagram.md
+├── eval/                                   # 🧪 Dữ liệu Mẫu & Báo cáo Đánh giá (Evaluation)
+│   ├── sample/                             # Dữ liệu mẫu thực tế (4 file CSV Y tế & Requirement text)
+│   │   ├── YeuCauNghiepVuYTe.md            # Toàn văn yêu cầu nghiệp vụ Y tế mẫu
+│   │   ├── DanhSachBenhNhan.csv            # File CSV nguồn 1: Danh sách bệnh nhân
+│   │   ├── ThongTinBenhNhan.csv            # File CSV nguồn 2: Chi tiết thông tin bệnh nhân
+│   │   ├── ThongtinHoSoLuuTru.csv          # File CSV nguồn 3: Chi tiết hồ sơ lưu trữ
+│   │   └── DanhSachHoSoLuuTru.csv          # File CSV nguồn 4: Danh mục hồ sơ lưu trữ
+│   └── results/                            # Báo cáo đánh giá chất lượng
+│       └── report.md                       # Báo cáo 5 Test Cases thực tế
 ├── scripts/                                # 🔌 AI Logging Hooks & Helper Scripts
 ├── Dockerfile                              # Multi-stage Dockerfile cho Backend
 ├── docker-compose.yml                      # Docker Compose orchestrating PostgreSQL & Services
 ├── requirements.txt                        # Python Project Dependencies
 ├── ruff.toml                               # Ruff Linter Configuration
 ├── .env.example                            # Template biến môi trường
+├── ARCHITECTURE.md                         # Sơ đồ kiến trúc & luồng dữ liệu hệ thống
 └── README.md                               # Document hướng dẫn dự án chính
 ```
 

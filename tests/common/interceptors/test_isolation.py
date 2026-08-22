@@ -33,11 +33,11 @@ def test_no_fastapi_dependency_in_interceptors() -> None:
 @pytest.mark.asyncio
 async def test_async_context_isolation_under_concurrency() -> None:
     """Kiểm tra tính cách ly ngữ cảnh (request_id, session_id) khi chạy đồng thời (asyncio.gather)."""
-    chain = InterceptorChain([TimingInterceptor(), LoggingInterceptor()])
+    chain = InterceptorChain([LoggingInterceptor(), TimingInterceptor()])
 
     async def run_operation(op_name: str, req_id: str, delay: float) -> dict[str, str | None]:
         set_request_id(req_id)
-        ctx = InterceptorContext.create(op_name)
+        ctx = InterceptorContext.from_logging_context(op_name)
         await asyncio.sleep(delay)
 
         async def dummy_task() -> str:

@@ -8,7 +8,7 @@ from src.domain.requirement.enums import RequirementPriority, RequirementType
 from src.domain.shared.types import EntityID
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class RequirementOutput:
     """Snapshot Requirement được phép đi qua application boundary."""
 

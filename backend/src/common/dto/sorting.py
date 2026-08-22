@@ -2,7 +2,7 @@
 
 from enum import StrEnum
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class SortOrder(StrEnum):
@@ -14,6 +14,8 @@ class SortOrder(StrEnum):
 
 class SortRequest(BaseModel):
     """DTO chứa tham số yêu cầu sắp xếp từ client (sort_by, sort_order)."""
+
+    model_config = ConfigDict(extra="forbid")
 
     sort_by: str | None = Field(
         default=None,

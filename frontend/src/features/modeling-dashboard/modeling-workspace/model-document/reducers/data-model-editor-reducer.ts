@@ -1,54 +1,19 @@
-import type {
-  DbmlColumn,
-  DbmlDocument,
-  DbmlReference,
-  DbmlTable,
-} from "@/common/dbml/types";
+import type { DbmlDocument } from "../dbml/types";
 import {
   removeColumnCascade,
   removeTableCascade,
-  renameColumnCascade,
-  renameTableCascade,
-} from "../utils/data-model-cascade";
+} from "../utils/data-model-removal-cascade";
+import { renameTableCascade } from "../utils/data-model-rename-cascade";
+import type { DataModelAction } from "./data-model-actions";
+import {
+  mapTable,
+  updateColumn,
+  updateColumnSettings,
+} from "./data-model-column-reducer";
 
-/** Tập mutation hợp lệ đối với canonical Data Model document. */
-export type DataModelAction =
-  | { type: "replace"; document: DbmlDocument }
-  | { type: "add-table"; table: DbmlTable }
-  | {
-      type: "update-table";
-      tableId: string;
-      field: "name" | "note";
-      value: string;
-    }
-  | { type: "remove-table"; tableId: string }
-  | { type: "add-column"; tableId: string; column: DbmlColumn }
-  | {
-      type: "update-column";
-      tableId: string;
-      columnId: string;
-      field: keyof DbmlColumn;
-      value: string | boolean;
-    }
-  | {
-      type: "update-column-settings";
-      tableId: string;
-      columnId: string;
-      patch: Partial<DbmlColumn>;
-      removeReferenceIds?: string[];
-    }
-  | { type: "remove-column"; tableId: string; columnId: string }
-  | { type: "add-reference"; reference: DbmlReference }
-  | { type: "update-reference"; reference: DbmlReference }
-  | { type: "remove-reference"; referenceId: string };
+export type { DataModelAction } from "./data-model-actions";
 
-/**
- * Áp dụng một mutation thuần lên Data Model draft.
- *
- * @param document Document hiện tại.
- * @param action Mutation cần thực thi.
- * @returns Document mới không dùng chung collection đã thay đổi.
- */
+/** Applies one immutable mutation to the canonical data-model draft. */
 export function dataModelEditorReducer(
   document: DbmlDocument,
   action: DataModelAction,
@@ -74,24 +39,11 @@ export function dataModelEditorReducer(
     case "remove-column":
       return removeColumnCascade(document, action.tableId, action.columnId);
     case "add-reference":
-      return {
-        ...document,
-        references: [...document.references, action.reference],
-      };
+      return addReference(document, action.reference);
     case "update-reference":
-      return {
-        ...document,
-        references: document.references.map((item) =>
-          item.id === action.reference.id ? action.reference : item,
-        ),
-      };
+      return updateReference(document, action.reference);
     case "remove-reference":
-      return {
-        ...document,
-        references: document.references.filter(
-          (item) => item.id !== action.referenceId,
-        ),
-      };
+      return removeReference(document, action.referenceId);
   }
 }
 
@@ -99,100 +51,40 @@ function updateTable(
   document: DbmlDocument,
   action: Extract<DataModelAction, { type: "update-table" }>,
 ): DbmlDocument {
-  if (action.field === "name")
+  if (action.field === "name") {
     return renameTableCascade(document, action.tableId, action.value);
+  }
   return mapTable(document, action.tableId, (table) => ({
     ...table,
     note: action.value,
   }));
 }
 
-function updateColumn(
+function addReference(
   document: DbmlDocument,
-  action: Extract<DataModelAction, { type: "update-column" }>,
+  reference: DbmlDocument["references"][number],
 ): DbmlDocument {
-  if (action.field === "name")
-    return renameColumnCascade(document, {
-      tableId: action.tableId,
-      columnId: action.columnId,
-      name: String(action.value),
-    });
-  return mapTable(document, action.tableId, (item) => ({
-    ...item,
-    columns: item.columns.map((entry) =>
-      entry.id === action.columnId
-        ? updateColumnField({
-            table: item,
-            column: entry,
-            field: action.field,
-            value: action.value,
-          })
-        : entry,
-    ),
-  }));
+  return { ...document, references: [...document.references, reference] };
 }
 
-interface ColumnFieldUpdate {
-  table: DbmlTable;
-  column: DbmlColumn;
-  field: keyof DbmlColumn;
-  value: string | boolean;
-}
-
-function updateColumnField(input: ColumnFieldUpdate): DbmlColumn {
-  const { table, column, field, value } = input;
-  return applyColumnSettings(table, column, { [field]: value });
-}
-
-function updateColumnSettings(
+function updateReference(
   document: DbmlDocument,
-  action: Extract<DataModelAction, { type: "update-column-settings" }>,
-): DbmlDocument {
-  const updated = mapTable(document, action.tableId, (table) => ({
-    ...table,
-    columns: table.columns.map((column) =>
-      column.id === action.columnId
-        ? applyColumnSettings(table, column, action.patch)
-        : column,
-    ),
-  }));
-  const removedIds = new Set(action.removeReferenceIds ?? []);
-  return removedIds.size
-    ? {
-        ...updated,
-        references: updated.references.filter(
-          (reference) => !removedIds.has(reference.id),
-        ),
-      }
-    : updated;
-}
-
-function applyColumnSettings(
-  table: DbmlTable,
-  column: DbmlColumn,
-  patch: Partial<DbmlColumn>,
-): DbmlColumn {
-  if (!column.isPrimaryKey || patch.isPrimaryKey !== false)
-    return { ...column, ...patch };
-  const isSinglePrimaryKey =
-    table.columns.filter((item) => item.isPrimaryKey).length === 1;
-  return {
-    ...column,
-    ...patch,
-    isNotNull: true,
-    isUnique: isSinglePrimaryKey || column.isUnique,
-  };
-}
-
-function mapTable(
-  document: DbmlDocument,
-  tableId: string,
-  update: (table: DbmlTable) => DbmlTable,
+  reference: DbmlDocument["references"][number],
 ): DbmlDocument {
   return {
     ...document,
-    tables: document.tables.map((table) =>
-      table.id === tableId ? update(table) : table,
+    references: document.references.map((item) =>
+      item.id === reference.id ? reference : item,
     ),
+  };
+}
+
+function removeReference(
+  document: DbmlDocument,
+  referenceId: string,
+): DbmlDocument {
+  return {
+    ...document,
+    references: document.references.filter((item) => item.id !== referenceId),
   };
 }

@@ -13,6 +13,36 @@ class DataSourceType(StrEnum):
     TEXT = "TEXT"
 
 
+class DataSourceAnalysisStatus(StrEnum):
+    """Trạng thái metadata phân tích của một nguồn dữ liệu."""
+
+    PENDING = "PENDING"
+    READY = "READY"
+
+
+class ColumnDataType(StrEnum):
+    """Kiểu dữ liệu hiển thị của một cột nguồn."""
+
+    TEXT = "TEXT"
+    CATEGORY = "CATEGORY"
+    INTEGER = "INTEGER"
+    NUMBER = "NUMBER"
+    DECIMAL = "DECIMAL"
+    DATE = "DATE"
+    TIME = "TIME"
+    DATETIME = "DATETIME"
+    BOOLEAN = "BOOLEAN"
+
+
+class ColumnConstraintType(StrEnum):
+    """Loại ràng buộc chính thức của cột nguồn."""
+
+    FOREIGN_KEY = "FOREIGN_KEY"
+    UNIQUE = "UNIQUE"
+    CHECK = "CHECK"
+    DEFAULT = "DEFAULT"
+
+
 class RelationshipType(StrEnum):
     """Loại mối quan hệ giữa các bảng trong cơ sở dữ liệu."""
 

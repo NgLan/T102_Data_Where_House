@@ -1,7 +1,9 @@
 """Cấu hình tập trung toàn bộ hệ thống (App, DB, Redis, Security, LLM, Agent, Observability, CORS)."""
 
 from functools import lru_cache
+from pathlib import Path
 from typing import Literal
+from uuid import UUID
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -34,6 +36,7 @@ class Settings(BaseSettings):
     postgres_port: int = Field(ge=1, le=65535)
     postgres_db: str
     database_url: str = ""
+    database_echo: bool = False
 
     # =========================================================================
     # 3. Redis Configuration (Cache & Session)
@@ -49,30 +52,38 @@ class Settings(BaseSettings):
     secret_key: str
     jwt_algorithm: str
     access_token_expire_minutes: int = Field(ge=1)
+    mvp_actor_id: UUID = UUID("a678ac27-3077-5ef2-8919-5218b2e48791")
+    mvp_actor_username: str = "annv"
+    mvp_actor_email: str = "an.nguyen@dataworks.vn"
+    upload_dir: Path = Path("data/uploads")
 
     # =========================================================================
-    # 5. LLM Configuration (OpenAI / Language Models)
+    # 5. LLM Configuration
     # =========================================================================
     openai_api_key: str = ""
     openai_base_url: str = ""
+    google_api_key: str = ""
+    llm_provider: str = "google"
+    llm_api_key: str = ""
+    llm_base_url: str = ""
     model_name: str
     llm_temperature: float = Field(ge=0.0, le=2.0)
-    max_tokens: int = Field(ge=1)
-<<<<<<< HEAD
-=======
     # Thời gian chờ tối đa một lời gọi LLM (giây) — NFR2 giới hạn 45 giây cho cả pipeline
->>>>>>> d3fd3dc (feat(agents): Fix agents)
     llm_request_timeout_seconds: float = Field(default=60.0, gt=0)
 
     # =========================================================================
-    # 6. Agent Configuration (LangGraph & Vector Store)
+    # 6. Agent Configuration
     # =========================================================================
-    agent_max_iterations: int = Field(ge=1)
-    chroma_persist_dir: str
-    enable_human_in_the_loop: bool
+    # Trần token đầu ra: các operation thiết kế phải xuất trọn một schema
+    # dạng JSON/DBML: chạm trần giữa chừng là structured output vỡ và cả pipeline hỏng
+    # với lỗi `LengthFinishReasonError`.
+    agent_max_output_tokens: int = Field(default=8000, ge=1024)
     # Che thông tin cá nhân trước khi gửi dữ liệu sang LLM API (FR6.2).
     # Mặc định luôn BẬT; chỉ tắt khi cần gỡ lỗi chất lượng đầu ra của Agent.
     pii_masking_enabled: bool = Field(default=True)
+    pii_default_language: str = "vi"
+    pii_supported_languages: str = "vi,en,ja"
+    pii_score_threshold: float = Field(default=0.4, ge=0.0, le=1.0)
 
     # =========================================================================
     # 7. Observability Configuration (Logging & Tracing)
@@ -102,20 +113,6 @@ class Settings(BaseSettings):
     # Helper Properties
     # -------------------------------------------------------------------------
     @property
-    def async_database_url(self) -> str:
-        """Trả về URL kết nối bất đồng bộ đến PostgreSQL."""
-        from src.infrastructure.database.config import get_async_database_url
-
-        return get_async_database_url(self)
-
-    @property
-    def sync_database_url(self) -> str:
-        """Trả về URL kết nối đồng bộ đến PostgreSQL."""
-        from src.infrastructure.database.config import get_sync_database_url
-
-        return get_sync_database_url(self)
-
-    @property
     def redis_url(self) -> str:
         """Trả về URL kết nối đến Redis."""
         if self.redis_password:
@@ -141,6 +138,15 @@ class Settings(BaseSettings):
     def allowed_hosts_list(self) -> list[str]:
         """Trả về danh sách Trusted Hosts."""
         return [host.strip() for host in self.allowed_hosts.split(",") if host.strip()]
+
+    @property
+    def pii_supported_languages_list(self) -> tuple[str, ...]:
+        """Trả các language code được PII analyzer hỗ trợ."""
+        return tuple(
+            language.strip()
+            for language in self.pii_supported_languages.split(",")
+            if language.strip()
+        )
 
 
 @lru_cache

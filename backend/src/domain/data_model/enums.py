@@ -10,11 +10,3 @@ class DataModelChangeStatus(StrEnum):
     ACCEPTED = "ACCEPTED"
     REJECTED = "REJECTED"
     CONFLICTED = "CONFLICTED"
-
-
-class DdlDialect(StrEnum):
-    """Các hệ quản trị được hỗ trợ khi sinh mã DDL."""
-
-    POSTGRESQL = "postgresql"
-    BIGQUERY = "bigquery"
-    SNOWFLAKE = "snowflake"

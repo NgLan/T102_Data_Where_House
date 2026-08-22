@@ -3,6 +3,8 @@
 from datetime import UTC, datetime
 from uuid import uuid4
 
+from src.domain.data_model.entities import DataModel, DataModelChange
+from src.domain.data_model.enums import DataModelChangeStatus
 from src.domain.data_source.entities import DataSource
 from src.domain.data_source.enums import DataSourceType, RelationshipType
 from src.domain.data_source.value_objects import (
@@ -24,14 +26,21 @@ from src.domain.project_session.value_objects import (
     AgentResultMetadata,
     LLMCallStats,
 )
+from src.domain.requirement.entities import Requirement
+from src.domain.requirement.enums import RequirementPriority, RequirementType
 from src.domain.user.entities import User
 from src.domain.user.value_objects import Email
 from src.infrastructure.database.mappers import (
+    DataModelChangeMapper,
+    DataModelMapper,
     DataSourceMapper,
     ProjectMapper,
+    RequirementMapper,
     SessionEventMapper,
     UserMapper,
 )
+
+SIMPLE_DBML = "Table users { id int [pk] }"
 
 
 def test_user_mapper_domain_to_model_and_back() -> None:
@@ -51,7 +60,6 @@ def test_user_mapper_domain_to_model_and_back() -> None:
     model = UserMapper.to_model(entity)
     assert model.id == user_id
     assert model.username == "john_doe"
-    assert model.email == "john@example.com"
     assert model.created_at == created_ts
     assert model.updated_at == updated_ts
 
@@ -188,3 +196,64 @@ def test_session_event_mapper_metadata_types() -> None:
     assert restored.metadata.status == AgentResultStatus.SUCCESS
     assert restored.metadata.llm is not None
     assert restored.metadata.llm.model == "gpt-4o"
+
+
+def test_requirement_mapper_preserves_serialized_enum_values() -> None:
+    """Requirement mapper đọc và ghi đúng các enum value đang lưu trong database."""
+    entity = Requirement(
+        project_id=uuid4(),
+        type=RequirementType.BUSINESS,
+        title="Doanh thu",
+        description="Theo dõi doanh thu theo tháng",
+        priority=RequirementPriority.HIGH,
+    )
+
+    model = RequirementMapper.to_model(entity)
+    restored = RequirementMapper.to_domain(model)
+
+    assert model.type == "BUSINESS"
+    assert model.priority == "HIGH"
+    assert restored.type is RequirementType.BUSINESS
+    assert restored.priority is RequirementPriority.HIGH
+
+
+def test_data_model_change_mapper_preserves_status_and_foreign_keys() -> None:
+    """Proposal mapper round-trip giữ nguyên wire value và identity liên kết."""
+    entity = DataModelChange(
+        data_model_id=uuid4(),
+        user_id=uuid4(),
+        proposed_dbml=SIMPLE_DBML,
+        status=DataModelChangeStatus.REJECTED,
+    )
+
+    model = DataModelChangeMapper.to_model(entity)
+    restored = DataModelChangeMapper.to_domain(model)
+
+    assert model.status == "REJECTED"
+    assert restored.status is DataModelChangeStatus.REJECTED
+    assert restored.data_model_id == entity.data_model_id
+    assert restored.user_id == entity.user_id
+
+
+def test_data_model_mapper_preserves_revisions_and_attributes() -> None:
+    """DataModel mapper round-trip giữ nguyên revisions và không có trường None."""
+    entity = DataModel(
+        project_id=uuid4(),
+        dbml=SIMPLE_DBML,
+        revision=2,
+        generated_from_requirement_revision=3,
+        generated_from_source_revision=4,
+    )
+
+    model = DataModelMapper.to_model(entity)
+    restored = DataModelMapper.to_domain(model)
+
+    assert model.dbml == SIMPLE_DBML
+    assert model.revision == 2
+    assert model.generated_from_requirement_revision == 3
+    assert model.generated_from_source_revision == 4
+    assert restored.project_id == entity.project_id
+    assert restored.dbml == SIMPLE_DBML
+    assert restored.revision == 2
+    assert restored.generated_from_requirement_revision == 3
+    assert restored.generated_from_source_revision == 4

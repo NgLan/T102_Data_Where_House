@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 
 from src.common.utils.string import safe_strip
-from src.domain.project.rules import (
+from src.domain.project.project_details_rules import (
     normalize_project_domain,
     normalize_project_name,
     normalize_project_requirement,
@@ -16,7 +16,7 @@ class ProjectDetails(BaseValueObject):
     """Thông tin nghiệp vụ có thể chỉnh sửa của dự án."""
 
     name: str
-    requirement: str
+    requirement: str | None = None
     domain: str | None = None
     description: str | None = None
 

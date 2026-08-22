@@ -1,62 +1,57 @@
-"""Triển khai PostgreSQL Repository cho thực thể Requirement."""
+"""PostgreSQL repository cho thực thể Requirement."""
 
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.domain.requirement.entities import Requirement
-from src.domain.requirement.repository import IRequirementRepository
+from src.domain.requirement.i_requirement_repository import IRequirementRepository
 from src.domain.shared.types import EntityID
+from src.infrastructure.database.error_translation import translate_database_errors
 from src.infrastructure.database.mappers.requirement_mapper import RequirementMapper
 from src.infrastructure.database.models.requirement import RequirementModel
+from src.infrastructure.repositories.sqlalchemy_crud import SqlAlchemyCrud
 from typing_extensions import override
 
 
 class PostgresRequirementRepository(IRequirementRepository):
-    """Triển khai IRequirementRepository sử dụng SQLAlchemy AsyncSession và RequirementMapper."""
+    """Lưu trữ Requirement bằng SQLAlchemy AsyncSession."""
 
     def __init__(self, session: AsyncSession) -> None:
-        """Khởi tạo repository với SQLAlchemy AsyncSession."""
-        self._session: AsyncSession = session
+        self._session = session
+        self._crud = SqlAlchemyCrud(session, RequirementModel, RequirementMapper)
 
     @override
     async def get_by_id(self, entity_id: EntityID) -> Requirement | None:
         """Lấy yêu cầu theo ID."""
-        stmt = select(RequirementModel).where(RequirementModel.id == entity_id)
-        result = await self._session.execute(stmt)
-        model = result.scalar_one_or_none()
-        return RequirementMapper.to_domain(model) if model else None
+        return await self._crud.get_by_id(entity_id)
 
     @override
+    @translate_database_errors
     async def list_by_project(self, project_id: EntityID) -> list[Requirement]:
-        """Lấy danh sách yêu cầu thuộc một dự án."""
-        stmt = select(RequirementModel).where(RequirementModel.project_id == project_id)
-        result = await self._session.execute(stmt)
-        models = result.scalars().all()
-        return [RequirementMapper.to_domain(m) for m in models]
+        """Lấy các yêu cầu thuộc dự án."""
+        statement = select(RequirementModel).where(RequirementModel.project_id == project_id)
+        result = await self._session.execute(statement)
+        return [RequirementMapper.to_domain(model) for model in result.scalars().all()]
+
+    @override
+    @translate_database_errors
+    async def replace_by_project(
+        self, project_id: EntityID, entities: tuple[Requirement, ...]
+    ) -> list[Requirement]:
+        """Xóa tập cũ và flush tập Requirements mới trong cùng transaction."""
+        await self._session.execute(
+            delete(RequirementModel).where(RequirementModel.project_id == project_id)
+        )
+        models = [RequirementMapper.to_model(entity) for entity in entities]
+        self._session.add_all(models)
+        await self._session.flush()
+        return [RequirementMapper.to_domain(model) for model in models]
 
     @override
     async def save(self, entity: Requirement) -> Requirement:
-        """Lưu (tạo mới hoặc cập nhật) thực thể Requirement."""
-        stmt = select(RequirementModel).where(RequirementModel.id == entity.id)
-        result = await self._session.execute(stmt)
-        existing_model = result.scalar_one_or_none()
-
-        if existing_model:
-            model = RequirementMapper.update_model(existing_model, entity)
-        else:
-            model = RequirementMapper.to_model(entity)
-            self._session.add(model)
-
-        await self._session.flush()
-        return RequirementMapper.to_domain(model)
+        """Lưu mới hoặc cập nhật yêu cầu."""
+        return await self._crud.save(entity)
 
     @override
     async def delete(self, entity_id: EntityID) -> bool:
-        """Xóa thực thể Requirement theo ID."""
-        stmt = select(RequirementModel).where(RequirementModel.id == entity_id)
-        result = await self._session.execute(stmt)
-        model = result.scalar_one_or_none()
-        if model is None:
-            return False
-        await self._session.delete(model)
-        await self._session.flush()
-        return True
+        """Xóa yêu cầu theo ID."""
+        return await self._crud.delete(entity_id)

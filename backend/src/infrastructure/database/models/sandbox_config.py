@@ -5,8 +5,13 @@ from uuid import UUID
 
 from sqlalchemy import CheckConstraint, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from src.domain.sandbox.rules import (
+    MAX_DATABASE_NAME_LENGTH,
+    MAX_HOST_LENGTH,
+    MAX_SCHEMA_NAME_LENGTH,
+)
 from src.infrastructure.database.base import Base
-from src.infrastructure.database.constants import MAX_NAME_LENGTH, MAX_STATUS_LENGTH
+from src.infrastructure.database.constants import MAX_NAME_LENGTH
 
 if TYPE_CHECKING:
     from src.infrastructure.database.models.project import ProjectModel
@@ -27,13 +32,15 @@ class SandboxConfigModel(Base):
 
     project_id: Mapped[UUID] = mapped_column(ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, unique=True)
     db_type: Mapped[str] = mapped_column(String(MAX_NAME_LENGTH), nullable=False, default="POSTGRESQL")
-    host: Mapped[str] = mapped_column(String(255), nullable=False, default="localhost")
+    host: Mapped[str] = mapped_column(String(MAX_HOST_LENGTH), nullable=False, default="localhost")
     port: Mapped[int] = mapped_column(Integer, nullable=False, default=5432)
-    database_name: Mapped[str] = mapped_column(String(MAX_NAME_LENGTH), nullable=False, default="sandbox_db")
+    database_name: Mapped[str] = mapped_column(
+        String(MAX_DATABASE_NAME_LENGTH), nullable=False, default="sandbox_db"
+    )
     username: Mapped[str | None] = mapped_column(String(MAX_NAME_LENGTH), nullable=True)
     password: Mapped[str | None] = mapped_column(Text, nullable=True)
-    schema_name: Mapped[str | None] = mapped_column(String(MAX_NAME_LENGTH), nullable=True, default="public")
-    status: Mapped[str] = mapped_column(String(MAX_STATUS_LENGTH), nullable=False, default="CONFIGURED")
-
+    schema_name: Mapped[str | None] = mapped_column(
+        String(MAX_SCHEMA_NAME_LENGTH), nullable=True, default="public"
+    )
     # Relationship
     project: Mapped["ProjectModel"] = relationship("ProjectModel", backref="sandbox_config")

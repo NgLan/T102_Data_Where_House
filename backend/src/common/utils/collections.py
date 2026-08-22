@@ -12,7 +12,15 @@ T = TypeVar("T")
 def chunked(iterable: Iterable[T], size: int) -> list[list[T]]:
     """Chia một iterable thành các danh sách con (chunk) có độ dài tối đa size.
 
-    Ném ValueError nếu size nhỏ hơn 1.
+    Args:
+        iterable: Tập phần tử đầu vào.
+        size: Kích thước tối đa của mỗi nhóm.
+
+    Returns:
+        Danh sách các nhóm phần tử.
+
+    Raises:
+        ValueError: Khi kích thước nhóm nhỏ hơn một.
     """
     if size < 1:
         raise ValueError("Kích thước chunk (size) phải lớn hơn hoặc bằng 1.")
@@ -22,7 +30,14 @@ def chunked(iterable: Iterable[T], size: int) -> list[list[T]]:
 
 
 def is_empty(collection: Collection[Any] | None) -> bool:
-    """Kiểm tra một collection là None hoặc có số lượng phần tử bằng 0."""
+    """Kiểm tra một collection không có phần tử.
+
+    Args:
+        collection: Collection cần kiểm tra hoặc ``None``.
+
+    Returns:
+        ``True`` khi collection là ``None`` hoặc rỗng.
+    """
     if collection is None:
         return True
     return len(collection) == 0

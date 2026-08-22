@@ -1,0 +1,15 @@
+{
+  "TXT_AI_INSIGHTS": "Phân tích AI và kiểm tra grain",
+  "TXT_ISSUE_COUNT": "{{count}} cảnh báo",
+  "BTN_TOGGLE_INSIGHTS": "Bật hoặc tắt phân tích AI",
+  "TXT_ALL_TABLES": "Tất cả các bảng ({{count}} cảnh báo)",
+  "TXT_EMPTY_INSIGHTS": "Không có cảnh báo phù hợp với bộ lọc hiện tại.",
+  "TXT_INSIGHT_GRAIN_TITLE": "Khái quát grain",
+  "TXT_INSIGHT_GRAIN_DESCRIPTION": "Mỗi dòng Fact_Rides tương ứng một chuyến được đặt hoặc hủy.",
+  "TXT_INSIGHT_FAN_TRAP_TITLE": "Mẫu fan trap",
+  "TXT_INSIGHT_FAN_TRAP_DESCRIPTION": "Relationship khuyến mãi một-nhiều có thể làm trùng tổng tiền giảm giá.",
+  "TXT_INSIGHT_KEY_TITLE": "Thiếu surrogate key",
+  "TXT_INSIGHT_KEY_DESCRIPTION": "Dim_Driver đang dùng natural key; nên bổ sung driver key dạng số nguyên.",
+  "TXT_INSIGHT_INDEX_TITLE": "Foreign key chưa có index",
+  "TXT_INSIGHT_INDEX_DESCRIPTION": "Fact_Rides.customer_key hiện chưa có index."
+}

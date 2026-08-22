@@ -35,3 +35,57 @@
 .dark-scrollbar::-webkit-scrollbar-thumb {
   background: #334155;
 }
+
+/* React Flow Controls & Minimap styling */
+.react-flow__controls {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.dark .react-flow__controls {
+  background-color: #0f172a !important;
+  border: 1px solid #334155 !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5) !important;
+}
+
+.dark .react-flow__controls-button {
+  background-color: #0f172a !important;
+  border-bottom: 1px solid #334155 !important;
+  fill: #e2e8f0 !important;
+  color: #e2e8f0 !important;
+}
+
+.dark .react-flow__controls-button:hover {
+  background-color: #1e293b !important;
+}
+
+.dark .react-flow__controls-button svg {
+  fill: #e2e8f0 !important;
+}
+
+.dark .react-flow__minimap {
+  background-color: #0f172a !important;
+  border: 1px solid #334155 !important;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.dark .react-flow__edge-path {
+  stroke: #64748b;
+  stroke-width: 1.5;
+}
+
+.dark .react-flow__edge.selected .react-flow__edge-path {
+  stroke: #38bdf8;
+  stroke-width: 2.5;
+}
+
+.dark .react-flow__edge-text {
+  fill: #f1f5f9;
+}
+
+.dark .react-flow__edge-textbg {
+  fill: #0f172a;
+  rx: 4px;
+}

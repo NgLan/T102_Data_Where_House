@@ -1,0 +1,13 @@
+﻿Số bệnh án,Thời gian vào viện,Ngày ra viện,Vào từ khoa,Ra từ khoa,Chẩn đoán,Số lưu trữ,Ngày lưu trữ,Trạng thái hồ sơ,Kho,Tủ,Ngăn,Vị trí,Ký hiệu,Ghi chú
+NOI-300,18/01/2015 16:00,06/02/2015 16:00,Khoa A7 (Nội thận - Tiết niệu),Khoa A7 (Nội thận - Tiết niệu),Nhồi máu cơ tim cấp,1,07/02/2015 16:00,Hồ sơ chờ đưa vào kho,Kho 2,Tủ A,Ngăn 1,Kệ 1 - Hàng 4,A7-15020001,
+NGTBD-301,27/02/2015 09:00,15/03/2015 09:00,Khoa B9 (Tai - Mũi - Họng),Khoa B9 (Tai - Mũi - Họng),Thoát vị đĩa đệm cột sống thắt lưng,2,20/03/2015 09:00,Hồ sơ đang lưu trữ,Kho 1,Tủ A,Ngăn 4,Kệ 3 - Hàng 5,B9-15020002,
+NOI-302,07/02/2015 18:00,10/02/2015 18:00,Khoa A2 (Chấn thương chỉnh hình),Khoa A2 (Chấn thương chỉnh hình),Sỏi thận,3,14/02/2015 18:00,Hồ sơ chờ đưa vào kho,Kho 1,Tủ B,Ngăn 1,Kệ 3 - Hàng 6,A2-15020003,
+NOI-303,22/02/2015 10:00,10/03/2015 10:00,Khoa A2 (Chấn thương chỉnh hình),Khoa Khám bệnh,Đái tháo đường type 2,4,13/03/2015 10:00,Hồ sơ đang lưu trữ,Kho 2,Tủ B,Ngăn 2,Kệ 3 - Hàng 2,A2-15020004,Hồ sơ cần bổ sung xét nghiệm
+NOI-304,02/02/2015 16:00,14/02/2015 16:00,Khoa A16 (Quốc tế),Khoa A16 (Quốc tế),Viêm xoang mạn tính,5,15/02/2015 16:00,Hồ sơ đang lưu trữ,Kho 1,Tủ B,Ngăn 4,Kệ 3 - Hàng 2,A16-15020005,
+NOI-305,23/01/2015 10:00,29/01/2015 10:00,Khoa A16 (Quốc tế),Khoa B6 (Ngoại chấn thương),U xơ tử cung,6,31/01/2015 10:00,Hồ sơ chờ đưa vào kho,Kho 3,Tủ B,Ngăn 5,Kệ 4 - Hàng 7,A16-15020006,
+NGTBD-306,25/01/2015 18:00,09/02/2015 18:00,Khoa Khám bệnh,Khoa Khám bệnh,Viêm xoang mạn tính,7,14/02/2015 18:00,Hồ sơ đang lưu trữ,Kho 2,Tủ B,Ngăn 5,Kệ 4 - Hàng 5,Khám-15020007,Hồ sơ cần bổ sung xét nghiệm
+NOI-307,11/02/2015 12:00,18/02/2015 12:00,Khoa Xạ trị,Khoa Xạ trị,Đái tháo đường type 2,8,22/02/2015 12:00,Hồ sơ đang lưu trữ,Kho 3,Tủ C,Ngăn 3,Kệ 2 - Hàng 2,Xạ-15020008,Hồ sơ cần bổ sung xét nghiệm
+NOI-308,05/01/2015 15:00,17/01/2015 15:00,Khoa Xạ trị,Khoa Xạ trị,Thoát vị đĩa đệm cột sống thắt lưng,9,21/01/2015 15:00,Hồ sơ đang lưu trữ,Kho 1,Tủ B,Ngăn 3,Kệ 2 - Hàng 1,Xạ-15020009,
+NOI-309,21/01/2015 08:00,07/02/2015 08:00,Khoa Khám bệnh,Khoa Khám bệnh,Thoát vị đĩa đệm cột sống thắt lưng,10,12/02/2015 08:00,Hồ sơ đang lưu trữ,Kho 2,Tủ C,Ngăn 5,Kệ 4 - Hàng 4,Khám-15020010,Hồ sơ cần bổ sung xét nghiệm
+NOI-310,05/02/2015 09:00,09/02/2015 09:00,Khoa B1-A (CT-Can thiệp),Khoa B1-A (CT-Can thiệp),Đái tháo đường type 2,11,12/02/2015 09:00,Hồ sơ đang lưu trữ,Kho 3,Tủ C,Ngăn 2,Kệ 2 - Hàng 1,B1-A-15020011,
+NGTBD-311,04/02/2015 10:00,21/02/2015 10:00,Khoa A1 (Nội tổng hợp),Khoa A2 (Chấn thương chỉnh hình),Thoát vị đĩa đệm cột sống thắt lưng,12,23/02/2015 10:00,Hồ sơ chờ đưa vào kho,Kho 1,Tủ C,Ngăn 5,Kệ 4 - Hàng 4,A1-15020012,Hồ sơ cần bổ sung xét nghiệm

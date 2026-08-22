@@ -1,57 +1,80 @@
-"""Middleware ghi log cho vòng đời HTTP Request (logging.py)."""
+"""Pure ASGI middleware ghi log vòng đời HTTP request."""
 
+import logging
 import time
-from collections.abc import Callable
 
-from fastapi import Request, Response
+from starlette.types import ASGIApp, Message, Receive, Scope, Send
+
+# isort: split
 from src.common.logging.logger import get_logger
-from starlette.middleware.base import BaseHTTPMiddleware
 
-logger = get_logger(__name__)
+logger: logging.Logger = get_logger(__name__)
 
-# Các đường dẫn endpoint kiểm tra sức khỏe hệ thống cần lọc bớt log INFO
-QUIET_PATHS = {"/health", "/healthz", "/ready", "/readyz"}
+MILLISECONDS_PER_SECOND = 1_000
+DURATION_PRECISION = 2
+QUIET_PATHS = frozenset({"/health", "/healthz", "/ready", "/readyz"})
 
 
-class HTTPLoggingMiddleware(BaseHTTPMiddleware):
-    """Middleware theo dõi vòng đời HTTP Request, đo đạc thời gian thực thi (duration_ms) và ghi log.
+def _duration_ms(start_time: float) -> float:
+    """Tính duration theo monotonic clock."""
+    elapsed = (time.perf_counter() - start_time) * MILLISECONDS_PER_SECOND
+    return round(elapsed, DURATION_PRECISION)
 
-    Đặc điểm:
-    - Sử dụng monotonic clock (time.perf_counter()) để đo chính xác duration.
-    - Phân loại log level: DEBUG cho health check & OPTIONS preflight, INFO cho request thông thường.
-    - Đảm bảo an toàn với StreamingResponse (không buffer/consume body).
-    - Không nuốt Exception: Re-raise exception để Global Exception Handler xử lý.
-    """
 
-    async def dispatch(self, request: Request, call_next: Callable) -> Response:
-        start_time = time.perf_counter()
-        path = request.url.path
-        method = request.method
+def _log_completed(scope: Scope, status_code: int, duration_ms: float) -> None:
+    """Ghi sự kiện HTTP hoàn thành với structured extras."""
+    method = scope.get("method", "UNKNOWN")
+    path = scope.get("path", "")
+    log_method = logger.debug if path in QUIET_PATHS or method == "OPTIONS" else logger.info
+    log_method(
+        "http_request_completed method=%s path=%s status=%d duration_ms=%.2f",
+        method,
+        path,
+        status_code,
+        duration_ms,
+        extra={"event": "http_request_completed", "duration_ms": duration_ms},
+    )
 
-        # Xác định log level phù hợp (health check & OPTIONS -> DEBUG)
-        is_quiet = path in QUIET_PATHS or method == "OPTIONS"
-        log_func = logger.debug if is_quiet else logger.info
+
+class HTTPLoggingMiddleware:
+    """Quan sát HTTP request mà không đọc hoặc thay đổi response body."""
+
+    def __init__(self, app: ASGIApp) -> None:
+        """Khởi tạo middleware.
+
+        Args:
+            app: ASGI application phía trong.
+        """
+        self._app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        """Ghi status và duration cho một HTTP request."""
+        if scope["type"] != "http":
+            await self._app(scope, receive, send)
+            return
+        await self._observe_http(scope, receive, send)
+
+    async def _observe_http(self, scope: Scope, receive: Receive, send: Send) -> None:
+        """Quan sát một HTTP connection và bảo toàn exception."""
+        started_at = time.perf_counter()
+        status_code = 500
+
+        async def _capture_status(message: Message) -> None:
+            nonlocal status_code
+            if message["type"] == "http.response.start":
+                status_code = int(message["status"])
+            await send(message)
 
         try:
-            response: Response = await call_next(request)
-            duration_ms = round((time.perf_counter() - start_time) * 1000, 2)
-
-            log_func(
-                "http_request_completed: %s %s status=%d duration_ms=%.2f",
-                method,
-                path,
-                response.status_code,
-                duration_ms,
-            )
-
-            return response
-        except Exception as exc:
-            duration_ms = round((time.perf_counter() - start_time) * 1000, 2)
-            logger.warning(
-                "http_request_failed: %s %s duration_ms=%.2f error=%s",
-                method,
-                path,
-                duration_ms,
-                str(exc),
+            await self._app(scope, receive, _capture_status)
+        except Exception:
+            duration = _duration_ms(started_at)
+            logger.error(
+                "http_request_failed method=%s path=%s duration_ms=%.2f",
+                scope.get("method", "UNKNOWN"),
+                scope.get("path", ""),
+                duration,
+                extra={"event": "http_request_failed", "duration_ms": duration},
             )
             raise
+        _log_completed(scope, status_code, _duration_ms(started_at))

@@ -1,49 +1,43 @@
 "use client";
 
-import { useTranslation } from "react-i18next";
-import { CreateProjectDialog } from "./components/CreateProjectDialog";
-import { ProjectListState } from "./components/ProjectListState";
-import { ProjectToolbar } from "./components/ProjectToolbar";
+import { CreateProjectDialog } from "./project-management-screen/project-creation/components/CreateProjectDialog";
+import { ProjectList } from "./project-management-screen/ProjectList";
+import { ProjectManagementHero } from "./project-management-screen/ProjectManagementHero";
+import { ProjectToolbar } from "./project-management-screen/ProjectToolbar";
 import { useProjectManagement } from "./hooks/use-project-management";
 
 /** Public screen của feature Project Management. */
 export function ProjectManagementScreen() {
-  const { t } = useTranslation("project-management");
   const state = useProjectManagement();
   return (
-    <main className="mx-auto w-full max-w-7xl space-y-6 px-4 py-8">
-      <header className="rounded-2xl bg-gradient-to-br from-slate-950 to-indigo-950 p-8 text-white">
-        <p className="text-xs font-semibold uppercase tracking-wider text-blue-300">
-          {t("EYEBROW")}
-        </p>
-        <h1 className="mt-2 text-2xl font-bold">{t("TITLE")}</h1>
-        <p className="mt-2 max-w-2xl text-sm text-slate-300">{t("SUBTITLE")}</p>
-      </header>
+    <section className="mx-auto w-full max-w-7xl space-y-6 px-4 py-8">
+      <ProjectManagementHero />
       <ProjectToolbar
-        query={state.searchQuery}
-        totalCount={state.totalCount}
-        isRefreshing={state.status === "refreshing"}
-        onQueryChange={state.setSearchQuery}
-        onRefresh={state.refreshProjects}
-        onCreate={() => state.setIsCreateOpen(true)}
+        searchQuery={state.searchQuery}
+        totalCount={state.projects.length}
+        isRefreshing={state.isRefreshing}
+        onSearchQueryChange={state.setSearchQuery}
+        onRefreshProjects={state.refreshProjects}
+        onCreateProject={() => state.setIsCreateDialogOpen(true)}
       />
-      <ProjectListState
-        projects={state.projects}
-        totalCount={state.totalCount}
-        status={state.status}
+      <ProjectList
+        projects={state.filteredProjects}
+        totalCount={state.projects.length}
         errorCode={state.errorCode}
-        hasSearch={Boolean(state.searchQuery.trim())}
-        deletingIds={state.deletingIds}
-        onRetry={state.retryProjects}
+        hasSearchQuery={Boolean(state.searchQuery.trim())}
+        isInitialError={state.isInitialError}
+        isInitialLoading={state.isInitialLoading}
+        deletingProjectIds={state.deletingProjectIds}
+        onRetry={state.refreshProjects}
         onClearSearch={() => state.setSearchQuery("")}
-        onCreate={() => state.setIsCreateOpen(true)}
-        onDelete={state.deleteProject}
+        onCreateProject={() => state.setIsCreateDialogOpen(true)}
+        onDeleteProject={state.deleteProject}
       />
       <CreateProjectDialog
-        isOpen={state.isCreateOpen}
-        onOpenChange={state.setIsCreateOpen}
+        isOpen={state.isCreateDialogOpen}
+        onOpenChange={state.setIsCreateDialogOpen}
         onSubmit={state.createProject}
       />
-    </main>
+    </section>
   );
 }

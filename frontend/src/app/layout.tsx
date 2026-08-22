@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
-import { I18nProvider } from '@/common/i18n/I18nProvider';
-import { NotificationCenter } from '@/common/components/ui/notification-center';
+import { AppProviders } from '@/common/providers/AppProviders';
 import commonVi from '@/common/i18n/locales/vi/common.json';
 import './globals.css';
 
@@ -20,12 +19,9 @@ export default function RootLayout({
   children: ReactNode;
 }>) {
   return (
-    <html lang="vi" className="font-sans">
+    <html lang="vi" className="font-sans" suppressHydrationWarning>
       <body className="antialiased">
-        <I18nProvider>
-          {children}
-          <NotificationCenter />
-        </I18nProvider>
+        <AppProviders>{children}</AppProviders>
       </body>
     </html>
   );

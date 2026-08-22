@@ -12,7 +12,15 @@ from src.domain.data_model import (
     DataModelChange,
     DataModelChangeStatus,
 )
-from src.domain.data_source import ColumnMetadata, DataSource, DataSourceType, SchemaMetadata, TableMetadata
+from src.domain.data_source import (
+    CheckConstraint,
+    ColumnDataType,
+    ColumnMetadata,
+    DataSource,
+    DataSourceType,
+    SchemaMetadata,
+    TableMetadata,
+)
 from src.domain.project import Project, ProjectDetails, ProjectMember, ProjectRole, ProjectStatus
 from src.domain.project_session import (
     AgentResultMetadata,
@@ -223,9 +231,11 @@ def test_project_name_too_long() -> None:
 
 
 def test_project_invalid_requirement() -> None:
-    """Project requirement rỗng ném lỗi INVALID_PROJECT_REQUIREMENT."""
+    """Requirement rỗng thành None, nhưng nội dung có giá trị vẫn phải đủ dài."""
+    project = Project(name="Tên dự án", requirement="  ", user_id=uuid4())
+    assert project.requirement is None
     with pytest.raises(BusinessException) as exc_info:
-        Project(name="Tên dự án", requirement="  ", user_id=uuid4())
+        Project(name="Tên dự án", requirement="ngắn", user_id=uuid4())
     assert exc_info.value.code == ErrorCode.INVALID_PROJECT_REQUIREMENT
 
 
@@ -252,6 +262,8 @@ def test_project_status_transitions() -> None:
     # Kiểm tra khôi phục lại trạng thái ACTIVE từ ARCHIVED
     project.update_status(ProjectStatus.ACTIVE)
     assert project.status == ProjectStatus.ACTIVE
+
+
 
 
 def test_archived_project_rejects_content_update() -> None:
@@ -287,21 +299,21 @@ def test_requirement_creation() -> None:
 def test_requirement_invalid_title() -> None:
     """Requirement title rỗng ném lỗi INVALID_REQUIREMENT_TITLE."""
     with pytest.raises(BusinessException) as exc_info:
-        Requirement(title="   ", description="Mô tả")
+        Requirement(project_id=uuid4(), title="   ", description="Mô tả")
     assert exc_info.value.code == ErrorCode.INVALID_REQUIREMENT_TITLE
 
 
 def test_requirement_title_too_long() -> None:
     """Requirement title > 255 ký tự ném lỗi REQUIREMENT_TITLE_TOO_LONG."""
     with pytest.raises(BusinessException) as exc_info:
-        Requirement(title="a" * 256, description="Mô tả")
+        Requirement(project_id=uuid4(), title="a" * 256, description="Mô tả")
     assert exc_info.value.code == ErrorCode.REQUIREMENT_TITLE_TOO_LONG
 
 
 def test_requirement_invalid_description() -> None:
     """Requirement description rỗng ném lỗi INVALID_REQUIREMENT_DESCRIPTION."""
     with pytest.raises(BusinessException) as exc_info:
-        Requirement(title="Tiêu đề", description="   ")
+        Requirement(project_id=uuid4(), title="Tiêu đề", description="   ")
     assert exc_info.value.code == ErrorCode.INVALID_REQUIREMENT_DESCRIPTION
 
 
@@ -322,10 +334,9 @@ def test_data_source_creation() -> None:
     """Kiểm tra tạo DataSource entity với SchemaMetadata Value Object chuẩn type safety."""
     col = ColumnMetadata(
         name="age",
-        data_type="integer",
+        data_type=ColumnDataType.INTEGER,
         nullable=False,
-        unique=False,
-        constraints=("age >= 0", "age <= 120"),
+        constraints=(CheckConstraint("age >= 0"), CheckConstraint("age <= 120")),
         description="Tuổi của bệnh nhân",
     )
     schema = SchemaMetadata(
@@ -333,7 +344,11 @@ def test_data_source_creation() -> None:
             TableMetadata(
                 name="patients",
                 columns=(
-                    ColumnMetadata(name="patient_id", data_type="integer", primary_key=True),
+                    ColumnMetadata(
+                        name="patient_id",
+                        data_type=ColumnDataType.INTEGER,
+                        primary_key=True,
+                    ),
                     col,
                 ),
             ),
@@ -349,7 +364,10 @@ def test_data_source_creation() -> None:
     assert ds.type == DataSourceType.CSV
     assert ds.schema_metadata is not None
     assert ds.schema_metadata.tables[0].name == "patients"
-    assert ds.schema_metadata.tables[0].columns[1].constraints == ("age >= 0", "age <= 120")
+    assert ds.schema_metadata.tables[0].columns[1].constraints == (
+        CheckConstraint("age >= 0"),
+        CheckConstraint("age <= 120"),
+    )
     assert ds.schema_metadata.tables[0].columns[1].nullable is False
 
 
@@ -415,5 +433,21 @@ def test_data_model_optimistic_locking_conflict() -> None:
     with pytest.raises(BusinessException) as exc_info:
         dm.apply_change(change)
 
-    assert exc_info.value.code == ErrorCode.REVISION_CONFLICT
+    assert exc_info.value.code == ErrorCode.DATA_MODEL_REVISION_CONFLICT
     assert change.status == DataModelChangeStatus.CONFLICTED
+
+
+def test_data_model_generated_revisions_and_outdated_check() -> None:
+    """DataModel khởi tạo mặc định revision = 1 và kiểm tra outdated chính xác."""
+    dm = DataModel(project_id=uuid4(), dbml="Table A { id uuid }")
+    assert dm.generated_from_requirement_revision == 1
+    assert dm.generated_from_source_revision == 1
+    assert dm.is_outdated(2, 1) is True
+    assert dm.is_outdated(1, 1) is False
+
+    dm.record_generation_revisions(2, 3)
+    assert dm.generated_from_requirement_revision == 2
+    assert dm.generated_from_source_revision == 3
+    assert dm.is_outdated(2, 3) is False
+    assert dm.is_outdated(2, 4) is True
+    assert dm.is_outdated(1, 3) is True

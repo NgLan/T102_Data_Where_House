@@ -3,11 +3,14 @@
 import asyncio
 import json
 import logging
+import sys
 
 import pytest
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 from src.common.logging import (
+    LoggingContextSnapshot,
+    bind_logging_context,
     clear_logging_context,
     get_agent_name,
     get_correlation_id,
@@ -49,6 +52,17 @@ def test_logging_context_management():
     assert get_correlation_id() is None
     assert get_session_id() is None
     assert get_agent_name() is None
+
+
+def test_logging_context_binding_restores_outer_context():
+    """Test context binding khôi phục đúng nested context sau khi thoát ``with``."""
+    set_request_id("outer-request")
+
+    with bind_logging_context(LoggingContextSnapshot(request_id="inner-request")):
+        assert get_request_id() == "inner-request"
+
+    assert get_request_id() == "outer-request"
+    clear_logging_context()
 
 
 @pytest.mark.asyncio
@@ -130,8 +144,8 @@ def test_console_formatter():
     assert "INFO" in output
     assert "test.logger" in output
     assert "Hello Console Log" in output
-    assert "[req_id=req_999]" in output
-    assert "[agent=test_agent]" in output
+    assert "[request_id=req_999]" in output
+    assert "[agent_name=test_agent]" in output
 
 
 def test_json_formatter():
@@ -148,6 +162,8 @@ def test_json_formatter():
     )
     record.request_id = "req_json_1"
     record.session_id = "sess_json_1"
+    record.event = "application_operation_failed"
+    record.duration_ms = 12.5
 
     output = formatter.format(record)
     parsed = json.loads(output)
@@ -157,6 +173,51 @@ def test_json_formatter():
     assert parsed["message"] == "JSON Log Error"
     assert parsed["request_id"] == "req_json_1"
     assert parsed["session_id"] == "sess_json_1"
+    assert parsed["event"] == "application_operation_failed"
+    assert parsed["duration_ms"] == 12.5
+
+
+def test_sensitive_data_filter_nested_values():
+    """Test filter che secret trong structured arguments lồng nhau."""
+    sensitive_filter = SensitiveDataFilter()
+    record = logging.LogRecord(
+        name="test",
+        level=logging.INFO,
+        pathname="test.py",
+        lineno=1,
+        msg="payload=%s client_secret=plain-secret",
+        args=({"profile": {"password": "nested-secret"}},),
+        exc_info=None,
+    )
+
+    sensitive_filter.filter(record)
+    output = record.getMessage()
+
+    assert "nested-secret" not in output
+    assert "plain-secret" not in output
+    assert output.count("***REDACTED***") >= 2
+
+
+def test_json_formatter_redacts_exception_traceback():
+    """Test traceback không làm rò secret qua formatter."""
+    try:
+        raise RuntimeError("authorization=Bearer top-secret-token")
+    except RuntimeError:
+        exception_info = sys.exc_info()
+
+    record = logging.LogRecord(
+        name="test.traceback",
+        level=logging.ERROR,
+        pathname="test.py",
+        lineno=1,
+        msg="operation failed",
+        args=(),
+        exc_info=exception_info,
+    )
+    output = JsonFormatter().format(record)
+
+    assert "top-secret-token" not in output
+    assert "***REDACTED***" in output
 
 
 @pytest.mark.asyncio

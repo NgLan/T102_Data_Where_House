@@ -1,5 +1,5 @@
-import { parseDbml } from "@/common/dbml/dbml-adapter";
-import type { DbmlColumn, DbmlDocument, DbmlTable } from "@/common/dbml/types";
+import { parseDbml } from "@/features/modeling-dashboard/modeling-workspace/model-document/dbml/dbml-adapter";
+import type { DbmlColumn, DbmlDocument, DbmlTable } from "@/features/modeling-dashboard/modeling-workspace/model-document/dbml/types";
 
 /** Parse DBML bắt buộc thành document cho state khởi tạo.
  * @param code DBML source hợp lệ mong đợi.
@@ -8,7 +8,9 @@ import type { DbmlColumn, DbmlDocument, DbmlTable } from "@/common/dbml/types";
  */
 export function requireParsedDocument(code: string): DbmlDocument {
   const parsed = parseDbml(code);
-  if (!parsed.document) throw new Error(parsed.error ?? "INVALID_DBML_CONTENT");
+  if (!parsed.document) {
+    throw new Error(parsed.error ?? "DATA_MODEL_DBML_SYNTAX_INVALID");
+  }
   return parsed.document;
 }
 

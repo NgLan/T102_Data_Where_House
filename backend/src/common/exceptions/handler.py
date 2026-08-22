@@ -1,129 +1,137 @@
-"""Bộ xử lý ngoại lệ toàn cục (Global Exception Handler) cho ứng dụng FastAPI."""
+"""Bộ xử lý ngoại lệ toàn cục tại FastAPI presentation boundary."""
 
 import logging
 from http import HTTPStatus
-from typing import Any
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from src.common.exceptions.base import AppException
-from src.common.exceptions.error_codes import ErrorCode
-from src.common.exceptions.error_status import get_http_status_code
-from src.common.logging import get_logger
 from starlette.exceptions import HTTPException as StarletteHTTPException
+
+# isort: split
+from src.common.exceptions.base import AppException, ExceptionDetail
+from src.common.exceptions.error_codes import ErrorCode
+from src.common.exceptions.error_status import (
+    get_error_code_for_http_status,
+    get_http_status_code,
+)
+from src.common.logging import get_logger
 
 logger: logging.Logger = get_logger(__name__)
 
+PUBLIC_SERVER_MESSAGE = "Internal server error."
+PUBLIC_HTTP_MESSAGE = "HTTP request failed."
+
+
+def _serialize_details(
+    details: tuple[ExceptionDetail, ...] | None,
+) -> list[dict[str, str]] | None:
+    """Chuyển exception details sang wire format chuẩn."""
+    return [detail.to_dict() for detail in details] if details else None
+
+
+def _public_app_message(exc: AppException, status: HTTPStatus) -> str:
+    """Ẩn message kỹ thuật khỏi mọi phản hồi lỗi phía server."""
+    if status.value >= HTTPStatus.INTERNAL_SERVER_ERROR.value:
+        return PUBLIC_SERVER_MESSAGE
+    return exc.message
+
+
+def _log_app_exception(request: Request, exc: AppException, status: HTTPStatus) -> None:
+    """Ghi log AppException theo mức độ mà không mất traceback."""
+    log_args = (exc.code, status.value, request.url.path, exc.message)
+    message = "app_exception code=%s status=%d path=%s message=%s"
+    if status.value >= HTTPStatus.INTERNAL_SERVER_ERROR.value:
+        logger.error(message, *log_args, exc_info=(type(exc), exc, exc.__traceback__))
+        return
+    logger.info(message, *log_args)
+
 
 async def app_exception_handler(request: Request, exc: AppException) -> JSONResponse:
-    """Xử lý các ngoại lệ kế thừa từ AppException (BusinessException & SystemException)."""
-    status: HTTPStatus = get_http_status_code(exc.code)
-    status_code: int = status.value
-
-    # Ghi log tương ứng với mức độ lỗi
-    if status_code >= HTTPStatus.INTERNAL_SERVER_ERROR:
-        logger.error(
-            "SystemException [%s] (%d) tại path %s: %s",
-            exc.code,
-            status_code,
-            request.url.path,
-            exc.message,
-            exc_info=True,
-        )
-    else:
-        logger.info(
-            "BusinessException [%s] (%d) tại path %s: %s",
-            exc.code,
-            status_code,
-            request.url.path,
-            exc.message,
-        )
-
-    content: dict[str, Any] = {
-        "code": status_code,
-        "message": exc.message,
+    """Chuyển ``AppException`` thành error envelope chuẩn."""
+    status = get_http_status_code(exc.code)
+    _log_app_exception(request, exc, status)
+    content: dict[str, object] = {
+        "code": status.value,
+        "message": _public_app_message(exc, status),
         "error_code": exc.code.value,
-        "details": exc.details,
+        "details": _serialize_details(exc.details),
     }
-    return JSONResponse(status_code=status_code, content=content)
+    return JSONResponse(status_code=status.value, content=content)
 
 
-async def validation_exception_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
-    """Xử lý lỗi validation dữ liệu đầu vào từ Pydantic / FastAPI."""
-    status_code: int = HTTPStatus.UNPROCESSABLE_ENTITY.value
+def _validation_details(exc: RequestValidationError) -> list[dict[str, str]]:
+    """Chuẩn hóa từng lỗi Pydantic thành một field detail."""
     details: list[dict[str, str]] = []
-
-    for err in exc.errors():
-        loc: list[str] = [str(x) for x in err.get("loc", []) if x != "body"]
-        field_name: str = ".".join(loc) if loc else "payload"
+    for error in exc.errors():
+        location = [str(item) for item in error.get("loc", []) if item != "body"]
         details.append(
             {
-                "field": field_name,
-                "message": err.get("msg", "Dữ liệu không hợp lệ"),
+                "field": ".".join(location) if location else "payload",
+                "message": str(error.get("msg", "Dữ liệu không hợp lệ")),
             }
         )
+    return details
 
-    logger.warning(
-        "Validation error tại path %s: %s",
-        request.url.path,
-        details,
-    )
 
-    content: dict[str, Any] = {
-        "code": status_code,
+async def validation_exception_handler(
+    request: Request,
+    exc: RequestValidationError,
+) -> JSONResponse:
+    """Chuyển lỗi validation thành danh sách field details."""
+    details = _validation_details(exc)
+    logger.warning("request_validation_failed path=%s details=%s", request.url.path, details)
+    content: dict[str, object] = {
+        "code": HTTPStatus.UNPROCESSABLE_ENTITY.value,
         "message": "Request validation failed.",
         "error_code": ErrorCode.VALIDATION_ERROR.value,
         "details": details,
     }
-    return JSONResponse(status_code=status_code, content=content)
+    return JSONResponse(status_code=HTTPStatus.UNPROCESSABLE_ENTITY.value, content=content)
 
 
-async def http_exception_handler(request: Request, exc: StarletteHTTPException) -> JSONResponse:
-    """Xử lý các ngoại lệ dạng Starlette / FastAPI HTTPException."""
-    status_code: int = exc.status_code
-    message: str = str(exc.detail) if exc.detail else "HTTP Exception"
+def _http_message(status_code: int) -> str:
+    """Lấy reason phrase công khai thay vì dùng exception detail tùy ý."""
+    try:
+        return HTTPStatus(status_code).phrase
+    except ValueError:
+        return PUBLIC_HTTP_MESSAGE
 
-    # Ánh xá sơ bộ status code sang ErrorCode phù hợp
-    error_code_str: str = ErrorCode.INTERNAL_SERVER_ERROR.value
-    if status_code == HTTPStatus.NOT_FOUND:
-        error_code_str = ErrorCode.USER_NOT_FOUND.value
-    elif status_code == HTTPStatus.UNAUTHORIZED:
-        error_code_str = ErrorCode.AUTHENTICATION_REQUIRED.value
-    elif status_code == HTTPStatus.FORBIDDEN:
-        error_code_str = ErrorCode.PERMISSION_DENIED.value
-    elif status_code == HTTPStatus.UNPROCESSABLE_ENTITY:
-        error_code_str = ErrorCode.VALIDATION_ERROR.value
 
-    content: dict[str, Any] = {
-        "code": status_code,
-        "message": message,
-        "error_code": error_code_str,
+async def http_exception_handler(
+    request: Request,
+    exc: StarletteHTTPException,
+) -> JSONResponse:
+    """Chuyển HTTP exception thành mã lỗi presentation tổng quát."""
+    error_code = get_error_code_for_http_status(exc.status_code)
+    logger.info("http_exception status=%d path=%s", exc.status_code, request.url.path)
+    content: dict[str, object] = {
+        "code": exc.status_code,
+        "message": _http_message(exc.status_code),
+        "error_code": error_code.value,
         "details": None,
     }
-    return JSONResponse(status_code=status_code, content=content)
+    return JSONResponse(status_code=exc.status_code, content=content)
 
 
 async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONResponse:
-    """Xử lý tất cả các ngoại lệ chưa được bắt (Unhandled / Unexpected Exceptions)."""
-    logger.exception(
-        "Lỗi không xác định (Unhandled Exception) tại path %s: %s",
-        request.url.path,
-        exc,
-    )
-
-    status_code: int = HTTPStatus.INTERNAL_SERVER_ERROR.value
-    content: dict[str, Any] = {
-        "code": status_code,
-        "message": "Internal server error.",
+    """Ẩn lỗi ngoài dự kiến và ghi đầy đủ traceback đã được redact."""
+    logger.exception("unhandled_exception path=%s", request.url.path)
+    content: dict[str, object] = {
+        "code": HTTPStatus.INTERNAL_SERVER_ERROR.value,
+        "message": PUBLIC_SERVER_MESSAGE,
         "error_code": ErrorCode.INTERNAL_SERVER_ERROR.value,
         "details": None,
     }
-    return JSONResponse(status_code=status_code, content=content)
+    return JSONResponse(status_code=HTTPStatus.INTERNAL_SERVER_ERROR.value, content=content)
 
 
 def register_exception_handlers(app: FastAPI) -> None:
-    """Đăng ký tất cả các exception handler vào FastAPI app instance."""
+    """Đăng ký toàn bộ global exception handler cho ứng dụng.
+
+    Args:
+        app: FastAPI application cần cấu hình.
+    """
     app.add_exception_handler(AppException, app_exception_handler)
     app.add_exception_handler(RequestValidationError, validation_exception_handler)
     app.add_exception_handler(StarletteHTTPException, http_exception_handler)

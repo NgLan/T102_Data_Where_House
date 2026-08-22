@@ -1,144 +1,105 @@
-"""Triển khai lưu trữ tệp tin cục bộ (Local File Storage)."""
+"""Local filesystem adapter cho artifact của dự án."""
 
-import os
 import re
 import shutil
 from pathlib import Path
+from typing import NoReturn
 
 import anyio
+from src.application.data_sources.i_data_source_service import IDataSourceFileStore
+from src.application.projects.i_project_service import IProjectArtifactStore
 from src.common.exceptions.error_codes import ErrorCode
 from src.common.exceptions.infrastructure import InfrastructureException
-from src.infrastructure.storage.file_storage import IFileStorage
+from src.domain.shared.types import EntityID
+from typing_extensions import override
 
-DEFAULT_UPLOAD_DIR = Path("data/uploads")
 
+class LocalFileStorage(IDataSourceFileStore, IProjectArtifactStore):
+    """Lưu file nguồn và artifact dự án dưới một thư mục gốc an toàn."""
 
-class LocalFileStorage(IFileStorage):
-    """Lưu trữ tệp tin trên hệ thống tệp cục bộ của server."""
+    def __init__(self, base_dir: Path) -> None:
+        """Khởi tạo adapter với upload root đã cấu hình."""
+        self._base_dir = base_dir.resolve()
 
-    def __init__(self, base_dir: Path = DEFAULT_UPLOAD_DIR) -> None:
-        """Khởi tạo storage với thư mục gốc.
-
-        Args:
-            base_dir: Thư mục lưu trữ gốc.
-        """
-        self.base_dir = base_dir.resolve()
-
-    def _sanitize_filename(self, filename: str) -> str:
-        """Chuẩn hóa tên tệp loại bỏ ký tự nguy hiểm và chống path traversal."""
-        if ".." in filename:
-            raise InfrastructureException(
-                code=ErrorCode.STORAGE_ERROR,
-                message=f"Phát hiện truy cập đường dẫn không hợp lệ trong tên tệp: {filename}",
-            )
-        base_name = os.path.basename(filename)
-        cleaned = re.sub(r"[^\w\.\-\_]", "_", base_name)
-        return cleaned or "unnamed_file"
-
-    def _resolve_and_validate_path(self, target_input: str | Path) -> Path:
-        """Giải quyết và kiểm tra an toàn đường dẫn tệp tin trong base_dir."""
-        norm_str = str(target_input).replace("\\", "/").strip()
-        if ".." in norm_str:
-            raise InfrastructureException(
-                code=ErrorCode.STORAGE_ERROR,
-                message=f"Phát hiện truy cập đường dẫn không hợp lệ: {target_input}",
-            )
-
-        target = self._normalize_target_path(norm_str, target_input)
-        resolved = target.resolve()
-        base_str = str(self.base_dir).lower()
-        resolved_str = str(resolved).lower()
-
-        if not resolved_str.startswith(base_str):
-            raise InfrastructureException(
-                code=ErrorCode.STORAGE_ERROR,
-                message=f"Phát hiện truy cập đường dẫn không hợp lệ: {target_input}",
-            )
-        return resolved
-
-    def _normalize_target_path(self, norm_str: str, original_input: str | Path) -> Path:
-        """Chuẩn hóa đường dẫn đích loại bỏ các tiền tố thư mục lưu trữ nếu có."""
-        target = Path(original_input)
-        if target.is_absolute():
-            return target
-        if norm_str.startswith("data/uploads/"):
-            return self.base_dir / norm_str[len("data/uploads/") :]
-        if norm_str.startswith("uploads/"):
-            return self.base_dir / norm_str[len("uploads/") :]
-        return self.base_dir / target
-
+    @override
     async def save_file(self, project_id: str, filename: str, content: bytes) -> str:
-        """Lưu tệp tin an toàn vào thư mục của project."""
+        """Lưu file vào thư mục dự án và trả đường dẫn tuyệt đối."""
         try:
-            safe_name = self._sanitize_filename(filename)
-            target_dir = self._resolve_and_validate_path(project_id)
-            target_dir.mkdir(parents=True, exist_ok=True)
-            file_path = self._resolve_and_validate_path(target_dir / safe_name)
-            await anyio.Path(file_path).write_bytes(content)
-            return str(file_path.as_posix())
+            directory = self._resolve(project_id)
+            await anyio.Path(directory).mkdir(parents=True, exist_ok=True)
+            path = self._resolve(Path(project_id) / self._safe_filename(filename))
+            await anyio.Path(path).write_bytes(content)
+            return path.as_posix()
         except InfrastructureException:
             raise
-        except Exception as exc:
-            raise InfrastructureException(
-                code=ErrorCode.STORAGE_ERROR,
-                message=f"Lỗi khi lưu tệp tin cục bộ: {filename}",
-            ) from exc
+        except OSError as exc:
+            self._raise_storage_error("Không thể lưu file nguồn.", exc)
 
+    @override
     async def read_file(self, file_path: str) -> bytes:
-        """Đọc nội dung tệp tin từ đường dẫn an toàn."""
+        """Đọc file nằm trong upload root."""
         try:
-            path = self._resolve_and_validate_path(file_path)
-            return await anyio.Path(path).read_bytes()
+            return await anyio.Path(self._resolve(file_path)).read_bytes()
         except InfrastructureException:
             raise
-        except Exception as exc:
-            raise InfrastructureException(
-                code=ErrorCode.STORAGE_ERROR,
-                message=f"Lỗi khi đọc tệp tin cục bộ: {file_path}",
-            ) from exc
+        except OSError as exc:
+            self._raise_storage_error("Không thể đọc file nguồn.", exc)
 
+    @override
     async def delete_file(self, file_path: str) -> None:
-        """Xóa tệp tin vật lý khỏi ổ đĩa."""
+        """Xóa file nếu file còn tồn tại."""
         try:
-            path = self._resolve_and_validate_path(file_path)
-            anyio_path = anyio.Path(path)
-            if await anyio_path.exists():
-                await anyio_path.unlink()
+            path = anyio.Path(self._resolve(file_path))
+            if await path.exists():
+                await path.unlink()
         except InfrastructureException:
             raise
-        except Exception as exc:
-            raise InfrastructureException(
-                code=ErrorCode.STORAGE_ERROR,
-                message=f"Lỗi khi xóa tệp tin cục bộ: {file_path}",
-            ) from exc
+        except OSError as exc:
+            self._raise_storage_error("Không thể xóa file nguồn.", exc)
 
-    async def delete_directory(self, dir_path: str) -> None:
-        """Xóa đệ quy toàn bộ thư mục và tệp tin bên trong."""
-        try:
-            path = self._resolve_and_validate_path(dir_path)
-            if path.exists() and path.is_dir():
-                shutil.rmtree(path)
-        except InfrastructureException:
-            raise
-        except Exception as exc:
-            raise InfrastructureException(
-                code=ErrorCode.STORAGE_ERROR,
-                message=f"Lỗi khi xóa thư mục: {dir_path}",
-            ) from exc
-
+    @override
     async def cleanup_empty_dir(self, project_id: str) -> None:
-        """Dọn dẹp thư mục dự án nếu không còn tệp tin nào."""
+        """Xóa thư mục dự án khi không còn artifact."""
         try:
-            target_dir = self._resolve_and_validate_path(project_id)
-            if target_dir.exists() and target_dir.is_dir():
-                if not any(target_dir.iterdir()):
-                    target_dir.rmdir()
+            directory = self._resolve(project_id)
+            if directory.is_dir() and not any(directory.iterdir()):
+                await anyio.Path(directory).rmdir()
         except InfrastructureException:
             raise
-        except Exception as exc:
+        except OSError as exc:
+            self._raise_storage_error("Không thể dọn thư mục dự án.", exc)
+
+    @override
+    async def delete_project_directory(self, project_id: EntityID) -> None:
+        """Xóa toàn bộ artifact thuộc dự án mà không block event loop."""
+        try:
+            directory = self._resolve(str(project_id))
+            if directory.is_dir():
+                await anyio.to_thread.run_sync(shutil.rmtree, directory)
+        except InfrastructureException:
+            raise
+        except OSError as exc:
+            self._raise_storage_error("Không thể xóa artifact dự án.", exc)
+
+    def _resolve(self, value: str | Path) -> Path:
+        raw_path = Path(value)
+        candidate = raw_path.resolve() if raw_path.is_absolute() else (self._base_dir / raw_path).resolve()
+        if not candidate.is_relative_to(self._base_dir):
             raise InfrastructureException(
                 code=ErrorCode.STORAGE_ERROR,
-                message=f"Lỗi khi dọn dẹp thư mục dự án: {project_id}",
-            ) from exc
+                message="Đường dẫn lưu trữ nằm ngoài thư mục được phép.",
+            )
+        return candidate
 
+    @staticmethod
+    def _safe_filename(filename: str) -> str:
+        if "/" in filename or "\\" in filename or filename in {".", ".."}:
+            raise InfrastructureException(
+                code=ErrorCode.STORAGE_ERROR,
+                message="Tên file nguồn không hợp lệ.",
+            )
+        return re.sub(r"[^\w.-]", "_", filename) or "unnamed_file"
 
+    @staticmethod
+    def _raise_storage_error(message: str, exc: OSError) -> NoReturn:
+        raise InfrastructureException(code=ErrorCode.STORAGE_ERROR, message=message) from exc

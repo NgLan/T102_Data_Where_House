@@ -3,9 +3,8 @@
 from http import HTTPStatus
 
 from fastapi import APIRouter, Response
-from src.application.projects.input import ListProjectsInput, ProjectIdInput
+from src.application.projects.input import ProjectIdInput
 from src.presentation.dependencies.projects import ProjectServiceDependency
-from src.presentation.dtos.common import ApiErrorResponse
 from src.presentation.dtos.projects.request import (
     CreateProjectRequest,
     ProjectIdPath,
@@ -15,7 +14,7 @@ from src.presentation.dtos.projects.response import (
     ProjectResponse,
     ProjectSummaryResponse,
 )
-from src.presentation.routing import ApiResponseRoute, ErrorResponses
+from src.presentation.routing import ApiResponseRoute, error_responses
 
 router = APIRouter(
     prefix="/projects",
@@ -23,24 +22,13 @@ router = APIRouter(
     route_class=ApiResponseRoute,
 )
 
-COMMON_ERROR_RESPONSES: ErrorResponses = {
-    401: {"model": ApiErrorResponse},
-    422: {"model": ApiErrorResponse},
-    500: {"model": ApiErrorResponse},
-}
-AUTHORIZED_ERROR_RESPONSES: ErrorResponses = {
-    403: {"model": ApiErrorResponse},
-    404: {"model": ApiErrorResponse},
-    **COMMON_ERROR_RESPONSES,
-}
-
 
 @router.post(
     "",
     response_model=ProjectResponse,
     status_code=HTTPStatus.CREATED,
     operation_id="createProject",
-    responses=COMMON_ERROR_RESPONSES,
+    responses=error_responses(401, 422, 500),
 )
 async def create_project(
     request: CreateProjectRequest,
@@ -55,13 +43,13 @@ async def create_project(
     "",
     response_model=list[ProjectSummaryResponse],
     operation_id="listProjects",
-    responses=COMMON_ERROR_RESPONSES,
+    responses=error_responses(401, 422, 500),
 )
 async def list_projects(
     service: ProjectServiceDependency,
 ) -> list[ProjectSummaryResponse]:
     """Liệt kê Project mà người dùng hiện tại được phép truy cập."""
-    outputs = await service.list_projects(ListProjectsInput())
+    outputs = await service.list_projects()
     return [ProjectSummaryResponse.from_summary(item) for item in outputs]
 
 
@@ -69,7 +57,7 @@ async def list_projects(
     "/{project_id}",
     response_model=ProjectResponse,
     operation_id="getProject",
-    responses=AUTHORIZED_ERROR_RESPONSES,
+    responses=error_responses(401, 403, 404, 422, 500),
 )
 async def get_project(
     project_id: ProjectIdPath,
@@ -84,7 +72,7 @@ async def get_project(
     "/{project_id}",
     response_model=ProjectResponse,
     operation_id="updateProject",
-    responses=AUTHORIZED_ERROR_RESPONSES,
+    responses=error_responses(401, 403, 404, 422, 500),
 )
 async def update_project(
     project_id: ProjectIdPath,
@@ -101,7 +89,7 @@ async def update_project(
     status_code=HTTPStatus.NO_CONTENT,
     response_model=None,
     operation_id="deleteProject",
-    responses=AUTHORIZED_ERROR_RESPONSES,
+    responses=error_responses(401, 403, 404, 422, 500),
 )
 async def delete_project(
     project_id: ProjectIdPath,
@@ -110,3 +98,4 @@ async def delete_project(
     """Xóa Project do OWNER sở hữu cùng toàn bộ artifact liên quan."""
     await service.delete_project(ProjectIdInput(project_id=project_id))
     return Response(status_code=HTTPStatus.NO_CONTENT)
+

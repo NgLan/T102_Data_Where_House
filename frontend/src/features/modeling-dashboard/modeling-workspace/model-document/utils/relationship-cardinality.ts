@@ -1,4 +1,4 @@
-import type { DbmlReference } from "@/common/dbml/types";
+import type { DbmlReference } from "@/features/modeling-dashboard/modeling-workspace/model-document/dbml/types";
 import type { RelationshipKind } from "../types/relationship-types";
 
 /** Chuyển cardinality UI sang toán tử relationship DBML.

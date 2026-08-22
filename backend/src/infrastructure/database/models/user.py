@@ -4,8 +4,9 @@ from typing import TYPE_CHECKING
 
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from src.domain.user.entities import MAX_USERNAME_LENGTH
+from src.domain.user.value_objects import MAX_EMAIL_LENGTH
 from src.infrastructure.database.base import Base
-from src.infrastructure.database.constants import MAX_EMAIL_LENGTH, MAX_USERNAME_LENGTH
 
 if TYPE_CHECKING:
     from src.infrastructure.database.models.data_model_change import DataModelChangeModel

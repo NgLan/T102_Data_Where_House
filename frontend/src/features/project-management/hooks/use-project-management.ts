@@ -1,22 +1,33 @@
 "use client";
 
 import { useState } from "react";
-import { useProjectList } from "./use-project-list";
-import { useProjectMutations } from "./use-project-mutations";
+import { isApiError } from "@/api";
+import { useAccessibleProjectsQuery } from "@/common/projects/project-queries";
+import { useCreateProject } from "./use-create-project";
+import { useDeleteProject } from "./use-delete-project";
+import { useProjectSearch } from "./use-project-search";
 
-export type { ProjectListStatus } from "./use-project-list";
-
-/** Quản lý lifecycle, mutation và chống stale response của Project Management. */
+/** Ghép state giao diện với project query và mutations.
+ * @returns View model duy nhất cho ProjectManagementScreen.
+ */
 export function useProjectManagement() {
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const { removeProject, ...list } = useProjectList();
-  const mutations = useProjectMutations({
-    onCreated: () => setIsCreateOpen(false),
-    onDeleted: removeProject,
-  });
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const projectsQuery = useAccessibleProjectsQuery();
+  const projects = projectsQuery.data ?? [];
+  const search = useProjectSearch(projects);
+  const createMutation = useCreateProject({ onCreated: () => setIsCreateDialogOpen(false) });
+  const deletion = useDeleteProject();
   return {
-    ...list,
-    ...mutations,
-    isCreateOpen, setIsCreateOpen,
+    ...search,
+    ...deletion,
+    createProject: createMutation.mutateAsync,
+    errorCode: isApiError(projectsQuery.error) ? projectsQuery.error.errorCode : "UNKNOWN_ERROR",
+    isCreateDialogOpen,
+    isInitialError: projectsQuery.isError && projects.length === 0,
+    isInitialLoading: projectsQuery.isPending,
+    isRefreshing: projectsQuery.isFetching && !projectsQuery.isPending,
+    projects,
+    refreshProjects: () => { void projectsQuery.refetch(); },
+    setIsCreateDialogOpen,
   };
 }

@@ -1,4 +1,4 @@
-import { handleApiError } from '@/common/errors/handle-api-error';
+import { handleApiError } from './errors';
 import { client } from './generated/client.gen';
 
 const configuredBaseUrl =
@@ -18,10 +18,23 @@ client.interceptors.request.use((request) => {
   return request;
 });
 
-client.interceptors.error.use((error, response) =>
-  handleApiError(error, { status: response?.status }),
+/** Đọc cờ tắt toast mà caller gắn kèm qua `meta` của từng request. */
+function readShouldNotify(options: unknown): boolean {
+  const meta = (options as { meta?: { shouldNotify?: boolean } } | undefined)?.meta;
+  return meta?.shouldNotify !== false;
+}
+
+// Caller nào tự dựng UI lỗi tại chỗ (khung chat Agent, empty state...) thì gắn
+// `meta: { shouldNotify: false }` để không bị toast chồng lên thông báo inline.
+client.interceptors.error.use((error, response, _request, options) =>
+  handleApiError(error, {
+    status: response?.status,
+    shouldNotify: readShouldNotify(options),
+  }),
 );
 
 /** Generated client dùng chung, được cấu hình tại application boundary của Frontend. */
 export { client as apiClient };
 export * from './generated';
+export * from './api-data';
+export * from './errors';

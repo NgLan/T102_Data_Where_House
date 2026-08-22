@@ -1,16 +1,18 @@
-"""Common DTOs cho các thông tin metadata chung của response."""
+"""DTO metadata để các payload cụ thể tái sử dụng khi cần."""
 
-from pydantic import BaseModel, Field
+from datetime import datetime
+
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class ResponseMeta(BaseModel):
-    """Metadata chung đi kèm phản hồi (request_id, timestamp...). Cấm đưa metadata đặc thù LLM/Agent vào đây."""
+    """Metadata tùy chọn nằm bên trong payload phản hồi."""
 
-    request_id: str | None = Field(
-        default=None,
+    model_config = ConfigDict(extra="forbid")
+
+    request_id: str = Field(
         description="Mã định danh request phục vụ truy vết (X-Request-ID)",
     )
-    timestamp: str | None = Field(
-        default=None,
-        description="Thời gian tạo phản hồi (ISO 8601 string)",
+    timestamp: datetime = Field(
+        description="Thời gian tạo phản hồi theo ISO 8601",
     )

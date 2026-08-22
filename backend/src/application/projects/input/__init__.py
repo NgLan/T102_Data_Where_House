@@ -2,14 +2,12 @@
 
 from src.application.projects.input.models import (
     CreateProjectInput,
-    ListProjectsInput,
     ProjectIdInput,
     UpdateProjectInput,
 )
 
 __all__ = [
     "CreateProjectInput",
-    "ListProjectsInput",
     "ProjectIdInput",
     "UpdateProjectInput",
 ]

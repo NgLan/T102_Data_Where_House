@@ -1,0 +1,15 @@
+{
+  "TXT_AI_INSIGHTS": "AI insights and grain audit",
+  "TXT_ISSUE_COUNT": "{{count}} issue(s)",
+  "BTN_TOGGLE_INSIGHTS": "Toggle AI insights",
+  "TXT_ALL_TABLES": "All tables ({{count}} issues)",
+  "TXT_EMPTY_INSIGHTS": "No alerts match the current filter.",
+  "TXT_INSIGHT_GRAIN_TITLE": "Grain overview",
+  "TXT_INSIGHT_GRAIN_DESCRIPTION": "Each Fact_Rides row represents one booked or cancelled trip.",
+  "TXT_INSIGHT_FAN_TRAP_TITLE": "Fan trap pattern",
+  "TXT_INSIGHT_FAN_TRAP_DESCRIPTION": "A one-to-many promotion relationship can duplicate discount totals.",
+  "TXT_INSIGHT_KEY_TITLE": "Missing surrogate key",
+  "TXT_INSIGHT_KEY_DESCRIPTION": "Dim_Driver uses a natural key; consider an integer driver key.",
+  "TXT_INSIGHT_INDEX_TITLE": "Unindexed foreign key",
+  "TXT_INSIGHT_INDEX_DESCRIPTION": "Fact_Rides.customer_key does not currently have an index."
+}

@@ -8,7 +8,7 @@ import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from main import app
 from src.application.projects.i_project_service import IProjectService
-from src.application.projects.input import CreateProjectInput, ListProjectsInput, ProjectIdInput, UpdateProjectInput
+from src.application.projects.input import CreateProjectInput, ProjectIdInput, UpdateProjectInput
 from src.application.projects.output import ProjectOutput, ProjectSummaryOutput
 from src.common.exceptions.business import BusinessException
 from src.common.exceptions.error_codes import ErrorCode
@@ -34,8 +34,7 @@ class StubProjectService(IProjectService):
         return self.project
 
     @override
-    async def list_projects(self, data: ListProjectsInput) -> tuple[ProjectSummaryOutput, ...]:
-        del data
+    async def list_projects(self) -> tuple[ProjectSummaryOutput, ...]:
         return (make_summary(self.project),)
 
     @override
@@ -88,6 +87,16 @@ async def test_project_endpoints_have_expected_runtime_contract(project_client: 
 
 
 @pytest.mark.asyncio
+async def test_project_can_be_created_without_requirement(project_client: AsyncClient) -> None:
+    """Requirement thô là tùy chọn lúc khởi tạo Project."""
+    response = await project_client.post(
+        "/api/v1/projects", json={"name": "Empty project", "domain": "retail"}
+    )
+    assert response.status_code == 201
+    assert response.json()["data"]["requirement"] is None
+
+
+@pytest.mark.asyncio
 async def test_project_validation_and_known_errors_are_standardized(project_client: AsyncClient) -> None:
     """Unknown field, 403, 404 và 500 dùng error envelope chuẩn."""
     invalid = await project_client.post(
@@ -136,27 +145,32 @@ def test_project_openapi_has_stable_operations_and_concrete_envelopes() -> None:
     assert "data_sources" not in components["UpdateProjectRequest"]["properties"]
     summary_properties = components["ProjectSummaryResponse"]["properties"]
     assert "data_source_count" in summary_properties
+    assert "requirement" not in summary_properties
     assert "data_source_ids" not in summary_properties
+    detail_properties = components["ProjectResponse"]["properties"]
+    assert {"requirement", "requirements"} <= set(detail_properties)
 
 
 def make_project_output(name: str = "Project", requirement: str = "Yêu cầu hợp lệ") -> ProjectOutput:
     now = datetime.now(UTC)
-    return ProjectOutput(uuid4(), name, requirement, uuid4(), ProjectStatus.ACTIVE, "retail", None, now, now, 0, ())
+    return ProjectOutput(
+        summary=ProjectSummaryOutput(
+            id=uuid4(),
+            name=name,
+            user_id=uuid4(),
+            status=ProjectStatus.ACTIVE,
+            domain="retail",
+            description=None,
+            created_at=now,
+            updated_at=now,
+            data_source_count=0,
+        ),
+        requirement=requirement,
+    )
 
 
 def make_summary(project: ProjectOutput) -> ProjectSummaryOutput:
-    return ProjectSummaryOutput(
-        project.id,
-        project.name,
-        project.requirement,
-        project.user_id,
-        project.status,
-        project.domain,
-        project.description,
-        project.created_at,
-        project.updated_at,
-        project.data_source_count,
-    )
+    return project.summary
 
 
 def raise_for_test_id(project_id: UUID) -> None:

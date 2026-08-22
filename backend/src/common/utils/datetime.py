@@ -9,15 +9,22 @@ from datetime import UTC, datetime
 
 
 def utc_now() -> datetime:
-    """Trả về thời gian hiện tại chuẩn UTC timezone-aware."""
+    """Lấy thời gian hiện tại có timezone UTC.
+
+    Returns:
+        Thời gian UTC hiện tại.
+    """
     return datetime.now(UTC)
 
 
 def ensure_utc(dt: datetime) -> datetime:
     """Đảm bảo đối tượng datetime có timezone UTC.
 
-    - Nếu naive (chưa có tzinfo): Gán tzinfo = timezone.utc.
-    - Nếu đã có timezone khác: Chuyển đổi (astimezone) sang timezone.utc.
+    Args:
+        dt: Thời gian cần chuẩn hóa.
+
+    Returns:
+        Thời gian có timezone UTC.
     """
     if dt.tzinfo is None:
         return dt.replace(tzinfo=UTC)
@@ -25,7 +32,14 @@ def ensure_utc(dt: datetime) -> datetime:
 
 
 def to_isoformat(dt: datetime) -> str:
-    """Chuyển đổi đối tượng datetime thành chuỗi chuẩn ISO 8601 UTC."""
+    """Chuyển thời gian thành chuỗi ISO 8601 UTC.
+
+    Args:
+        dt: Thời gian cần chuyển đổi.
+
+    Returns:
+        Chuỗi ISO 8601 có timezone UTC.
+    """
     utc_dt = ensure_utc(dt)
     return utc_dt.isoformat()
 
@@ -33,10 +47,17 @@ def to_isoformat(dt: datetime) -> str:
 def parse_iso_datetime(value: str) -> datetime:
     """Parse chuỗi ISO 8601 thành đối tượng datetime UTC timezone-aware.
 
-    Ném ValueError nếu định dạng chuỗi không hợp lệ.
+    Args:
+        value: Chuỗi ISO 8601 cần phân tích.
+
+    Returns:
+        Thời gian có timezone UTC.
+
+    Raises:
+        ValueError: Khi chuỗi rỗng hoặc sai định dạng.
     """
     if not isinstance(value, str) or not value.strip():
-        raise ValueError("Gía trị datetime đầu vào phải là chuỗi không rỗng.")
+        raise ValueError("Giá trị datetime đầu vào phải là chuỗi không rỗng.")
 
     try:
         dt = datetime.fromisoformat(value.strip())

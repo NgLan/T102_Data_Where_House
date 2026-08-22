@@ -1,9 +1,21 @@
-"""Các input model của application service Data Model."""
+"""Public input models của Data Model application service."""
 
 from src.application.data_models.input.models import (
-    GenerateDataModelInput,
+    ChangeProposalIdInput,
+    GenerateDataModelDdlInput,
+    GetChangeProposalInput,
     GetDataModelInput,
+    GetPendingChangeProposalInput,
     UpdateDataModelInput,
+    ValidateDataModelInput,
 )
 
-__all__ = ["GenerateDataModelInput", "GetDataModelInput", "UpdateDataModelInput"]
+__all__ = [
+    "ChangeProposalIdInput",
+    "GenerateDataModelDdlInput",
+    "GetChangeProposalInput",
+    "GetPendingChangeProposalInput",
+    "GetDataModelInput",
+    "UpdateDataModelInput",
+    "ValidateDataModelInput",
+]

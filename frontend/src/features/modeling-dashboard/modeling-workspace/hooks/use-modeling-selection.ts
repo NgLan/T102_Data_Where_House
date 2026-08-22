@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import type { DbmlDocument, DbmlReference } from "@/common/dbml/types";
+import type { DbmlDocument, DbmlReference } from "@/features/modeling-dashboard/modeling-workspace/model-document/dbml/types";
 import type { DataModelAction } from "../model-document/reducers/data-model-editor-reducer";
 import {
   createColumn,

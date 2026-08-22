@@ -4,11 +4,13 @@ from datetime import datetime
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
-from src.application.data_models.output import (
-    DataModelDdlOutput,
-    DataModelInsightOutput,
-    DataModelOutput,
+from src.application.data_models.output import DataModelDdlOutput, DataModelOutput
+from src.application.data_warehouse_workflows.output import (
+    ValidationIssue,
+    ValidationIssueCode,
+    ValidationSeverity,
 )
+from src.domain.sandbox.enums import SandboxDbType
 
 
 class DataModelResponse(BaseModel):
@@ -22,6 +24,7 @@ class DataModelResponse(BaseModel):
     revision: int = Field(ge=1, description="Revision phục vụ optimistic locking")
     created_at: datetime = Field(description="Thời điểm tạo theo ISO 8601")
     updated_at: datetime = Field(description="Thời điểm cập nhật theo ISO 8601")
+    is_outdated: bool = Field(description="Model không khớp analysis revisions hiện tại")
 
     @classmethod
     def from_application(cls, output: DataModelOutput) -> "DataModelResponse":
@@ -29,31 +32,34 @@ class DataModelResponse(BaseModel):
         return cls.model_validate(output)
 
 
-class DataModelDdlResponse(BaseModel):
-    """DDL sinh từ revision Data Model hiện tại."""
+class DataModelValidationIssueResponse(BaseModel):
+    """Lỗi hoặc cảnh báo do ValidationEngine phát hiện."""
 
     model_config = ConfigDict(from_attributes=True)
 
-    ddl: str
-    dialect: str
-    revision: int = Field(ge=1)
-
-    @classmethod
-    def from_application(cls, output: DataModelDdlOutput) -> "DataModelDdlResponse":
-        return cls.model_validate(output)
-
-
-class DataModelInsightResponse(BaseModel):
-    """Insight cấu trúc của một bảng trong Data Model."""
-
-    model_config = ConfigDict(from_attributes=True)
-
-    id: str
+    code: ValidationIssueCode
     table_name: str
-    severity: str
+    column_name: str
+    severity: ValidationSeverity
     title: str
     description: str
 
     @classmethod
-    def from_application(cls, output: DataModelInsightOutput) -> "DataModelInsightResponse":
+    def from_application(cls, output: ValidationIssue) -> "DataModelValidationIssueResponse":
+        """Ánh xạ application validation issue sang response DTO."""
+        return cls.model_validate(output)
+
+
+class DataModelDdlResponse(BaseModel):
+    """DDL sinh từ Data Model hiện hành."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    ddl: str = Field(description="Script DDL đã sinh")
+    db_type: SandboxDbType = Field(description="Database type đích")
+    data_model_revision: int = Field(ge=1, description="Revision Data Model nguồn")
+
+    @classmethod
+    def from_application(cls, output: DataModelDdlOutput) -> "DataModelDdlResponse":
+        """Ánh xạ application DDL output sang response DTO."""
         return cls.model_validate(output)

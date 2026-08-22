@@ -10,12 +10,12 @@ from src.domain.user.value_objects import Email
 MAX_USERNAME_LENGTH = 100
 
 
-@dataclass(eq=False)
+@dataclass(eq=False, kw_only=True)
 class User(BaseEntity):
     """Thực thể đại diện cho Người dùng (User) trong hệ thống."""
 
-    username: str = ""
-    email: Email = Email("default@example.com")
+    username: str
+    email: Email
 
     def __post_init__(self) -> None:
         """Thực thi kiểm tra và đảm bảo invariant cho User."""

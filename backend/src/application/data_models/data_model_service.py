@@ -1,193 +1,219 @@
-"""Application service duy nhất cho module Data Model."""
+"""Application service cho Data Model snapshot và Human Review."""
 
+from src.application.common.project_access_policy import ProjectAccessPolicy
 from src.application.common.unit_of_work import IUnitOfWork
-from src.application.data_models.artifact_generator import IDataModelArtifactGenerator
-from src.application.data_models.i_data_model_service import IDataModelService
+from src.application.data_models.i_data_model_service import IDataModelDdlGenerator, IDataModelService
 from src.application.data_models.input import (
-    GenerateDataModelInput,
+    ChangeProposalIdInput,
+    GenerateDataModelDdlInput,
+    GetChangeProposalInput,
     GetDataModelInput,
+    GetPendingChangeProposalInput,
     UpdateDataModelInput,
+    ValidateDataModelInput,
 )
-from src.application.data_models.output import DataModelOutput
-from src.application.data_models.insight_analyzer import IDataModelInsightAnalyzer
 from src.application.data_models.output import (
+    ChangeProposalDetailOutput,
+    ChangeProposalSummaryOutput,
     DataModelDdlOutput,
-    DataModelInsightOutput,
     DataModelOutput,
 )
+from src.application.data_warehouse_workflows.i_data_warehouse_workflow_service import (
+    IDataModelValidationEngine,
+)
+from src.application.data_warehouse_workflows.output import ValidationIssue, ValidationSeverity
 from src.common.exceptions.business import BusinessException
 from src.common.exceptions.error_codes import ErrorCode
-from src.common.logging import get_logger
-from src.domain.analytical_requirement.repository import IAnalyticalRequirementRepository
-from src.domain.data_model.entities import DataModel
-from src.domain.data_model.generation import IDataModelGenerator
-from src.domain.data_model.repository import IDataModelRepository
-from src.domain.data_source.repository import IDataSourceRepository
-from src.domain.requirement.repository import IRequirementRepository
+from src.domain.data_model.entities import DataModel, DataModelChange
+from src.domain.data_model.i_data_model_change_repository import IDataModelChangeRepository
+from src.domain.data_model.i_data_model_repository import IDataModelRepository
+from src.domain.project.entities import Project
+from src.domain.shared.types import EntityID
 from typing_extensions import override
-
-logger = get_logger(__name__)
 
 
 class DataModelService(IDataModelService):
-    """Điều phối các use case của Data Model qua domain repository."""
+    """Điều phối snapshot, validation và proposal bằng revision rõ ràng."""
 
     def __init__(
         self,
-        repository: IDataModelRepository,
+        models: IDataModelRepository,
+        changes: IDataModelChangeRepository,
+        validator: IDataModelValidationEngine,
         unit_of_work: IUnitOfWork,
-        requirement_repository: IRequirementRepository | None = None,
-        data_source_repository: IDataSourceRepository | None = None,
-        analytical_repository: IAnalyticalRequirementRepository | None = None,
-        generator: IDataModelGenerator | None = None,
+        access: ProjectAccessPolicy,
+        ddl_generator: IDataModelDdlGenerator,
     ) -> None:
-        """Khởi tạo service với repository và transaction abstraction.
-
-        Bốn tham số cuối chỉ cần cho use case sinh mô hình bằng AI (T-019); các use case
-        đọc/ghi thủ công vẫn hoạt động khi chúng để trống.
-        """
-        self._repository = repository
+        self._models = models
+        self._changes = changes
+        self._validator = validator
         self._unit_of_work = unit_of_work
-        self._requirement_repository = requirement_repository
-        self._data_source_repository = data_source_repository
-        self._analytical_repository = analytical_repository
-        self._generator = generator
+        self._access = access
+        self._ddl_generator = ddl_generator
 
     @override
     async def get_data_model(self, data: GetDataModelInput) -> DataModelOutput:
-        """Lấy Data Model theo project và chuẩn hóa lỗi không tồn tại."""
-        data_model = await self._repository.get_by_project_id(data.project_id)
-        if data_model is None:
-            raise BusinessException(
-                code=ErrorCode.DATA_MODEL_NOT_FOUND,
-                message="Không tìm thấy Data Model của dự án.",
-            )
-        return DataModelOutput.from_domain(data_model)
+        """Lấy model và tính outdated từ analysis revisions hiện tại."""
+        project = (await self._access.require_member(data.project_id)).project
+        model = await self._require_project_model(data.project_id)
+        outdated = model.is_outdated(project.analyzed_requirement_revision, project.analyzed_source_revision)
+        return DataModelOutput.from_domain(model, outdated)
 
     @override
     async def update_data_model(self, data: UpdateDataModelInput) -> DataModelOutput:
-        """Cập nhật DBML dựa trên base revision."""
-        current = self._get_target(await self._repository.get_by_project_id(data.project_id), data)
-        current.update_dbml(data.dbml, data.base_revision)
-        updated = await self._repository.update_if_revision_matches(current, data.base_revision)
-        if updated is None:
-            raise BusinessException(
-                code=ErrorCode.REVISION_CONFLICT,
-                message="Data Model đã được cập nhật bởi một thao tác khác.",
-            )
-        await self._unit_of_work.commit()
-        return DataModelOutput.from_domain(updated)
+        """Validate rồi lưu trực tiếp DBML do người dùng chỉnh sửa."""
+        self._ensure_valid(data.dbml)
+        async with self._unit_of_work:
+            project = await self._access.require_owner(data.project_id)
+            model = await self._require_project_model(data.project_id)
+            _validate_update_target(model, data)
+            model.update_dbml(data.dbml, data.base_revision)
+            saved = await self._models.update_if_revision_matches(model, data.base_revision)
+            if saved is None:
+                raise BusinessException(ErrorCode.DATA_MODEL_REVISION_CONFLICT, "Data Model đã thay đổi.")
+            await self._unit_of_work.commit()
+        outdated = saved.is_outdated(
+            project.analyzed_requirement_revision,
+            project.analyzed_source_revision,
+        )
+        return DataModelOutput.from_domain(saved, outdated)
 
     @override
-    async def generate_data_model(self, data: GenerateDataModelInput) -> DataModelOutput:
-        """Chạy pipeline AI sinh Data Model từ yêu cầu và nguồn dữ liệu của dự án."""
-        self._ensure_generation_ready()
+    async def get_validation_issues(self, data: GetDataModelInput) -> tuple[ValidationIssue, ...]:
+        """Validate snapshot hiện hành bằng ValidationEngine dùng chung."""
+        await self._access.require_member(data.project_id)
+        model = await self._require_project_model(data.project_id)
+        return self._validator.validate(model.dbml)
 
-        requirements = await self._requirement_repository.list_by_project(data.project_id)
-        data_sources = await self._data_source_repository.list_by_project(data.project_id)
-        if not requirements and not data_sources:
+    @override
+    async def validate_draft(self, data: ValidateDataModelInput) -> tuple[ValidationIssue, ...]:
+        """Kiểm tra draft bằng ValidationEngine deterministic dùng chung."""
+        await self._access.require_member(data.project_id)
+        return self._validator.validate(data.dbml)
+
+    @override
+    async def get_change_proposal(self, data: GetChangeProposalInput) -> ChangeProposalDetailOutput:
+        """Lấy proposal và tính outdated từ base revision của Data Model."""
+        change, model = await self._load_change(data.change_id)
+        await self._access.require_member(data.project_id)
+        if model.project_id != data.project_id:
             raise BusinessException(
-                code=ErrorCode.INVALID_DATA_MODEL,
-                message=(
-                    "Dự án chưa có yêu cầu nghiệp vụ hoặc nguồn dữ liệu nào "
-                    "để AI phân tích."
-                ),
+                ErrorCode.DATA_MODEL_CHANGE_NOT_FOUND,
+                "Không tìm thấy đề xuất thay đổi Data Model trong dự án.",
             )
+        return ChangeProposalDetailOutput.from_domain(change, model)
 
-        result = await self._generator.generate(requirements, data_sources)
-
-        await self._persist_analysis(data_sources, result)
-        saved = await self._persist_data_model(data.project_id, result.dbml)
-        await self._unit_of_work.commit()
-
-        logger.info(
-            "data_model_generated project_id=%s revision=%d attempts=%d",
-            data.project_id,
-            saved.revision,
-            result.attempts,
+    @override
+    async def get_pending_change_proposal(
+        self, data: GetPendingChangeProposalInput
+    ) -> ChangeProposalDetailOutput | None:
+        await self._access.require_owner(data.project_id)
+        model = await self._require_project_model(data.project_id)
+        change = await self._changes.get_proposed_by_data_model_and_user(
+            model.id, self._access.actor_id
         )
-        return DataModelOutput.from_domain(saved)
+        return ChangeProposalDetailOutput.from_domain(change, model) if change else None
 
-    def _ensure_generation_ready(self) -> None:
-        """Chặn sớm khi service được dựng thiếu phụ thuộc dành cho pipeline AI."""
-        missing = (
-            self._requirement_repository is None
-            or self._data_source_repository is None
-            or self._analytical_repository is None
-            or self._generator is None
-        )
-        if missing:
-            raise BusinessException(
-                code=ErrorCode.INTERNAL_SERVER_ERROR,
-                message="Chức năng sinh mô hình bằng AI chưa được cấu hình đầy đủ.",
-            )
-
-    async def _persist_analysis(self, data_sources, result) -> None:  # noqa: ANN001
-        """Lưu schema đã phân tích và các yêu cầu phân tích do agent sinh ra."""
-        for data_source in data_sources:
-            data_source.schema_metadata = result.analyzed_schema
-            await self._data_source_repository.save(data_source)
-
-        for analytical in result.analytical_requirements:
-            await self._analytical_repository.save(analytical)
-
-    async def _persist_data_model(self, project_id, dbml: str) -> DataModel:  # noqa: ANN001
-        """Tạo mới Data Model hoặc cập nhật bản hiện có bằng optimistic locking."""
-        current = await self._repository.get_by_project_id(project_id)
-        if current is None:
-            return await self._repository.save(DataModel(project_id=project_id, dbml=dbml))
-
-        base_revision = current.revision
-        current.update_dbml(dbml, base_revision)
-        updated = await self._repository.update_if_revision_matches(current, base_revision)
-        if updated is None:
-            raise BusinessException(
-                code=ErrorCode.REVISION_CONFLICT,
-                message="Data Model đã được cập nhật bởi một thao tác khác.",
-            )
-        return updated
-    async def generate_ddl(self, data: GetDataModelInput, dialect: str) -> DataModelDdlOutput:
-        """Sinh DDL đúng revision từ DBML đang được lưu."""
-        current = self._require_current(await self._repository.get_by_project_id(data.project_id))
+    @override
+    async def generate_ddl(self, data: GenerateDataModelDdlInput) -> DataModelDdlOutput:
+        """Sinh DDL từ snapshot hiện hành sau khi kiểm tra membership."""
+        await self._access.require_member(data.project_id)
+        model = await self._require_project_model(data.project_id)
         return DataModelDdlOutput(
-            ddl=self._require_artifact_generator().generate_ddl(current.dbml, dialect),
-            dialect=dialect,
-            revision=current.revision,
+            ddl=self._ddl_generator.generate_ddl(model.dbml, data.db_type),
+            db_type=data.db_type,
+            data_model_revision=model.revision,
         )
 
     @override
-    async def get_insights(self, data: GetDataModelInput) -> list[DataModelInsightOutput]:
-        """Phân tích trực tiếp DBML hiện tại, không dùng dữ liệu demo frontend."""
-        current = self._require_current(await self._repository.get_by_project_id(data.project_id))
-        if self._insight_analyzer is not None:
-            return await self._insight_analyzer.analyze(current.dbml)
-        return self._require_artifact_generator().analyze(current.dbml)
-
-    def _require_artifact_generator(self) -> IDataModelArtifactGenerator:
-        if self._artifact_generator is None:
-            raise RuntimeError("Data Model artifact generator chưa được cấu hình.")
-        return self._artifact_generator
-
-    @staticmethod
-    def _require_current(current: DataModel | None) -> DataModel:
-        if current is None:
+    async def accept_change_proposal(self, data: ChangeProposalIdInput) -> DataModelOutput:
+        """Chỉ áp dụng proposal khi base revision của Data Model còn khớp."""
+        model, project, is_outdated = await self._persist_change_acceptance(data.change_id)
+        if is_outdated:
             raise BusinessException(
-                code=ErrorCode.DATA_MODEL_NOT_FOUND,
-                message="Không tìm thấy Data Model của dự án.",
+                ErrorCode.DATA_MODEL_CHANGE_OUTDATED,
+                "Đề xuất thay đổi dựa trên revision Data Model đã lỗi thời.",
             )
-        return current
+        return DataModelOutput.from_domain(
+            model,
+            model.is_outdated(
+                project.analyzed_requirement_revision,
+                project.analyzed_source_revision,
+            ),
+        )
 
-    @staticmethod
-    def _get_target(current: DataModel | None, data: UpdateDataModelInput) -> DataModel:
-        """Kiểm tra và trả Data Model đúng ID trong input."""
-        if current is None:
+    async def _persist_change_acceptance(self, change_id: EntityID) -> tuple[DataModel, Project, bool]:
+        """Persist trạng thái proposal và snapshot trong cùng transaction."""
+        async with self._unit_of_work:
+            change, model = await self._load_change(change_id)
+            project = await self._access.require_owner(model.project_id)
+            outdated = change.base_revision != model.revision
+            if outdated:
+                change.mark_conflicted()
+            else:
+                await self._apply_current_change(change, model, project)
+            await self._changes.save(change)
+            await self._unit_of_work.commit()
+        return model, project, outdated
+
+    async def _apply_current_change(self, change: DataModelChange, model: DataModel, project: Project) -> None:
+        """Validate và áp dụng proposal còn khớp revision hiện hành."""
+        self._ensure_valid(change.proposed_dbml)
+        model.apply_change(change)
+        model.record_generation_revisions(
+            project.analyzed_requirement_revision,
+            project.analyzed_source_revision,
+        )
+        await self._models.save(model)
+
+    @override
+    async def reject_change_proposal(self, data: ChangeProposalIdInput) -> ChangeProposalSummaryOutput:
+        """Từ chối proposal mà không sửa snapshot."""
+        async with self._unit_of_work:
+            change, model = await self._load_change(data.change_id)
+            await self._access.require_owner(model.project_id)
+            change.mark_rejected()
+            saved = await self._changes.save(change)
+            await self._unit_of_work.commit()
+        return ChangeProposalSummaryOutput.from_domain(saved)
+
+    async def _require_project_model(self, project_id: EntityID) -> DataModel:
+        model = await self._models.get_by_project_id(project_id)
+        if model is None:
+            raise BusinessException(ErrorCode.DATA_MODEL_NOT_FOUND, "Không tìm thấy Data Model.")
+        return model
+
+    async def _load_change(self, change_id: EntityID) -> tuple[DataModelChange, DataModel]:
+        change = await self._changes.get_by_id(change_id)
+        if change is None:
             raise BusinessException(
-                code=ErrorCode.DATA_MODEL_NOT_FOUND,
-                message="Không tìm thấy Data Model của dự án.",
+                ErrorCode.DATA_MODEL_CHANGE_NOT_FOUND,
+                "Không tìm thấy đề xuất thay đổi Data Model.",
             )
-        if current.id != data.data_model_id:
+        model = await self._models.get_by_id(change.data_model_id)
+        if model is None:
+            raise BusinessException(ErrorCode.DATA_MODEL_NOT_FOUND, "Không tìm thấy Data Model.")
+        return change, model
+
+    def _ensure_valid(self, dbml: str) -> None:
+        """Từ chối DBML có bất kỳ validation ERROR nào."""
+        issues = self._validator.validate(dbml)
+        if any(item.severity is ValidationSeverity.ERROR for item in issues):
             raise BusinessException(
-                code=ErrorCode.INVALID_DATA_MODEL,
-                message="Data Model không thuộc dự án được yêu cầu.",
+                ErrorCode.DATA_MODEL_VALIDATION_FAILED,
+                "DBML không vượt qua các quy tắc validation Data Model.",
             )
-        return current
+
+
+def _validate_update_target(current: DataModel, data: UpdateDataModelInput) -> None:
+    """Kiểm tra ID và base revision của manual update."""
+    if data.data_model_id != current.id:
+        raise BusinessException(
+            ErrorCode.DATA_MODEL_UPDATE_ID_MISMATCH,
+            "Data Model trong request không khớp snapshot của dự án.",
+        )
+    if data.base_revision != current.revision:
+        raise BusinessException(
+            ErrorCode.DATA_MODEL_REVISION_CONFLICT,
+            "Base revision không khớp revision Data Model hiện tại.",
+        )

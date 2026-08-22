@@ -14,6 +14,7 @@ from src.common.middleware import (
     SecurityHeadersMiddleware,
     setup_cors_middleware,
 )
+from src.infrastructure.database.config import dispose_async_db_engine
 from src.infrastructure.database.init_db import init_db
 from src.presentation.api.router import router as api_router
 from src.presentation.dtos.common import ApiErrorResponse
@@ -29,14 +30,23 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     settings: Settings = get_settings()
     logger.info("Starting %s in %s mode", settings.app_name, settings.app_env)
 
-    # 1. Gọi hàm init_db() để khởi tạo CSDL
+    # 1. Gọi hàm init_db() để khởi tạo CSDL.
+    # Vẫn cho ứng dụng lên khi CSDL chưa sẵn sàng (tiện lúc phát triển), nhưng log ở mức
+    # ERROR kèm nguyên nhân: trước đây đây là `warning` nên lỗi seed thật sự trôi qua
+    # không ai để ý suốt nhiều phiên chạy.
     try:
         await init_db(settings)
-    except Exception as exc:
-        logger.warning("Không thể khởi tạo CSDL lúc startup: %s", exc)
+    except Exception:
+        logger.exception(
+            "Khởi tạo CSDL lúc startup THẤT BẠI. Ứng dụng vẫn chạy nhưng các API cần "
+            "CSDL sẽ lỗi cho tới khi vấn đề này được xử lý."
+        )
 
-    yield
-    logger.info("Shutting down application...")
+    try:
+        yield
+    finally:
+        await dispose_async_db_engine()
+        logger.info("Shutting down application...")
 
 
 def create_app() -> FastAPI:

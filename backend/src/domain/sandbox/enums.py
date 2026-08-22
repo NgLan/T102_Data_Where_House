@@ -11,3 +11,4 @@ class SandboxDbType(StrEnum):
     SNOWFLAKE = "SNOWFLAKE"
     MYSQL = "MYSQL"
     SQLITE = "SQLITE"
+    SQLSERVER = "SQLSERVER"

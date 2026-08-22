@@ -1,27 +1,37 @@
 """Cấu hình và đăng ký CORS Middleware chuẩn hóa (cors.py)."""
 
-from typing import Any
+from typing import Protocol
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 
-def setup_cors_middleware(app: FastAPI, settings: Any) -> None:
+class CorsSettings(Protocol):
+    """Phần cấu hình tối thiểu mà CORS cần sử dụng."""
+
+    cors_origins_list: list[str]
+    cors_allow_credentials: bool
+    cors_allow_methods_list: list[str]
+    cors_allow_headers_list: list[str]
+
+
+def setup_cors_middleware(app: FastAPI, settings: CorsSettings) -> None:
     """Cấu hình và gắn CORSMiddleware vào ứng dụng FastAPI dựa trên Settings.
 
-    Đảm bảo:
-    - Origins được trích xuất từ settings.cors_origins_list.
-    - Configured methods & headers linh hoạt theo môi trường.
-    - Tuân thủ quy định an toàn của CORS specification.
+    Args:
+        app: FastAPI application cần cấu hình.
+        settings: Cấu hình origins, credentials, methods và headers.
+
+    Raises:
+        ValueError: Khi wildcard origin được dùng cùng credentials.
     """
     origins = settings.cors_origins_list
-    allow_credentials = getattr(settings, "cors_allow_credentials", True)
+    allow_credentials = settings.cors_allow_credentials
     allow_methods = settings.cors_allow_methods_list
     allow_headers = settings.cors_allow_headers_list
 
-    # Kiểm tra an toàn: Starlette không cho phép allow_origins=["*"] kết hợp allow_credentials=True
     if "*" in origins and allow_credentials:
-        allow_credentials = False
+        raise ValueError("CORS không cho phép wildcard origin khi bật credentials.")
 
     app.add_middleware(
         CORSMiddleware,

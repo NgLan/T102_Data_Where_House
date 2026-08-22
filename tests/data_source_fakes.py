@@ -1,10 +1,13 @@
 """In-memory adapters cho Data Source service tests."""
 
+from types import TracebackType
+
 from src.application.common.unit_of_work import IUnitOfWork
 from src.domain.data_source.entities import DataSource
-from src.domain.data_source.repository import IDataSourceRepository
+from src.domain.data_source.i_data_source_repository import IDataSourceRepository
 from src.domain.project.entities import Project, ProjectMember
-from src.domain.project.repository import IProjectMemberRepository, IProjectRepository
+from src.domain.project.i_project_member_repository import IProjectMemberRepository
+from src.domain.project.i_project_repository import IProjectRepository
 from src.domain.shared.types import EntityID
 
 
@@ -115,3 +118,13 @@ class RecordingUnitOfWork(IUnitOfWork):
 
     async def rollback(self) -> None:
         self.rollbacks += 1
+
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> None:
+        """Rollback khi khối `async with` thoát ra do ngoại lệ, giống bản thật."""
+        if exc_type is not None:
+            await self.rollback()

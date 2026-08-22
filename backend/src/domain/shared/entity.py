@@ -2,13 +2,13 @@
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from uuid import uuid4
 
 from src.common.utils.datetime import ensure_utc, utc_now
+from src.common.utils.uuid import generate_uuid
 from src.domain.shared.types import EntityID
 
 
-@dataclass(eq=False)
+@dataclass(eq=False, kw_only=True)
 class BaseEntity:
     """Lớp cơ sở cho các Entity trong tầng Domain.
 
@@ -16,7 +16,7 @@ class BaseEntity:
     Equality và Hash hoàn toàn dựa vào identity `id`.
     """
 
-    id: EntityID = field(default_factory=uuid4)
+    id: EntityID = field(default_factory=generate_uuid)
     created_at: datetime = field(default_factory=utc_now)
     updated_at: datetime = field(default_factory=utc_now)
 

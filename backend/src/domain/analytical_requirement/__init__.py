@@ -2,7 +2,9 @@
 
 from src.domain.analytical_requirement.entities import AnalyticalRequirement
 from src.domain.analytical_requirement.enums import AggregationMethod
-from src.domain.analytical_requirement.repository import IAnalyticalRequirementRepository
+from src.domain.analytical_requirement.i_analytical_requirement_repository import (
+    IAnalyticalRequirementRepository,
+)
 from src.domain.analytical_requirement.rules import validate_analytical_requirement
 
 __all__: list[str] = [

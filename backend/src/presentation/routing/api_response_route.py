@@ -4,7 +4,7 @@ from collections.abc import Awaitable, Callable
 from functools import wraps
 from http import HTTPStatus
 from inspect import iscoroutinefunction
-from typing import cast
+from typing import Any, cast
 
 from fastapi.datastructures import DefaultPlaceholder
 from fastapi.routing import APIRoute
@@ -24,7 +24,7 @@ class ApiResponseRoute(APIRoute):
         self,
         path: str,
         endpoint: Endpoint,
-        **kwargs: object,
+        **kwargs: Any,
     ) -> None:
         """Cấu hình runtime response và OpenAPI schema từ một payload model."""
         response_model = kwargs.get("response_model")
@@ -33,6 +33,7 @@ class ApiResponseRoute(APIRoute):
             status_code = cast(int | None, kwargs.get("status_code"))
             endpoint = _wrap_endpoint(endpoint, status_code)
         super().__init__(path=path, endpoint=endpoint, **kwargs)
+
 
 
 def _has_payload_model(response_model: object) -> bool:

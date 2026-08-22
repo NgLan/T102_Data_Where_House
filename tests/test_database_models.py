@@ -14,6 +14,9 @@ from src.infrastructure.database.models import (
     SessionEventModel,
     UserModel,
 )
+from src.infrastructure.database.models.data_model_change import (
+    ACTIVE_PROPOSAL_UNIQUE_INDEX,
+)
 
 
 def test_all_sqlalchemy_models_mapped_successfully() -> None:
@@ -67,3 +70,16 @@ def test_metadata_tables_count() -> None:
         "data_model_changes",
     }
     assert expected_tables.issubset(table_names)
+
+
+def test_data_model_change_has_partial_unique_active_proposal_index() -> None:
+    """DB chặn race tạo hai proposal PROPOSED cho cùng model và user."""
+    index = next(
+        item
+        for item in DataModelChangeModel.__table__.indexes
+        if item.name == ACTIVE_PROPOSAL_UNIQUE_INDEX
+    )
+
+    assert index.unique is True
+    assert [column.name for column in index.columns] == ["data_model_id", "user_id"]
+    assert str(index.dialect_options["postgresql"]["where"]) == "status = 'PROPOSED'"

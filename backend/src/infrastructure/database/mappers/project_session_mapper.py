@@ -17,6 +17,8 @@ class ProjectSessionMapper:
             user_id=model.user_id,
             title=model.title or "Untitled Session",
             status=SessionStatus(model.status),
+            active_turn_id=model.active_turn_id,
+            active_turn_started_at=model.active_turn_started_at,
             created_at=model.created_at,
             updated_at=model.updated_at,
         )
@@ -29,7 +31,9 @@ class ProjectSessionMapper:
             project_id=entity.project_id,
             user_id=entity.user_id,
             title=entity.title,
-            status=str(entity.status.value if hasattr(entity.status, "value") else entity.status),
+            status=entity.status.value,
+            active_turn_id=entity.active_turn_id,
+            active_turn_started_at=entity.active_turn_started_at,
             created_at=entity.created_at,
             updated_at=entity.updated_at,
         )
@@ -40,7 +44,8 @@ class ProjectSessionMapper:
         model.project_id = entity.project_id
         model.user_id = entity.user_id
         model.title = entity.title
-        model.status = str(entity.status.value if hasattr(entity.status, "value") else entity.status)
-        model.created_at = entity.created_at
+        model.status = entity.status.value
+        model.active_turn_id = entity.active_turn_id
+        model.active_turn_started_at = entity.active_turn_started_at
         model.updated_at = entity.updated_at
         return model

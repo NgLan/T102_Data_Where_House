@@ -3,10 +3,14 @@
 from typing import TYPE_CHECKING
 from uuid import UUID
 
-from sqlalchemy import ForeignKey, Index, String, Text
+from sqlalchemy import ForeignKey, Index, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from src.domain.project.project_details_rules import (
+    MAX_PROJECT_DOMAIN_LENGTH,
+    MAX_PROJECT_NAME_LENGTH,
+)
 from src.infrastructure.database.base import Base
-from src.infrastructure.database.constants import MAX_DOMAIN_LENGTH, MAX_NAME_LENGTH, MAX_STATUS_LENGTH
+from src.infrastructure.database.constants import MAX_STATUS_LENGTH
 
 if TYPE_CHECKING:
     from src.infrastructure.database.models.data_model import DataModelModel
@@ -22,10 +26,14 @@ class ProjectModel(Base):
 
     __tablename__ = "projects"
 
-    name: Mapped[str] = mapped_column(String(MAX_NAME_LENGTH), nullable=False)
+    name: Mapped[str] = mapped_column(String(MAX_PROJECT_NAME_LENGTH), nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
-    domain: Mapped[str | None] = mapped_column(String(MAX_DOMAIN_LENGTH), nullable=True)
-    requirement: Mapped[str] = mapped_column(Text, nullable=False)
+    domain: Mapped[str | None] = mapped_column(String(MAX_PROJECT_DOMAIN_LENGTH), nullable=True)
+    requirement: Mapped[str | None] = mapped_column(Text, nullable=True)
+    requirement_revision: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    source_revision: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    analyzed_requirement_revision: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    analyzed_source_revision: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     status: Mapped[str] = mapped_column(String(MAX_STATUS_LENGTH), nullable=False, default="ACTIVE", index=True)
     user_id: Mapped[UUID] = mapped_column(
         ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True

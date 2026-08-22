@@ -7,24 +7,18 @@ from unittest.mock import AsyncMock, MagicMock
 from uuid import uuid4
 
 import pytest
-from src.domain.analytical_requirement.repository import (
+from src.domain.analytical_requirement.i_analytical_requirement_repository import (
     IAnalyticalRequirementRepository,
 )
-from src.domain.data_model.repository import (
-    IDataModelChangeRepository,
-    IDataModelRepository,
-)
-from src.domain.data_source.repository import IDataSourceRepository
-from src.domain.project.repository import IProjectMemberRepository, IProjectRepository
-from src.domain.project_session.repository import (
-    IProjectSessionRepository,
-    ISessionEventRepository,
-)
-from src.domain.requirement.repository import IRequirementRepository
-from src.domain.user.repository import IUserRepository
-from src.infrastructure.repositories.postgres_agent_session_repository import (
-    PostgresAgentSessionRepository,
-)
+from src.domain.data_model.i_data_model_change_repository import IDataModelChangeRepository
+from src.domain.data_model.i_data_model_repository import IDataModelRepository
+from src.domain.data_source.i_data_source_repository import IDataSourceRepository
+from src.domain.project.i_project_member_repository import IProjectMemberRepository
+from src.domain.project.i_project_repository import IProjectRepository
+from src.domain.project_session.i_project_session_repository import IProjectSessionRepository
+from src.domain.project_session.i_session_event_repository import ISessionEventRepository
+from src.domain.requirement.i_requirement_repository import IRequirementRepository
+from src.domain.user.i_user_repository import IUserRepository
 from src.infrastructure.repositories.postgres_analytical_requirement_repository import (
     PostgresAnalyticalRequirementRepository,
 )
@@ -43,6 +37,9 @@ from src.infrastructure.repositories.postgres_project_member_repository import (
 from src.infrastructure.repositories.postgres_project_repository import (
     PostgresProjectRepository,
 )
+from src.infrastructure.repositories.postgres_project_session_repository import (
+    PostgresProjectSessionRepository,
+)
 from src.infrastructure.repositories.postgres_requirement_repository import (
     PostgresRequirementRepository,
 )
@@ -60,7 +57,7 @@ REPOSITORY_CONTRACTS = (
     (PostgresRequirementRepository, IRequirementRepository),
     (PostgresAnalyticalRequirementRepository, IAnalyticalRequirementRepository),
     (PostgresDataSourceRepository, IDataSourceRepository),
-    (PostgresAgentSessionRepository, IProjectSessionRepository),
+    (PostgresProjectSessionRepository, IProjectSessionRepository),
     (PostgresSessionEventRepository, ISessionEventRepository),
     (PostgresDataModelRepository, IDataModelRepository),
     (PostgresDataModelChangeRepository, IDataModelChangeRepository),

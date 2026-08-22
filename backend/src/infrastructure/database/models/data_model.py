@@ -22,6 +22,8 @@ class DataModelModel(Base):
     )
     dbml: Mapped[str] = mapped_column(Text, nullable=False)
     revision: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    generated_from_requirement_revision: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    generated_from_source_revision: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
 
     # Relationships
     project: Mapped["ProjectModel"] = relationship("ProjectModel", back_populates="data_model")

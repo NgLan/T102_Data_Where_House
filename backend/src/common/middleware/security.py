@@ -1,35 +1,44 @@
-"""Middleware thiết lập các Security Headers chuẩn hóa cho ứng dụng HTTP (security.py)."""
+"""Pure ASGI middleware thiết lập các security header dùng chung."""
 
-from collections.abc import Callable
+from starlette.datastructures import MutableHeaders
+from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
-from fastapi import Request, Response
-from starlette.middleware.base import BaseHTTPMiddleware
+HSTS_MAX_AGE_SECONDS = 31_536_000
+BASE_SECURITY_HEADERS = {
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "DENY",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+}
 
 
-class SecurityHeadersMiddleware(BaseHTTPMiddleware):
-    """Middleware tự động đính kèm các Security Headers bảo vệ ứng dụng HTTP khỏi các lỗ hổng phổ biến (XSS, Clickjacking, MIME sniffing)."""
+class SecurityHeadersMiddleware:
+    """Đính kèm security header mà không buffer response body."""
 
-    def __init__(self, app: Callable, enable_hsts: bool = False) -> None:
-        super().__init__(app)
-        self.enable_hsts = enable_hsts
+    def __init__(self, app: ASGIApp, enable_hsts: bool = False) -> None:
+        """Khởi tạo middleware.
 
-    async def dispatch(self, request: Request, call_next: Callable) -> Response:
-        response: Response = await call_next(request)
+        Args:
+            app: ASGI application phía trong.
+            enable_hsts: Có phát HSTS cho môi trường HTTPS hay không.
+        """
+        self._app = app
+        self._enable_hsts = enable_hsts
 
-        # 1. Chống MIME-type sniffing
-        response.headers["X-Content-Type-Options"] = "nosniff"
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        """Đính kèm header khi ASGI bắt đầu gửi HTTP response."""
+        if scope["type"] != "http":
+            await self._app(scope, receive, send)
+            return
 
-        # 2. Chống Clickjacking
-        response.headers["X-Frame-Options"] = "DENY"
+        async def _send_with_security_headers(message: Message) -> None:
+            if message["type"] == "http.response.start":
+                headers = MutableHeaders(scope=message)
+                for name, value in BASE_SECURITY_HEADERS.items():
+                    headers[name] = value
+                if self._enable_hsts:
+                    headers["Strict-Transport-Security"] = (
+                        f"max-age={HSTS_MAX_AGE_SECONDS}; includeSubDomains"
+                    )
+            await send(message)
 
-        # 3. Bảo vệ thông tin Referrer
-        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-
-        # 4. Kích hoạt XSS Protection bộ lọc trình duyệt
-        response.headers["X-XSS-Protection"] = "1; mode=block"
-
-        # 5. HSTS nếu được bật cho môi trường HTTPS Production
-        if self.enable_hsts:
-            response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
-
-        return response
+        await self._app(scope, receive, _send_with_security_headers)

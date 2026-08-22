@@ -2,7 +2,8 @@
 
 from src.domain.project.entities import Project, ProjectMember
 from src.domain.project.enums import ProjectRole, ProjectStatus
-from src.domain.project.repository import IProjectMemberRepository, IProjectRepository
+from src.domain.project.i_project_member_repository import IProjectMemberRepository
+from src.domain.project.i_project_repository import IProjectRepository
 from src.domain.project.value_objects import ProjectDetails
 
 __all__: list[str] = [

@@ -1,43 +1,72 @@
-"""Interface duy nhất cho các thao tác application Data Model."""
+"""Public service contract của Data Model module."""
 
 from abc import ABC, abstractmethod
 
 from src.application.data_models.input import (
-    GenerateDataModelInput,
+    ChangeProposalIdInput,
+    GenerateDataModelDdlInput,
+    GetChangeProposalInput,
     GetDataModelInput,
+    GetPendingChangeProposalInput,
     UpdateDataModelInput,
+    ValidateDataModelInput,
 )
 from src.application.data_models.output import (
+    ChangeProposalDetailOutput,
+    ChangeProposalSummaryOutput,
     DataModelDdlOutput,
-    DataModelInsightOutput,
     DataModelOutput,
 )
+from src.application.data_warehouse_workflows.output import ValidationIssue
+from src.domain.sandbox.enums import SandboxDbType
+
+
+class IDataModelDdlGenerator(ABC):
+    """Outbound port biên dịch DBML sang DDL."""
+
+    @abstractmethod
+    def generate_ddl(self, dbml: str, db_type: SandboxDbType) -> str:
+        """Sinh DDL cho database type được yêu cầu."""
+        raise NotImplementedError
 
 
 class IDataModelService(ABC):
-    """Hợp đồng công khai của application service Data Model."""
+    """Hợp đồng lifecycle của snapshot và Human Review."""
 
     @abstractmethod
     async def get_data_model(self, data: GetDataModelInput) -> DataModelOutput:
-        """Lấy Data Model hiện tại của dự án."""
-        raise NotImplementedError
+        """Lấy snapshot cùng trạng thái outdated được tính từ revision."""
 
     @abstractmethod
     async def update_data_model(self, data: UpdateDataModelInput) -> DataModelOutput:
-        """Cập nhật Data Model bằng optimistic locking."""
-        raise NotImplementedError
+        """Lưu trực tiếp chỉnh sửa thủ công bằng optimistic locking."""
 
     @abstractmethod
-    async def generate_data_model(self, data: GenerateDataModelInput) -> DataModelOutput:
-        """Chạy pipeline AI sinh Data Model từ yêu cầu và nguồn dữ liệu của dự án."""
-        raise NotImplementedError
-        
-    @abstractmethod
-    async def generate_ddl(self, data: GetDataModelInput, dialect: str) -> DataModelDdlOutput:
-        """Sinh DDL từ snapshot hiện tại."""
-        raise NotImplementedError
+    async def get_validation_issues(self, data: GetDataModelInput) -> tuple[ValidationIssue, ...]:
+        """Validate snapshot hiện hành bằng ValidationEngine dùng chung."""
 
     @abstractmethod
-    async def get_insights(self, data: GetDataModelInput) -> list[DataModelInsightOutput]:
-        """Lấy insight được phân tích từ snapshot hiện tại."""
-        raise NotImplementedError
+    async def validate_draft(self, data: ValidateDataModelInput) -> tuple[ValidationIssue, ...]:
+        """Kiểm tra DBML draft mà không thay đổi snapshot."""
+
+    @abstractmethod
+    async def get_change_proposal(self, data: GetChangeProposalInput) -> ChangeProposalDetailOutput:
+        """Lấy proposal cùng snapshot hiện hành."""
+
+    @abstractmethod
+    async def get_pending_change_proposal(
+        self, data: GetPendingChangeProposalInput
+    ) -> ChangeProposalDetailOutput | None:
+        """Return the actor's pending proposal for a project, when present."""
+
+    @abstractmethod
+    async def accept_change_proposal(self, data: ChangeProposalIdInput) -> DataModelOutput:
+        """Áp dụng proposal còn hợp lệ."""
+
+    @abstractmethod
+    async def reject_change_proposal(self, data: ChangeProposalIdInput) -> ChangeProposalSummaryOutput:
+        """Chuyển proposal đang chờ sang REJECTED."""
+
+    @abstractmethod
+    async def generate_ddl(self, data: GenerateDataModelDdlInput) -> DataModelDdlOutput:
+        """Sinh DDL từ snapshot Data Model hiện hành."""

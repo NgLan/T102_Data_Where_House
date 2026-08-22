@@ -1,29 +1,53 @@
-"""Input model cho các thao tác Data Model."""
+"""Input models độc lập HTTP cho Data Model application service."""
 
 from dataclasses import dataclass
 
+from src.domain.sandbox.enums import SandboxDbType
 from src.domain.shared.types import EntityID
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class GetDataModelInput:
-    """Dữ liệu đầu vào để lấy Data Model hiện tại của dự án."""
-
     project_id: EntityID
 
 
-@dataclass(frozen=True)
-class UpdateDataModelInput:
-    """Dữ liệu đầu vào để cập nhật Data Model bằng optimistic locking."""
+@dataclass(frozen=True, slots=True)
+class ValidateDataModelInput:
+    """DBML draft cần được kiểm tra mà không ghi snapshot."""
 
+    project_id: EntityID
+    dbml: str
+
+
+@dataclass(frozen=True, slots=True)
+class UpdateDataModelInput:
     project_id: EntityID
     data_model_id: EntityID
     dbml: str
     base_revision: int
 
 
-@dataclass(frozen=True)
-class GenerateDataModelInput:
-    """Dữ liệu đầu vào để AI sinh Data Model từ yêu cầu và nguồn dữ liệu của dự án."""
+@dataclass(frozen=True, slots=True)
+class ChangeProposalIdInput:
+    change_id: EntityID
+
+
+@dataclass(frozen=True, slots=True)
+class GetChangeProposalInput:
+    """Input xem proposal trong phạm vi Project."""
 
     project_id: EntityID
+    change_id: EntityID
+
+
+@dataclass(frozen=True, slots=True)
+class GetPendingChangeProposalInput:
+    project_id: EntityID
+
+
+@dataclass(frozen=True, slots=True)
+class GenerateDataModelDdlInput:
+    """Input sinh DDL từ Data Model hiện hành."""
+
+    project_id: EntityID
+    db_type: SandboxDbType = SandboxDbType.POSTGRESQL

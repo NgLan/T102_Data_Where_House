@@ -31,9 +31,7 @@ async def test_postgres_user_repository_get_by_id() -> None:
     )
 
     session = AsyncMock()
-    mock_result = MagicMock()
-    mock_result.scalar_one_or_none.return_value = mock_model
-    session.execute.return_value = mock_result
+    session.get.return_value = mock_model
 
     repo = PostgresUserRepository(session)
     user = await repo.get_by_id(user_id)
@@ -55,9 +53,7 @@ async def test_postgres_user_repository_save_new_user() -> None:
     )
 
     session = MagicMock()
-    mock_result = MagicMock()
-    mock_result.scalar_one_or_none.return_value = None
-    session.execute = AsyncMock(return_value=mock_result)
+    session.get = AsyncMock(return_value=None)
     session.flush = AsyncMock()
 
     repo = PostgresUserRepository(session)

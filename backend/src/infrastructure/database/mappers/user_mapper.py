@@ -35,6 +35,5 @@ class UserMapper:
         """Cập nhật dữ liệu từ User Entity sang UserModel đã tồn tại."""
         model.username = entity.username
         model.email = entity.email.value
-        model.created_at = entity.created_at
         model.updated_at = entity.updated_at
         return model

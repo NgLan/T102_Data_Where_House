@@ -42,7 +42,7 @@ async def test_interceptor_chain_order() -> None:
     i2 = TrackingInterceptor("I2", logs)
 
     chain = InterceptorChain([i1, i2])
-    context = InterceptorContext.create("TestOperation")
+    context = InterceptorContext("TestOperation")
 
     async def target_op() -> str:
         logs.append("TargetExecuted")
@@ -68,7 +68,7 @@ async def test_interceptor_chain_exception_propagation() -> None:
     i2 = TrackingInterceptor("I2", logs)
 
     chain = InterceptorChain([i1, i2])
-    context = InterceptorContext.create("FailingOperation")
+    context = InterceptorContext("FailingOperation")
 
     async def failing_op() -> None:
         logs.append("TargetFailing")

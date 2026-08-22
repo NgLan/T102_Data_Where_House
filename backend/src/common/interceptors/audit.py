@@ -1,19 +1,21 @@
-"""Interceptor ghi nhận thông tin Audit Metadata (audit.py).
-
-Ghi nhận thông tin audit mở rộng (actor, action, resource_id) cho operation
-mà không lưu trữ dữ liệu nhạy cảm hay can thiệp vào CSDL.
-"""
+"""Interceptor gắn audit metadata đã được whitelist."""
 
 from collections.abc import Awaitable, Callable
-from typing import Any
+from typing import TypeVar
 
+from typing_extensions import override
+
+# isort: split
 from src.common.interceptors.base import BaseInterceptor
 from src.common.interceptors.context import InterceptorContext
-from src.common.utils.datetime import utc_now
+from src.common.utils.datetime import to_isoformat, utc_now
+
+R = TypeVar("R")
+DEFAULT_AUDIT_ACTOR = "system"
 
 
 class AuditInterceptor(BaseInterceptor):
-    """Interceptor đính kèm và kiểm tra Audit Metadata."""
+    """Chỉ gắn actor, action, resource ID và timestamp vào context."""
 
     def __init__(
         self,
@@ -21,22 +23,25 @@ class AuditInterceptor(BaseInterceptor):
         action: str | None = None,
         resource_id: str | None = None,
     ) -> None:
-        self.actor = actor
-        self.action = action
-        self.resource_id = resource_id
+        """Khởi tạo audit descriptor không chứa dữ liệu nhạy cảm."""
+        self._actor = actor
+        self._action = action
+        self._resource_id = resource_id
 
+    @override
     async def intercept(
         self,
         context: InterceptorContext,
-        call_next: Callable[[], Awaitable[Any]],
-    ) -> Any:
-        audit_record: dict[str, Any] = {
-            "timestamp": utc_now().isoformat(),
-            "actor": self.actor or context.metadata.get("actor", "system"),
-            "action": self.action or context.operation_name,
-            "resource_id": self.resource_id or context.metadata.get("resource_id"),
+        call_next: Callable[[], Awaitable[R]],
+    ) -> R:
+        """Gắn audit record đã whitelist rồi tiếp tục operation."""
+        audit_record: dict[str, object] = {
+            "timestamp": to_isoformat(utc_now()),
+            "actor": self._actor or context.metadata.get("actor", DEFAULT_AUDIT_ACTOR),
+            "action": self._action or context.operation_name,
         }
-        # Đính kèm audit record vào context metadata (loại bỏ các giá trị None)
-        context.metadata["audit"] = {k: v for k, v in audit_record.items() if v is not None}
-
+        resource_id = self._resource_id or context.metadata.get("resource_id")
+        if resource_id is not None:
+            audit_record["resource_id"] = resource_id
+        context.metadata["audit"] = audit_record
         return await call_next()

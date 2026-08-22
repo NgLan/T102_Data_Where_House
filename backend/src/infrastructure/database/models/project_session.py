@@ -1,9 +1,10 @@
 """Model CSDL đại diện cho Bảng Phiên Agent (project_sessions)."""
 
+from datetime import datetime
 from typing import TYPE_CHECKING
 from uuid import UUID
 
-from sqlalchemy import ForeignKey, Index, String
+from sqlalchemy import DateTime, ForeignKey, Index, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from src.infrastructure.database.base import Base
 from src.infrastructure.database.constants import MAX_STATUS_LENGTH, MAX_TITLE_LENGTH
@@ -27,6 +28,8 @@ class ProjectSessionModel(Base):
     )
     title: Mapped[str | None] = mapped_column(String(MAX_TITLE_LENGTH), nullable=True)
     status: Mapped[str] = mapped_column(String(MAX_STATUS_LENGTH), nullable=False, default="ACTIVE", index=True)
+    active_turn_id: Mapped[UUID | None] = mapped_column(nullable=True)
+    active_turn_started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     __table_args__ = (
         Index("idx_project_sessions_project_status", "project_id", "status"),

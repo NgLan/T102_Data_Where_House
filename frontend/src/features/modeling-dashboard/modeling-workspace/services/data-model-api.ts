@@ -1,6 +1,5 @@
 import type { DataModelResponse, UpdateDataModelRequest } from "@/api";
-import { apiClient, getDataModel, updateDataModel } from "@/api";
-import { requireApiData } from "@/common/api/require-api-data";
+import { apiClient, getDataModel, requireApiData, updateDataModel } from "@/api";
 
 /** Tải snapshot Data Model hiện tại bằng generated SDK.
  * @param projectId ID Project sở hữu Data Model.
@@ -15,6 +14,7 @@ export async function requestDataModel(
     path: { project_id: projectId },
     responseStyle: "fields",
     throwOnError: true,
+    meta: { shouldNotify: false },
   });
   return requireApiData(response.data);
 }
@@ -42,7 +42,11 @@ export async function requestDataModelUpdate(
   return requireApiData(response.data);
 }
 
-/** Tạo payload update từ snapshot hiện hành và DBML draft. */
+/** Tạo payload update từ snapshot hiện hành và DBML draft.
+ *
+ * Không có snapshot nghĩa là dự án chưa có Data Model — gửi mỗi `dbml` để Backend tạo
+ * bản đầu tiên, vì lúc này chưa tồn tại revision nào để optimistic locking dựa vào.
+ */
 function createUpdateBody(
   snapshot: DataModelResponse,
   dbml: string,

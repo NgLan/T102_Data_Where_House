@@ -1,51 +1,90 @@
-"""Output model cho các thao tác Data Model."""
+"""Public output models của Data Model application service."""
 
 from dataclasses import dataclass
 from datetime import datetime
 
-from src.domain.data_model.entities import DataModel
+from src.domain.data_model.entities import DataModel, DataModelChange
+from src.domain.data_model.enums import DataModelChangeStatus
+from src.domain.sandbox.enums import SandboxDbType
 from src.domain.shared.types import EntityID
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class DataModelOutput:
-    """Snapshot Data Model được phép đi qua application boundary."""
-
     id: EntityID
     project_id: EntityID
     dbml: str
     revision: int
     created_at: datetime
     updated_at: datetime
+    is_outdated: bool = False
 
     @classmethod
-    def from_domain(cls, data_model: DataModel) -> "DataModelOutput":
-        """Ánh xạ domain entity sang application output."""
+    def from_domain(cls, model: DataModel, is_outdated: bool = False) -> "DataModelOutput":
+        """Ánh xạ Data Model entity sang output."""
         return cls(
-            id=data_model.id,
-            project_id=data_model.project_id,
-            dbml=data_model.dbml,
-            revision=data_model.revision,
-            created_at=data_model.created_at,
-            updated_at=data_model.updated_at,
+            model.id,
+            model.project_id,
+            model.dbml,
+            model.revision,
+            model.created_at,
+            model.updated_at,
+            is_outdated,
         )
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
+class ChangeProposalSummaryOutput:
+    id: EntityID
+    data_model_id: EntityID
+    user_id: EntityID
+    base_revision: int
+    status: DataModelChangeStatus
+    created_at: datetime
+    updated_at: datetime
+
+    @classmethod
+    def from_domain(cls, change: DataModelChange) -> "ChangeProposalSummaryOutput":
+        """Ánh xạ change entity sang summary output."""
+        return cls(
+            change.id,
+            change.data_model_id,
+            change.user_id,
+            change.base_revision,
+            change.status,
+            change.created_at,
+            change.updated_at,
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class ChangeProposalDetailOutput:
+    summary: ChangeProposalSummaryOutput
+    proposed_dbml: str
+    current_dbml: str
+    current_revision: int
+    is_outdated: bool
+
+    @classmethod
+    def from_domain(
+        cls,
+        change: DataModelChange,
+        model: DataModel,
+    ) -> "ChangeProposalDetailOutput":
+        """Ghép proposal với snapshot Data Model hiện hành."""
+        return cls(
+            summary=ChangeProposalSummaryOutput.from_domain(change),
+            proposed_dbml=change.proposed_dbml,
+            current_dbml=change.base_dbml,
+            current_revision=model.revision,
+            is_outdated=change.base_revision != model.revision,
+        )
+
+
+@dataclass(frozen=True, slots=True)
 class DataModelDdlOutput:
-    """DDL được sinh từ một revision Data Model cụ thể."""
+    """DDL sinh từ một revision Data Model cụ thể."""
 
     ddl: str
-    dialect: str
-    revision: int
-
-
-@dataclass(frozen=True)
-class DataModelInsightOutput:
-    """Một nhận xét cấu trúc được sinh từ DBML hiện tại."""
-
-    id: str
-    table_name: str
-    severity: str
-    title: str
-    description: str
+    db_type: SandboxDbType
+    data_model_revision: int

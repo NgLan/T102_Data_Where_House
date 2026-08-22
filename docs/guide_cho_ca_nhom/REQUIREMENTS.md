@@ -4,60 +4,60 @@
 
 ## **0\. Document Control**
 
-Phần này chứa các thông tin quản lý tài liệu. Mục đích là đảm bảo tài liệu có thể được xác định, theo dõi phiên bản, người chịu trách nhiệm và lịch sử cập nhật một cách rõ ràng. 
+Phần này chứa các thông tin quản lý tài liệu. Mục đích là đảm bảo tài liệu có thể được xác định, theo dõi phiên bản, người chịu trách nhiệm và lịch sử cập nhật một cách rõ ràng.
 
 ### **0.1 Document Information**
 
-* Document Name: Master Requirements & Engineering Specification   
-* Project Name: AI Agent gợi ý và thiết kế mô hình dữ liệu  
-* Document Version: 0.1.0  
-  * Dùng để theo dõi sự thay đổi của tài liệu theo thời gian.  
-  * **Quy ước:** MAJOR.MINOR.PATCH  
-    * Trong đó:  
-      * **MAJOR**: Có thay đổi lớn về phạm vi, kiến trúc hoặc các quy định nền tảng của hệ thống.  
-      * **MINOR**: Thêm mới hoặc thay đổi đáng kể một nhóm yêu cầu nhưng không phá vỡ các quy định hiện tại.  
-      * **PATCH**: Sửa lỗi, làm rõ nội dung, chỉnh sửa câu chữ hoặc cập nhật nhỏ.  
-    * **Ví dụ:** 1.0.0, 1.1.0, 1.1.1, 2.0.0  
-* Status: Draft  
-  * Cho biết mức độ hoàn thiện và hiệu lực hiện tại của tài liệu.   
-  * Các trạng thái được sử dụng: 
+- Document Name: Master Requirements & Engineering Specification
+- Project Name: AI Agent gợi ý và thiết kế mô hình dữ liệu
+- Document Version: 0.1.0
+  - Dùng để theo dõi sự thay đổi của tài liệu theo thời gian.
+  - **Quy ước:** MAJOR.MINOR.PATCH
+    - Trong đó:
+      - **MAJOR**: Có thay đổi lớn về phạm vi, kiến trúc hoặc các quy định nền tảng của hệ thống.
+      - **MINOR**: Thêm mới hoặc thay đổi đáng kể một nhóm yêu cầu nhưng không phá vỡ các quy định hiện tại.
+      - **PATCH**: Sửa lỗi, làm rõ nội dung, chỉnh sửa câu chữ hoặc cập nhật nhỏ.
+    - **Ví dụ:** 1.0.0, 1.1.0, 1.1.1, 2.0.0
+- Status: Draft
+  - Cho biết mức độ hoàn thiện và hiệu lực hiện tại của tài liệu.
+  - Các trạng thái được sử dụng:
 
-| Status | Ý nghĩa |
-| ----- | ----- |
-| **Draft** | Đang xây dựng, nội dung chưa được thống nhất |
-| **Review** | Đã có bản tương đối hoàn chỉnh và đang được review |
-| **Approved** | Đã được thống nhất và có thể sử dụng làm căn cứ phát triển |
-| **Deprecated** | Không còn được sử dụng |
-| **Archived** | Được lưu trữ để tham khảo, không còn là tài liệu hiện hành |
+| Status         | Ý nghĩa                                                    |
+| -------------- | ---------------------------------------------------------- |
+| **Draft**      | Đang xây dựng, nội dung chưa được thống nhất               |
+| **Review**     | Đã có bản tương đối hoàn chỉnh và đang được review         |
+| **Approved**   | Đã được thống nhất và có thể sử dụng làm căn cứ phát triển |
+| **Deprecated** | Không còn được sử dụng                                     |
+| **Archived**   | Được lưu trữ để tham khảo, không còn là tài liệu hiện hành |
 
-* Created Date: 04/08/2026  
-* Last Updated: 04/08/2026  
-* Owner: Nguyễn Ngọc Lan  
-* Contributors:   
-  * Nguyễn Ngọc Lan  
-  * Hoàng Hương Giang  
-  * Vũ Hải Nam  
-  * Giáp Quốc Anh
+- Created Date: 04/08/2026
+- Last Updated: 04/08/2026
+- Owner: Nguyễn Ngọc Lan
+- Contributors:
+  - Nguyễn Ngọc Lan
+  - Hoàng Hương Giang
+  - Vũ Hải Nam
+  - Giáp Quốc Anh
 
 ### **0.2 Document Status & Change History**
 
-#### ***Version History*** 
+#### **_Version History_**
 
-| Version  | Date  | Author | Change Summary | Status |
-| :---: | :---: | :---: | ----- | :---: |
-| 0.1.0 | 4/8/2026 | Nguyễn Ngọc Lan | Khởi tạo document skeleton  | Draft  |
+| Version |   Date   |     Author      | Change Summary             | Status |
+| :-----: | :------: | :-------------: | -------------------------- | :----: |
+|  0.1.0  | 4/8/2026 | Nguyễn Ngọc Lan | Khởi tạo document skeleton | Draft  |
 
-#### ***Change Rules***
+#### **_Change Rules_**
 
-* Mỗi thay đổi quan trọng phải cập nhật Document Version.
+- Mỗi thay đổi quan trọng phải cập nhật Document Version.
 
-* Last Updated phải được cập nhật khi tài liệu thay đổi.
+- Last Updated phải được cập nhật khi tài liệu thay đổi.
 
-* Thay đổi requirement quan trọng phải được ghi lại trong Version History.
+- Thay đổi requirement quan trọng phải được ghi lại trong Version History.
 
-* Không xóa lịch sử phiên bản cũ.
+- Không xóa lịch sử phiên bản cũ.
 
-* Khi một requirement bị thay đổi hoặc loại bỏ, phải ghi rõ lý do nếu thay đổi đó có ảnh hưởng đến hệ thống.
+- Khi một requirement bị thay đổi hoặc loại bỏ, phải ghi rõ lý do nếu thay đổi đó có ảnh hưởng đến hệ thống.
 
 ### **0.3 Document Purpose**
 
@@ -65,17 +65,17 @@ Tài liệu này là tài liệu yêu cầu và quy định tổng thể của d
 
 Tài liệu có các mục đích chính:
 
-* Mô tả hệ thống cần xây dựng và phạm vi của hệ thống.  
-* Mô tả các nghiệp vụ và yêu cầu chức năng.  
-* Mô tả kiến trúc và các nguyên tắc thiết kế hệ thống.  
-* Xác định các yêu cầu đối với AI Agent và Multi-Agent Architecture.  
-* Xác định các quy tắc thiết kế Data Warehouse.  
-* Xác định quy định về Database, API và Frontend.  
-* Xác định các tiêu chuẩn lập trình và cấu trúc source code.  
-* Xác định các yêu cầu về Security, Testing, Logging và Performance.  
-* Xác định quy trình phát triển và quản lý source code bằng Git.  
-* Cung cấp các quy tắc và giới hạn mà AI coding agent phải tuân thủ khi thực hiện hoặc thay đổi code.  
-* Làm cơ sở để đánh giá xem một tính năng hoặc thay đổi đã đáp ứng đầy đủ yêu cầu của hệ thống hay chưa.
+- Mô tả hệ thống cần xây dựng và phạm vi của hệ thống.
+- Mô tả các nghiệp vụ và yêu cầu chức năng.
+- Mô tả kiến trúc và các nguyên tắc thiết kế hệ thống.
+- Xác định các yêu cầu đối với AI Agent và Multi-Agent Architecture.
+- Xác định các quy tắc thiết kế Data Warehouse.
+- Xác định quy định về Database, API và Frontend.
+- Xác định các tiêu chuẩn lập trình và cấu trúc source code.
+- Xác định các yêu cầu về Security, Testing, Logging và Performance.
+- Xác định quy trình phát triển và quản lý source code bằng Git.
+- Cung cấp các quy tắc và giới hạn mà AI coding agent phải tuân thủ khi thực hiện hoặc thay đổi code.
+- Làm cơ sở để đánh giá xem một tính năng hoặc thay đổi đã đáp ứng đầy đủ yêu cầu của hệ thống hay chưa.
 
 **Nguyên tắc quan trọng**
 
@@ -85,217 +85,217 @@ Tuy nhiên, AI coding agent **không được tự ý thay đổi các requireme
 
 ### **0.4 Document Scope**
 
-#### ***In Scope***
+#### **_In Scope_**
 
 Tài liệu bao gồm các nhóm nội dung sau:
 
 **Business**
 
-* Bối cảnh và mục tiêu nghiệp vụ.  
-* Các actor.  
-* Business process.  
-* Business rules.  
-* Business requirements.  
-* Các use case và business scenario.
+- Bối cảnh và mục tiêu nghiệp vụ.
+- Các actor.
+- Business process.
+- Business rules.
+- Business requirements.
+- Các use case và business scenario.
 
 **Product / System**
 
-* Phạm vi chức năng của hệ thống.  
-* System workflow.  
-* Functional requirements.  
-* Non-functional requirements.  
-* System constraints.  
-* System behavior.
+- Phạm vi chức năng của hệ thống.
+- System workflow.
+- Functional requirements.
+- Non-functional requirements.
+- System constraints.
+- System behavior.
 
 **AI Agent**
 
-* Multi-Agent Architecture.  
-* Agent responsibilities.  
-* Agent communication.  
-* Agent workflow.  
-* ReAct Pattern.  
-* Plan-and-Execute Pattern.  
-* Tool usage.  
-* Agent input/output.  
-* Agent validation.  
-* Agent error handling.  
-* Human-in-the-loop.
+- Multi-Agent Architecture.
+- Agent responsibilities.
+- Agent communication.
+- Agent workflow.
+- ReAct Pattern.
+- Plan-and-Execute Pattern.
+- Tool usage.
+- Agent input/output.
+- Agent validation.
+- Agent error handling.
+- Human-in-the-loop.
 
 **Data Warehouse**
 
-* Data Warehouse architecture.  
-* Fact / Dimension design.  
-* Grain.  
-* Measures.  
-* Relationships.  
-* Surrogate keys.  
-* Slowly Changing Dimensions.  
-* Source-to-target mapping.  
-* Data lineage.  
-* Các quy tắc thiết kế Data Warehouse.
+- Data Warehouse architecture.
+- Fact / Dimension design.
+- Grain.
+- Measures.
+- Relationships.
+- Surrogate keys.
+- Slowly Changing Dimensions.
+- Source-to-target mapping.
+- Data lineage.
+- Các quy tắc thiết kế Data Warehouse.
 
 **Technical**
 
-* System architecture.  
-* Backend.  
-* Frontend.  
-* Database.  
-* API.  
-* Security.  
-* Testing.  
-* Logging.  
-* Monitoring.  
-* Performance.  
-* Deployment.
+- System architecture.
+- Backend.
+- Frontend.
+- Database.
+- API.
+- Security.
+- Testing.
+- Logging.
+- Monitoring.
+- Performance.
+- Deployment.
 
 **Engineering**
 
-* Coding standards.  
-* Project structure.  
-* Naming conventions.  
-* Git workflow.  
-* Branching strategy.  
-* Commit conventions.  
-* Pull Request rules.  
-* Code review.  
-* CI/CD.  
-* Documentation.
+- Coding standards.
+- Project structure.
+- Naming conventions.
+- Git workflow.
+- Branching strategy.
+- Commit conventions.
+- Pull Request rules.
+- Code review.
+- CI/CD.
+- Documentation.
 
 **AI Coding Agent**
 
-* Quy tắc để AI coding agent đọc và sử dụng requirement.  
-* Quyền hạn của AI agent.  
-* Các hành động AI được phép tự thực hiện.  
-* Các hành động AI phải yêu cầu con người xác nhận.  
-* Cách xử lý requirement chưa rõ hoặc mâu thuẫn.  
-* Các hành vi bị cấm.
+- Quy tắc để AI coding agent đọc và sử dụng requirement.
+- Quyền hạn của AI agent.
+- Các hành động AI được phép tự thực hiện.
+- Các hành động AI phải yêu cầu con người xác nhận.
+- Cách xử lý requirement chưa rõ hoặc mâu thuẫn.
+- Các hành vi bị cấm.
 
-#### ***Out of Scope***
+#### **_Out of Scope_**
 
 Những nội dung không được quy định trong tài liệu này hoặc chưa được xác định sẽ được đánh dấu rõ ràng bằng **TBD**, **TODO** hoặc được chuyển sang tài liệu chuyên biệt nếu cần.
 
 Tài liệu này **không thay thế** các tài liệu chuyên môn có yêu cầu chi tiết hơn trong tương lai, ví dụ:
 
-* API Reference chi tiết.  
-* Database Schema Reference.  
-* UI/UX Design Specification.  
-* Deployment Runbook.  
-* User Manual.  
-* Operational Manual.
+- API Reference chi tiết.
+- Database Schema Reference.
+- UI/UX Design Specification.
+- Deployment Runbook.
+- User Manual.
+- Operational Manual.
 
 Trong trường hợp các tài liệu chuyên biệt được tạo sau này, các tài liệu đó phải tham chiếu đến Master Requirements này và không được tự ý tạo ra quy định mâu thuẫn với các requirement đã được phê duyệt.
 
 ### **0.5 Intended Audience**
 
-Tài liệu được sử dụng bởi tất cả các bên tham gia vào quá trình xây dựng và vận hành hệ thống. 
+Tài liệu được sử dụng bởi tất cả các bên tham gia vào quá trình xây dựng và vận hành hệ thống.
 
 **Project Manager / Team Leader**
 
 Sử dụng tài liệu để:
 
-* Hiểu phạm vi dự án.  
-* Theo dõi yêu cầu.  
-* Theo dõi các constraint.  
-* Kiểm soát thay đổi.  
-* Xác định acceptance criteria.
+- Hiểu phạm vi dự án.
+- Theo dõi yêu cầu.
+- Theo dõi các constraint.
+- Kiểm soát thay đổi.
+- Xác định acceptance criteria.
 
 **Business / Domain Analyst**
 
 Sử dụng tài liệu để:
 
-* Mô tả nghiệp vụ.  
-* Xác định business rules.  
-* Xác định business requirements.  
-* Xác định KPI và business scenarios.
+- Mô tả nghiệp vụ.
+- Xác định business rules.
+- Xác định business requirements.
+- Xác định KPI và business scenarios.
 
 **Solution / System Architect**
 
 Sử dụng tài liệu để:
 
-* Thiết kế architecture.  
-* Xác định system components.  
-* Đưa ra architectural decisions.  
-* Đảm bảo hệ thống tuân thủ các architectural constraints.
+- Thiết kế architecture.
+- Xác định system components.
+- Đưa ra architectural decisions.
+- Đảm bảo hệ thống tuân thủ các architectural constraints.
 
 **Backend Developer**
 
 Sử dụng tài liệu để:
 
-* Implement backend.  
-* Xây dựng API.  
-* Implement business logic.  
-* Implement AI Agent.  
-* Tuân thủ coding standards và backend architecture.
+- Implement backend.
+- Xây dựng API.
+- Implement business logic.
+- Implement AI Agent.
+- Tuân thủ coding standards và backend architecture.
 
 **Frontend Developer**
 
 Sử dụng tài liệu để:
 
-* Implement UI/UX.  
-* Xây dựng frontend architecture.  
-* Tích hợp API.  
-* Implement các giao diện tương tác với AI Agent.
+- Implement UI/UX.
+- Xây dựng frontend architecture.
+- Tích hợp API.
+- Implement các giao diện tương tác với AI Agent.
 
 **Data Engineer / Database Developer**
 
 Sử dụng tài liệu để:
 
-* Thiết kế application database.  
-* Thiết kế Data Warehouse.  
-* Implement data processing.  
-* Tuân thủ database và DW design rules.
+- Thiết kế application database.
+- Thiết kế Data Warehouse.
+- Implement data processing.
+- Tuân thủ database và DW design rules.
 
 **AI / ML Engineer**
 
 Sử dụng tài liệu để:
 
-* Thiết kế Agent.  
-* Implement ReAct.  
-* Implement Plan-and-Execute.  
-* Thiết kế Agent tools.  
-* Đánh giá chất lượng Agent.
+- Thiết kế Agent.
+- Implement ReAct.
+- Implement Plan-and-Execute.
+- Thiết kế Agent tools.
+- Đánh giá chất lượng Agent.
 
 **QA / Tester**
 
 Sử dụng tài liệu để:
 
-* Xây dựng test cases.  
-* Xác định expected behavior.  
-* Kiểm tra acceptance criteria.  
-* Đánh giá hệ thống có đáp ứng requirement hay không.
+- Xây dựng test cases.
+- Xác định expected behavior.
+- Kiểm tra acceptance criteria.
+- Đánh giá hệ thống có đáp ứng requirement hay không.
 
 **DevOps / Infrastructure**
 
 Sử dụng tài liệu để:
 
-* Thiết lập môi trường.  
-* CI/CD.  
-* Deployment.  
-* Monitoring.  
-* Logging.  
-* Infrastructure.
+- Thiết lập môi trường.
+- CI/CD.
+- Deployment.
+- Monitoring.
+- Logging.
+- Infrastructure.
 
 **AI Coding Agent**
 
 Bao gồm nhưng không giới hạn ở:
 
-* Codex  
-* Claude Code  
-* Các AI coding agent khác
+- Codex
+- Claude Code
+- Các AI coding agent khác
 
-AI coding agent sử dụng tài liệu này làm nguồn tham chiếu chính để hiểu yêu cầu, constraint và quy tắc phát triển của hệ thống. 
+AI coding agent sử dụng tài liệu này làm nguồn tham chiếu chính để hiểu yêu cầu, constraint và quy tắc phát triển của hệ thống.
 
-AI coding agent phải tuân thủ các quy định trong tài liệu này trong phạm vi quyền hạn được cấp. 
+AI coding agent phải tuân thủ các quy định trong tài liệu này trong phạm vi quyền hạn được cấp.
 
 ### **0.6 How to Use This Document**
 
-Tài liệu này phải được sử dụng như **nguồn tham chiếu chính trong quá trình phát triển hệ thống**. 
+Tài liệu này phải được sử dụng như **nguồn tham chiếu chính trong quá trình phát triển hệ thống**.
 
-#### ***0.6.1 General Rule***
+#### **_0.6.1 General Rule_**
 
 Trước khi thực hiện một thay đổi có ảnh hưởng đến hệ thống, developer hoặc AI coding agent phải xác định các requirement và quy định liên quan trong tài liệu này.
 
-Ví dụ: 
+Ví dụ:
 
 Thay đổi Database
 
@@ -319,37 +319,37 @@ Kiểm tra Migration Rules
 
 Thực hiện thay đổi
 
-#### ***0.6.2 Requirement Priority***
+#### **_0.6.2 Requirement Priority_**
 
 Khi có nhiều requirement liên quan đến một implementation, phải tuân thủ theo mức độ ưu tiên được định nghĩa tại **0.7 Requirement Priority Convention**.
 
-#### ***0.6.3 Before Development***
+#### **_0.6.3 Before Development_**
 
 Trước khi bắt đầu một feature mới, cần xác định:
 
-* Feature thuộc requirement nào.  
-* Business rule liên quan.  
-* API requirement liên quan.  
-* Database requirement liên quan.  
-* UI requirement liên quan.  
-* Security requirement liên quan.  
-* Testing requirement liên quan.
+- Feature thuộc requirement nào.
+- Business rule liên quan.
+- API requirement liên quan.
+- Database requirement liên quan.
+- UI requirement liên quan.
+- Security requirement liên quan.
+- Testing requirement liên quan.
 
-#### ***0.6.4 Before Changing Existing Code***
+#### **_0.6.4 Before Changing Existing Code_**
 
 Không được mặc định rằng code hiện tại là đúng.
 
 Trước khi thay đổi code quan trọng, cần kiểm tra:
 
-1. Requirement tương ứng.  
-2. Architecture hiện tại.  
-3. Các dependency liên quan.  
-4. API contract.  
-5. Database schema.  
-6. Các test hiện có.  
+1. Requirement tương ứng.
+2. Architecture hiện tại.
+3. Các dependency liên quan.
+4. API contract.
+5. Database schema.
+6. Các test hiện có.
 7. Các constraint liên quan.
 
-#### ***0.6.5 When Requirement Is Missing***
+#### **_0.6.5 When Requirement Is Missing_**
 
 Nếu requirement cần thiết chưa được định nghĩa:
 
@@ -357,18 +357,18 @@ Nếu requirement cần thiết chưa được định nghĩa:
 
 AI coding agent có thể đưa ra đề xuất, nhưng phải đánh dấu rõ hoặc yêu cầu người dùng xác nhận tùy mức độ ảnh hưởng.
 
-#### ***0.6.6 When Requirements Conflict***
+#### **_0.6.6 When Requirements Conflict_**
 
 Nếu hai requirement mâu thuẫn nhau:
 
-1. Không tự ý chọn một requirement.  
-2. Xác định rõ các requirement đang xung đột.  
-3. Đánh giá phạm vi ảnh hưởng.  
-4. Báo cáo conflict.  
-5. Yêu cầu người có thẩm quyền đưa ra quyết định.  
+1. Không tự ý chọn một requirement.
+2. Xác định rõ các requirement đang xung đột.
+3. Đánh giá phạm vi ảnh hưởng.
+4. Báo cáo conflict.
+5. Yêu cầu người có thẩm quyền đưa ra quyết định.
 6. Cập nhật tài liệu sau khi quyết định được thống nhất.
 
-#### ***0.6.7 Document Maintenance***
+#### **_0.6.7 Document Maintenance_**
 
 Khi một thay đổi trong hệ thống làm thay đổi requirement hoặc quy định:
 
@@ -398,43 +398,44 @@ Không nên để implementation thay đổi trước rồi mới cập nhật r
 
 Các từ khóa này áp dụng cho cả con người và AI coding agent.
 
-* MUST: nghĩa là **bắt buộc phải thực hiện**.
+- MUST: nghĩa là **bắt buộc phải thực hiện**.
+  - Requirement sử dụng MUST không được bỏ qua hoặc thay đổi nếu chưa có sự phê duyệt tương ứng.
 
-  * Requirement sử dụng MUST không được bỏ qua hoặc thay đổi nếu chưa có sự phê duyệt tương ứng.
+  - **Ví dụ:**
+    - API MUST validate tất cả dữ liệu đầu vào trước khi xử lý.
+    - Điều này có nghĩa là implementation bắt buộc phải có validation.
 
-  * **Ví dụ:**  
-    * API MUST validate tất cả dữ liệu đầu vào trước khi xử lý.  
-    * Điều này có nghĩa là implementation bắt buộc phải có validation.  
-* MUST NOT: nghĩa là **tuyệt đối không được thực hiện**.  
-  * Thường được sử dụng cho:  
-    * Security rules.  
-    * Architecture constraints.  
-    * Coding restrictions.  
-    * Git restrictions.  
-    * Các hành vi có thể gây lỗi hoặc gây nguy hiểm cho hệ thống.  
-  * **Ví dụ:** AI coding agent MUST NOT commit secret hoặc API key vào repository.  
-* SHOULD: nghĩa là **nên thực hiện**.   
-  * Đây là requirement được khuyến nghị nhưng có thể có ngoại lệ nếu có lý do kỹ thuật hợp lý.
+- MUST NOT: nghĩa là **tuyệt đối không được thực hiện**.
+  - Thường được sử dụng cho:
+    - Security rules.
+    - Architecture constraints.
+    - Coding restrictions.
+    - Git restrictions.
+    - Các hành vi có thể gây lỗi hoặc gây nguy hiểm cho hệ thống.
+  - **Ví dụ:** AI coding agent MUST NOT commit secret hoặc API key vào repository.
+- SHOULD: nghĩa là **nên thực hiện**.
+  - Đây là requirement được khuyến nghị nhưng có thể có ngoại lệ nếu có lý do kỹ thuật hợp lý.
 
-  * Nếu không tuân thủ SHOULD, developer phải đảm bảo rằng quyết định đó không gây ảnh hưởng tiêu cực và nên ghi nhận lý do khi cần thiết.
+  - Nếu không tuân thủ SHOULD, developer phải đảm bảo rằng quyết định đó không gây ảnh hưởng tiêu cực và nên ghi nhận lý do khi cần thiết.
 
-  * **Ví dụ:** API SHOULD sử dụng pagination đối với các endpoint trả về danh sách lớn.  
-* SHOULD NOT: nghĩa là **không nên thực hiện**, nhưng có thể có ngoại lệ nếu có lý do hợp lý.  
-  * **Ví dụ:** Application SHOULD NOT thực hiện các truy vấn database không có giới hạn số lượng bản ghi đối với dữ liệu lớn.  
-* MAY: nghĩa là **được phép thực hiện nhưng không bắt buộc**.  
-  * Dùng cho các tính năng hoặc implementation tùy chọn.  
-  * **Ví dụ:**  
-    * Hệ thống MAY hỗ trợ Dark Mode (Nếu không implement Dark Mode thì hệ thống vẫn đáp ứng requirement bắt buộc).
+  - **Ví dụ:** API SHOULD sử dụng pagination đối với các endpoint trả về danh sách lớn.
+
+- SHOULD NOT: nghĩa là **không nên thực hiện**, nhưng có thể có ngoại lệ nếu có lý do hợp lý.
+  - **Ví dụ:** Application SHOULD NOT thực hiện các truy vấn database không có giới hạn số lượng bản ghi đối với dữ liệu lớn.
+- MAY: nghĩa là **được phép thực hiện nhưng không bắt buộc**.
+  - Dùng cho các tính năng hoặc implementation tùy chọn.
+  - **Ví dụ:**
+    - Hệ thống MAY hỗ trợ Dark Mode (Nếu không implement Dark Mode thì hệ thống vẫn đáp ứng requirement bắt buộc).
 
 **Priority Summary**
 
-| Keyword | Ý nghĩa | Có được bỏ qua? |
-| ----- | ----- | ----- |
-| **MUST** | Bắt buộc phải thực hiện | ❌ Không |
-| **MUST NOT** | Tuyệt đối không được thực hiện | ❌ Không |
-| **SHOULD** | Nên thực hiện | ⚠️ Có thể, nếu có lý do |
-| **SHOULD NOT** | Không nên thực hiện | ⚠️ Có thể, nếu có lý do |
-| **MAY** | Có thể thực hiện | ✅ Có |
+| Keyword        | Ý nghĩa                        | Có được bỏ qua?         |
+| -------------- | ------------------------------ | ----------------------- |
+| **MUST**       | Bắt buộc phải thực hiện        | ❌ Không                |
+| **MUST NOT**   | Tuyệt đối không được thực hiện | ❌ Không                |
+| **SHOULD**     | Nên thực hiện                  | ⚠️ Có thể, nếu có lý do |
+| **SHOULD NOT** | Không nên thực hiện            | ⚠️ Có thể, nếu có lý do |
+| **MAY**        | Có thể thực hiện               | ✅ Có                   |
 
 ### **0.8 Requirement ID Convention**
 
@@ -442,14 +443,14 @@ Mỗi requirement chính thức phải có một **Requirement ID duy nhất**.
 
 Requirement ID được sử dụng để:
 
-* Tham chiếu requirement giữa các tài liệu.  
-* Liên kết requirement với implementation.  
-* Liên kết requirement với test case.  
-* Theo dõi requirement trong issue / Pull Request.  
-* Theo dõi thay đổi requirement.  
-* Giúp AI coding agent xác định chính xác requirement cần thực hiện.
+- Tham chiếu requirement giữa các tài liệu.
+- Liên kết requirement với implementation.
+- Liên kết requirement với test case.
+- Theo dõi requirement trong issue / Pull Request.
+- Theo dõi thay đổi requirement.
+- Giúp AI coding agent xác định chính xác requirement cần thực hiện.
 
-#### ***0.8.1 ID Format***
+#### **_0.8.1 ID Format_**
 
 Định dạng chung: \<PREFIX\>-\<NUMBER\>
 
@@ -465,28 +466,28 @@ DB-001
 
 API-001
 
-**NUMBER** sử dụng số nguyên dương, bắt đầu từ **001**. 
+**NUMBER** sử dụng số nguyên dương, bắt đầu từ **001**.
 
-#### ***0.8.2 Requirement Categories*** 
+#### **_0.8.2 Requirement Categories_**
 
-| Prefix | Category | Ý nghĩa |
-| ----- | ----- | ----- |
-| `FR` | Functional Requirement | Yêu cầu chức năng |
-| `NFR` | Non-Functional Requirement | Yêu cầu phi chức năng |
-| `DB` | Database Requirement | Yêu cầu liên quan Database |
-| `DW` | Data Warehouse Requirement | Yêu cầu liên quan Data Warehouse |
-| `API` | API Requirement | Yêu cầu liên quan API |
-| `UI` | UI Requirement | Yêu cầu giao diện |
-| `AI` | AI / Agent Requirement | Yêu cầu liên quan AI Agent |
-| `SEC` | Security Requirement | Yêu cầu bảo mật |
-| `DEV` | Development Requirement | Quy định phát triển / coding |
-| `GIT` | Git Requirement | Quy định Git |
-| `TEST` | Testing Requirement | Yêu cầu kiểm thử |
-| `DEP` | Deployment Requirement | Yêu cầu triển khai |
-| `OPS` | Operations Requirement | Yêu cầu vận hành |
-| `DOC` | Documentation Requirement | Yêu cầu tài liệu |
+| Prefix | Category                   | Ý nghĩa                          |
+| ------ | -------------------------- | -------------------------------- |
+| `FR`   | Functional Requirement     | Yêu cầu chức năng                |
+| `NFR`  | Non-Functional Requirement | Yêu cầu phi chức năng            |
+| `DB`   | Database Requirement       | Yêu cầu liên quan Database       |
+| `DW`   | Data Warehouse Requirement | Yêu cầu liên quan Data Warehouse |
+| `API`  | API Requirement            | Yêu cầu liên quan API            |
+| `UI`   | UI Requirement             | Yêu cầu giao diện                |
+| `AI`   | AI / Agent Requirement     | Yêu cầu liên quan AI Agent       |
+| `SEC`  | Security Requirement       | Yêu cầu bảo mật                  |
+| `DEV`  | Development Requirement    | Quy định phát triển / coding     |
+| `GIT`  | Git Requirement            | Quy định Git                     |
+| `TEST` | Testing Requirement        | Yêu cầu kiểm thử                 |
+| `DEP`  | Deployment Requirement     | Yêu cầu triển khai               |
+| `OPS`  | Operations Requirement     | Yêu cầu vận hành                 |
+| `DOC`  | Documentation Requirement  | Yêu cầu tài liệu                 |
 
-#### ***0.8.3 Requirement Example***
+#### **_0.8.3 Requirement Example_**
 
 Ví dụ:
 
@@ -512,16 +513,16 @@ Hoặc:
 
 > Developer MUST NOT push trực tiếp vào branch main.
 
-#### ***0.8.4 Requirement ID Rules***
+#### **_0.8.4 Requirement ID Rules_**
 
-* Mỗi Requirement ID phải **duy nhất trong toàn bộ project**.  
-* Không tái sử dụng ID của requirement đã bị xóa.  
-* Khi requirement thay đổi nội dung nhưng vẫn giữ nguyên ý nghĩa, có thể giữ ID.  
-* Khi requirement thay đổi bản chất, cần cân nhắc tạo Requirement ID mới.  
-* Requirement ID không được thay đổi tùy tiện sau khi requirement đã được sử dụng trong issue, code hoặc test case.  
-* Requirement ID phải được sử dụng khi tham chiếu đến requirement trong các tài liệu khác.
+- Mỗi Requirement ID phải **duy nhất trong toàn bộ project**.
+- Không tái sử dụng ID của requirement đã bị xóa.
+- Khi requirement thay đổi nội dung nhưng vẫn giữ nguyên ý nghĩa, có thể giữ ID.
+- Khi requirement thay đổi bản chất, cần cân nhắc tạo Requirement ID mới.
+- Requirement ID không được thay đổi tùy tiện sau khi requirement đã được sử dụng trong issue, code hoặc test case.
+- Requirement ID phải được sử dụng khi tham chiếu đến requirement trong các tài liệu khác.
 
-#### ***0.8.5 Requirement Traceability***
+#### **_0.8.5 Requirement Traceability_**
 
 Khi hệ thống phát triển, requirement có thể được liên kết theo chuỗi:
 
@@ -555,19 +556,19 @@ Test Result
 
 FR-015
 
-   ↓
+↓
 
 Issue \#42
 
-   ↓
+↓
 
 feature/FR-015-project-creation
 
-   ↓
+↓
 
 PR \#57
 
-   ↓
+↓
 
 Test Case TC-015
 
@@ -581,17 +582,17 @@ Hiện nay, doanh nghiệp có thể sở hữu nhiều nguồn dữ liệu khá
 
 Việc xây dựng Data Warehouse từ các nguồn dữ liệu này đòi hỏi phải thực hiện nhiều bước phân tích và thiết kế, bao gồm:
 
-* Phân tích yêu cầu nghiệp vụ.  
-* Xác định các quy trình nghiệp vụ cần phân tích.  
-* Xác định các chỉ số và KPI.  
-* Phân tích nguồn dữ liệu.  
-* Xác định dữ liệu cần thiết cho từng nghiệp vụ.  
-* Xác định grain của Fact Table.  
-* Xác định Fact và Dimension.  
-* Xác định mối quan hệ giữa các bảng.  
-* Xác định cách xử lý dữ liệu lịch sử.  
-* Xác định mapping giữa dữ liệu nguồn và Data Warehouse.  
-* Kiểm tra tính hợp lý và nhất quán của mô hình.
+- Phân tích yêu cầu nghiệp vụ.
+- Xác định các quy trình nghiệp vụ cần phân tích.
+- Xác định các chỉ số và KPI.
+- Phân tích nguồn dữ liệu.
+- Xác định dữ liệu cần thiết cho từng nghiệp vụ.
+- Xác định grain của Fact Table.
+- Xác định Fact và Dimension.
+- Xác định mối quan hệ giữa các bảng.
+- Xác định cách xử lý dữ liệu lịch sử.
+- Xác định mapping giữa dữ liệu nguồn và Data Warehouse.
+- Kiểm tra tính hợp lý và nhất quán của mô hình.
 
 Các công việc trên thường yêu cầu nhiều kiến thức đồng thời về nghiệp vụ, Data Modeling, Database và Data Warehouse. Quá trình thiết kế thủ công cũng có thể mất nhiều thời gian và dễ xảy ra sai sót khi số lượng nguồn dữ liệu, bảng và yêu cầu nghiệp vụ tăng lên.
 
@@ -607,62 +608,62 @@ Hệ thống cần giải quyết bài toán:
 
 Các vấn đề chính cần giải quyết bao gồm:
 
-#### ***1\. Phân tích yêu cầu nghiệp vụ***
+#### **_1\. Phân tích yêu cầu nghiệp vụ_**
 
 Yêu cầu nghiệp vụ thường được mô tả dưới dạng ngôn ngữ tự nhiên và có thể không trực tiếp chỉ ra:
 
-* Fact nào cần tạo.  
-* Dimension nào cần tạo.  
-* Grain của Fact là gì.  
-* Measure nào cần tính.  
-* Dữ liệu nào từ nguồn được sử dụng.  
-* Quan hệ giữa các thực thể.
+- Fact nào cần tạo.
+- Dimension nào cần tạo.
+- Grain của Fact là gì.
+- Measure nào cần tính.
+- Dữ liệu nào từ nguồn được sử dụng.
+- Quan hệ giữa các thực thể.
 
 Hệ thống cần hỗ trợ chuyển đổi yêu cầu nghiệp vụ thành các thông tin có cấu trúc phục vụ quá trình thiết kế Data Warehouse.
 
-#### ***2\. Phân tích dữ liệu nguồn***
+#### **_2\. Phân tích dữ liệu nguồn_**
 
 Một hệ thống có thể có nhiều bảng nguồn với cấu trúc và ý nghĩa khác nhau.
 
 Hệ thống cần hỗ trợ phân tích:
 
-* Schema.  
-* Table.  
-* Column.  
-* Data type.  
-* Relationship.  
-* Metadata.  
-* Business meaning.  
-* Các dữ liệu liên quan đến yêu cầu nghiệp vụ.
+- Schema.
+- Table.
+- Column.
+- Data type.
+- Relationship.
+- Metadata.
+- Business meaning.
+- Các dữ liệu liên quan đến yêu cầu nghiệp vụ.
 
-#### ***3\. Thiết kế Data Warehouse***
+#### **_3\. Thiết kế Data Warehouse_**
 
 Từ yêu cầu nghiệp vụ và dữ liệu nguồn, hệ thống cần hỗ trợ xác định:
 
-* Fact Table.  
-* Dimension Table.  
-* Grain.  
-* Measure.  
-* Key.  
-* Relationship.  
-* Historical data handling.  
-* Source-to-target mapping.
+- Fact Table.
+- Dimension Table.
+- Grain.
+- Measure.
+- Key.
+- Relationship.
+- Historical data handling.
+- Source-to-target mapping.
 
-#### ***4\. Kiểm tra chất lượng thiết kế***
+#### **_4\. Kiểm tra chất lượng thiết kế_**
 
 Kết quả do AI tạo ra có thể chứa:
 
-* Thiếu Dimension.  
-* Sai Grain.  
-* Sai Relationship.  
-* Measure không phù hợp.  
-* Không có nguồn dữ liệu tương ứng.  
-* Vi phạm quy tắc thiết kế Data Warehouse.  
-* Mâu thuẫn giữa các thành phần của mô hình.
+- Thiếu Dimension.
+- Sai Grain.
+- Sai Relationship.
+- Measure không phù hợp.
+- Không có nguồn dữ liệu tương ứng.
+- Vi phạm quy tắc thiết kế Data Warehouse.
+- Mâu thuẫn giữa các thành phần của mô hình.
 
 Do đó, hệ thống cần có cơ chế kiểm tra và đánh giá kết quả trước khi xem đó là một thiết kế hợp lệ.
 
-#### ***5\. Điều phối nhiều AI Agent***
+#### **_5\. Điều phối nhiều AI Agent_**
 
 Một nhiệm vụ thiết kế Data Warehouse có thể bao gồm nhiều loại công việc khác nhau.
 
@@ -718,118 +719,118 @@ Thay vào đó, hệ thống đóng vai trò là **AI-assisted design system**, 
 
 Dự án có các mục tiêu chính sau:
 
-#### ***1.4.1 Tự động hóa quá trình phân tích***
+#### **_1.4.1 Tự động hóa quá trình phân tích_**
 
 Hỗ trợ tự động phân tích yêu cầu nghiệp vụ, dữ liệu nguồn và các quy tắc liên quan để giảm các công việc phân tích thủ công.
 
-#### ***1.4.2 Hỗ trợ thiết kế Data Warehouse***
+#### **_1.4.2 Hỗ trợ thiết kế Data Warehouse_**
 
 Hỗ trợ tạo đề xuất Data Warehouse Model bao gồm:
 
-* Fact.  
-* Dimension.  
-* Grain.  
-* Measure.  
-* Key.  
-* Relationship.  
-* Các thuộc tính cần thiết.  
-* Source-to-target mapping.
+- Fact.
+- Dimension.
+- Grain.
+- Measure.
+- Key.
+- Relationship.
+- Các thuộc tính cần thiết.
+- Source-to-target mapping.
 
-#### ***1.4.3 Sử dụng Multi-Agent Architecture***
+#### **_1.4.3 Sử dụng Multi-Agent Architecture_**
 
 Phân chia quá trình xử lý thành các Agent có trách nhiệm chuyên biệt thay vì giao toàn bộ nhiệm vụ cho một Agent duy nhất.
 
-#### ***1.4.4 Kết hợp nhiều Agent Pattern***
+#### **_1.4.4 Kết hợp nhiều Agent Pattern_**
 
 Hệ thống hỗ trợ kết hợp:
 
-* **ReAct Pattern** cho các nhiệm vụ cần quan sát kết quả, sử dụng tool và điều chỉnh hành động theo từng bước.  
-* **Plan-and-Execute Pattern** cho các nhiệm vụ có thể phân rã thành nhiều bước cần lập kế hoạch trước khi thực hiện.
+- **ReAct Pattern** cho các nhiệm vụ cần quan sát kết quả, sử dụng tool và điều chỉnh hành động theo từng bước.
+- **Plan-and-Execute Pattern** cho các nhiệm vụ có thể phân rã thành nhiều bước cần lập kế hoạch trước khi thực hiện.
 
 Việc lựa chọn pattern phải phụ thuộc vào loại nhiệm vụ và được quy định cụ thể trong phần AI Agent Architecture.
 
-#### ***1.4.5 Kiểm tra và đánh giá kết quả***
+#### **_1.4.5 Kiểm tra và đánh giá kết quả_**
 
 Hệ thống phải có khả năng kiểm tra thiết kế được tạo ra dựa trên các quy tắc đã được định nghĩa.
 
-#### ***1.4.6 Hỗ trợ Human-in-the-Loop***
+#### **_1.4.6 Hỗ trợ Human-in-the-Loop_**
 
 Người dùng phải có khả năng:
 
-* Xem kết quả AI.  
-* Xem lý do hoặc căn cứ của đề xuất khi hệ thống hỗ trợ.  
-* Chỉnh sửa kết quả.  
-* Từ chối kết quả.  
-* Phê duyệt kết quả.  
-* Yêu cầu AI thực hiện lại hoặc điều chỉnh.
+- Xem kết quả AI.
+- Xem lý do hoặc căn cứ của đề xuất khi hệ thống hỗ trợ.
+- Chỉnh sửa kết quả.
+- Từ chối kết quả.
+- Phê duyệt kết quả.
+- Yêu cầu AI thực hiện lại hoặc điều chỉnh.
 
-#### ***1.4.7 Chuẩn hóa quá trình phát triển***
+#### **_1.4.7 Chuẩn hóa quá trình phát triển_**
 
 Hệ thống và source code phải tuân thủ các quy định thống nhất về:
 
-* Architecture.  
-* Database.  
-* API.  
-* UI.  
-* Security.  
-* Testing.  
-* Coding style.  
-* Git.  
-* Documentation.
+- Architecture.
+- Database.
+- API.
+- UI.
+- Security.
+- Testing.
+- Coding style.
+- Git.
+- Documentation.
 
 ### **1.5 Expected Outcomes**
 
 Sau khi hoàn thành, hệ thống dự kiến cung cấp các kết quả chính sau:
 
-#### ***1.5.1 AI Agent System***
+#### **_1.5.1 AI Agent System_**
 
 Một hệ thống Multi-Agent có khả năng phối hợp nhiều Agent để thực hiện quá trình phân tích và thiết kế Data Warehouse.
 
-#### ***1.5.2 Data Warehouse Design***
+#### **_1.5.2 Data Warehouse Design_**
 
 Hệ thống có khả năng tạo hoặc đề xuất một Data Warehouse Model dựa trên đầu vào của người dùng.
 
 Kết quả có thể bao gồm:
 
-* Fact Tables.  
-* Dimension Tables.  
-* Attributes.  
-* Measures.  
-* Keys.  
-* Relationships.  
-* Grain.  
-* Mapping với dữ liệu nguồn.
+- Fact Tables.
+- Dimension Tables.
+- Attributes.
+- Measures.
+- Keys.
+- Relationships.
+- Grain.
+- Mapping với dữ liệu nguồn.
 
-#### ***1.5.3 Validation Result***
+#### **_1.5.3 Validation Result_**
 
 Hệ thống cung cấp kết quả kiểm tra thiết kế và chỉ ra các vấn đề được phát hiện.
 
 **Ví dụ:**
 
-* Missing Dimension  
-* Invalid Relationship  
-* Incorrect Grain  
-* Missing Measure  
-* Unsupported Source Mapping  
-* Business Rule Violation
+- Missing Dimension
+- Invalid Relationship
+- Incorrect Grain
+- Missing Measure
+- Unsupported Source Mapping
+- Business Rule Violation
 
-#### ***1.5.4 Visualization***
+#### **_1.5.4 Visualization_**
 
 Người dùng có thể trực quan hóa Data Warehouse Model, ví dụ dưới dạng ERD hoặc các hình thức biểu diễn tương ứng.
 
-#### ***1.5.5 Exportable Output***
+#### **_1.5.5 Exportable Output_**
 
 Hệ thống có khả năng tạo ra các đầu ra phục vụ quá trình phát triển tiếp theo, ví dụ:
 
-* Data model.  
-* ERD.  
-* DDL.  
-* Documentation.  
-* Source-to-target mapping.
+- Data model.
+- ERD.
+- DDL.
+- Documentation.
+- Source-to-target mapping.
 
 Các định dạng cụ thể sẽ được xác định trong phần [**Functional Requirements**](#6.-functional-requirements).
 
-#### ***1.5.6 Traceability***
+#### **_1.5.6 Traceability_**
 
 Có khả năng truy xuất mối liên hệ giữa:
 
@@ -863,100 +864,100 @@ Mục tiêu là giúp người dùng hiểu được một thành phần trong D
 
 Hệ thống hỗ trợ:
 
-* Nhập yêu cầu nghiệp vụ.  
-* Phân tích yêu cầu.  
-* Xác định business entities.  
-* Xác định business process.  
-* Xác định KPI / Measure.  
-* Xác định business rules liên quan.
+- Nhập yêu cầu nghiệp vụ.
+- Phân tích yêu cầu.
+- Xác định business entities.
+- Xác định business process.
+- Xác định KPI / Measure.
+- Xác định business rules liên quan.
 
 **Source Data Analysis**
 
 Hệ thống hỗ trợ:
 
-* Nhập schema hoặc metadata của nguồn dữ liệu.  
-* Phân tích table và column.  
-* Phân tích relationship.  
-* Mapping dữ liệu nguồn với yêu cầu nghiệp vụ.
+- Nhập schema hoặc metadata của nguồn dữ liệu.
+- Phân tích table và column.
+- Phân tích relationship.
+- Mapping dữ liệu nguồn với yêu cầu nghiệp vụ.
 
 **Data Warehouse Design**
 
 Hệ thống hỗ trợ:
 
-* Xác định Fact.  
-* Xác định Dimension.  
-* Xác định Grain.  
-* Xác định Measure.  
-* Xác định Key.  
-* Xác định Relationship.  
-* Đề xuất cách xử lý dữ liệu lịch sử.  
-* Tạo Data Warehouse Model.
+- Xác định Fact.
+- Xác định Dimension.
+- Xác định Grain.
+- Xác định Measure.
+- Xác định Key.
+- Xác định Relationship.
+- Đề xuất cách xử lý dữ liệu lịch sử.
+- Tạo Data Warehouse Model.
 
 **AI Agent**
 
 Hệ thống bao gồm:
 
-* Multi-Agent Architecture.  
-* Agent điều phối.  
-* ReAct.  
-* Plan-and-Execute.  
-* Tool usage.  
-* Agent validation.  
-* Agent collaboration.  
-* Agent error handling.
+- Multi-Agent Architecture.
+- Agent điều phối.
+- ReAct.
+- Plan-and-Execute.
+- Tool usage.
+- Agent validation.
+- Agent collaboration.
+- Agent error handling.
 
 **Validation**
 
 Hệ thống hỗ trợ kiểm tra:
 
-* Tính nhất quán.  
-* Tính đầy đủ.  
-* Tính hợp lệ của model.  
-* Tuân thủ Data Warehouse design rules.  
-* Mapping giữa source và target.
+- Tính nhất quán.
+- Tính đầy đủ.
+- Tính hợp lệ của model.
+- Tuân thủ Data Warehouse design rules.
+- Mapping giữa source và target.
 
 **User Interface**
 
 Hệ thống cung cấp giao diện để người dùng:
 
-* Nhập dữ liệu.  
-* Theo dõi quá trình Agent xử lý.  
-* Xem kết quả.  
-* Xem Data Warehouse Model.  
-* Review kết quả.  
-* Chỉnh sửa và phê duyệt kết quả.
+- Nhập dữ liệu.
+- Theo dõi quá trình Agent xử lý.
+- Xem kết quả.
+- Xem Data Warehouse Model.
+- Review kết quả.
+- Chỉnh sửa và phê duyệt kết quả.
 
 ### **1.7 Out of Scope**
 
 Các nội dung sau đây **không thuộc phạm vi mặc định của phiên bản hiện tại**, trừ khi được bổ sung thành requirement chính thức.
 
-#### ***1.7.1 Production Data Warehouse***
+#### **_1.7.1 Production Data Warehouse_**
 
 Hệ thống không mặc định chịu trách nhiệm xây dựng và vận hành một Data Warehouse production thực tế cho doanh nghiệp.
 
-#### ***1.7.2 Full ETL/ELT Platform***
+#### **_1.7.2 Full ETL/ELT Platform_**
 
 Hệ thống tập trung vào **phân tích và thiết kế Data Warehouse**, không mặc định trở thành một nền tảng ETL/ELT hoàn chỉnh.
 
-#### ***1.7.3 Autonomous Production Deployment***
+#### **_1.7.3 Autonomous Production Deployment_**
 
 AI Agent không được tự động triển khai thay đổi lên production nếu chưa có requirement và cơ chế phê duyệt tương ứng.
 
-#### ***1.7.4 Fully Autonomous Decision Making***
+#### **_1.7.4 Fully Autonomous Decision Making_**
 
 AI không được mặc định có quyền tự quyết đối với các quyết định quan trọng về:
 
-* Business rule.  
-* Architecture.  
-* Database schema.  
-* Security.  
-* Production infrastructure.
+- Business rule.
+- Architecture.
+- Database schema.
+- Security.
+- Production infrastructure.
 
-#### ***1.7.5 Real Enterprise Data***
+#### **_1.7.5 Real Enterprise Data_**
 
 Trong quá trình phát triển và kiểm thử, không sử dụng dữ liệu doanh nghiệp thực tế hoặc dữ liệu nhạy cảm nếu chưa có cơ chế bảo mật và quyền sử dụng phù hợp.
 
-#### ***1.7.6 Domain-Specific Production System***
+#### **_1.7.6 Domain-Specific Production System_**
 
 Việc hệ thống được áp dụng thử nghiệm cho một domain cụ thể không có nghĩa hệ thống trở thành hệ thống nghiệp vụ production của domain đó.
 
@@ -964,9 +965,9 @@ Domain cụ thể sẽ được xác định tại các phần [**Business Domai
 
 ### **1.8 Success Criteria**
 
-Dự án được xem là đạt mục tiêu khi đáp ứng các tiêu chí được thống nhất dưới đây. 
+Dự án được xem là đạt mục tiêu khi đáp ứng các tiêu chí được thống nhất dưới đây.
 
-#### ***1.8.1 Functional Success***
+#### **_1.8.1 Functional Success_**
 
 Hệ thống có thể thực hiện đầy đủ workflow chính từ:
 
@@ -986,45 +987,45 @@ Input
 
 → Output
 
-#### ***1.8.2 Data Warehouse Design Quality***
+#### **_1.8.2 Data Warehouse Design Quality_**
 
 Thiết kế được tạo ra phải đáp ứng các Data Warehouse design rules đã được định nghĩa trong tài liệu.
 
 Các tiêu chí cụ thể sẽ được xác định tại phần: [**10\. Data Warehouse Design Rules**](#12.-data-warehouse-design-rules)
 
-#### ***1.8.3 AI Agent Quality***
+#### **_1.8.3 AI Agent Quality_**
 
 AI Agent phải có khả năng:
 
-* Hoàn thành các nhiệm vụ được giao.  
-* Sử dụng đúng tool.  
-* Tuân thủ giới hạn quyền hạn.  
-* Phát hiện lỗi.  
-* Xử lý hoặc báo cáo lỗi.  
-* Không tự ý đưa ra quyết định vượt quá quyền hạn.
+- Hoàn thành các nhiệm vụ được giao.
+- Sử dụng đúng tool.
+- Tuân thủ giới hạn quyền hạn.
+- Phát hiện lỗi.
+- Xử lý hoặc báo cáo lỗi.
+- Không tự ý đưa ra quyết định vượt quá quyền hạn.
 
-#### ***1.8.4 Validation Quality***
+#### **_1.8.4 Validation Quality_**
 
 Hệ thống phải có khả năng phát hiện các lỗi hoặc vấn đề quan trọng trong Data Warehouse Design.
 
 Các metric đánh giá cụ thể sẽ được xác định tại: **[20\. AI Evaluation](#20.-ai-evaluation)**
 
-#### ***1.8.5 Traceability***
+#### **_1.8.5 Traceability_**
 
 Các thành phần quan trọng của Data Warehouse phải có khả năng truy xuất về nguồn gốc của chúng khi hệ thống có đủ thông tin để thực hiện việc truy xuất.
 
-#### ***1.8.6 Engineering Quality***
+#### **_1.8.6 Engineering Quality_**
 
 Source code phải đáp ứng các quy định về:
 
-* Architecture.  
-* Coding standards.  
-* Testing.  
-* Security.  
-* Git.  
-* Documentation.
+- Architecture.
+- Coding standards.
+- Testing.
+- Security.
+- Git.
+- Documentation.
 
-#### ***1.8.7 User Acceptance***
+#### **_1.8.7 User Acceptance_**
 
 Người dùng mục tiêu có thể sử dụng hệ thống để hoàn thành workflow chính mà không cần can thiệp thủ công vào source code của hệ thống.
 
@@ -1032,13 +1033,13 @@ Người dùng mục tiêu có thể sử dụng hệ thống để hoàn thành
 
 Dự án được phát triển trong một số giới hạn và điều kiện nhất định.
 
-#### ***1.9.1 Technology Constraints***
+#### **_1.9.1 Technology Constraints_**
 
 Các công nghệ được phép sử dụng phải tuân thủ Technology Stack được thống nhất trong tài liệu.
 
 Việc thêm một framework, library hoặc infrastructure component mới phải tuân thủ quy định về dependency management.
 
-#### ***1.9.2 AI / LLM Constraints***
+#### **_1.9.2 AI / LLM Constraints_**
 
 Hệ thống phụ thuộc vào khả năng của LLM được sử dụng.
 
@@ -1046,40 +1047,40 @@ Kết quả từ LLM không được mặc định xem là chính xác tuyệt �
 
 Các kết quả quan trọng phải được validation hoặc human review theo quy định.
 
-#### ***1.9.3 Data Constraints***
+#### **_1.9.3 Data Constraints_**
 
 Chất lượng của kết quả Data Warehouse phụ thuộc vào:
 
-* Chất lượng dữ liệu nguồn.  
-* Metadata.  
-* Schema.  
-* Business requirements.  
-* Business rules.
+- Chất lượng dữ liệu nguồn.
+- Metadata.
+- Schema.
+- Business requirements.
+- Business rules.
 
 Hệ thống không được giả định rằng dữ liệu nguồn luôn đầy đủ hoặc chính xác.
 
-#### ***1.9.4 Development Constraints***
+#### **_1.9.4 Development Constraints_**
 
 Mọi implementation phải tuân thủ:
 
-* Project architecture.  
-* Coding standards.  
-* Git workflow.  
-* Testing requirements.  
-* Security requirements.
+- Project architecture.
+- Coding standards.
+- Git workflow.
+- Testing requirements.
+- Security requirements.
 
-#### ***1.9.5 Security Constraints***
+#### **_1.9.5 Security Constraints_**
 
 Không được đưa các thông tin nhạy cảm như:
 
-* API key.  
-* Password.  
-* Secret.  
-* Credential.
+- API key.
+- Password.
+- Secret.
+- Credential.
 
 vào source code hoặc repository.
 
-#### ***1.9.6 Human Approval Constraints***
+#### **_1.9.6 Human Approval Constraints_**
 
 Các hành động có ảnh hưởng lớn đến hệ thống phải tuân thủ cơ chế Human-in-the-Loop khi được quy định.
 
@@ -1087,43 +1088,43 @@ Các hành động có ảnh hưởng lớn đến hệ thống phải tuân th�
 
 Các assumption dưới đây được sử dụng làm cơ sở ban đầu cho quá trình thiết kế. Nếu assumption không còn đúng, requirement liên quan phải được xem xét lại.
 
-#### ***1.10.1 Input Assumptions***
+#### **_1.10.1 Input Assumptions_**
 
 Giả định rằng người dùng có thể cung cấp một hoặc nhiều loại thông tin đầu vào như:
 
-* Business Requirements.  
-* Business Rules.  
-* KPI.  
-* Source Schema.  
-* Data Dictionary.  
-* Metadata.  
-* Sample Data.
+- Business Requirements.
+- Business Rules.
+- KPI.
+- Source Schema.
+- Data Dictionary.
+- Metadata.
+- Sample Data.
 
 Không phải mọi loại input đều bắt buộc phải có trong mọi workflow. Requirement cụ thể sẽ xác định input tối thiểu cho từng chức năng.
 
-#### ***1.10.2 Data Assumptions***
+#### **_1.10.2 Data Assumptions_**
 
 Giả định rằng source data có metadata đủ để hệ thống thực hiện phân tích ở mức độ cần thiết.
 
 Nếu thông tin không đủ, hệ thống phải xác định phần thông tin còn thiếu thay vì tự động tạo ra thông tin không có căn cứ.
 
-#### ***1.10.3 AI Assumptions***
+#### **_1.10.3 AI Assumptions_**
 
 Giả định rằng LLM có khả năng:
 
-* Hiểu ngôn ngữ tự nhiên.  
-* Phân tích schema.  
-* Thực hiện reasoning theo workflow được thiết kế.  
-* Sử dụng tool.  
-* Tạo structured output.
+- Hiểu ngôn ngữ tự nhiên.
+- Phân tích schema.
+- Thực hiện reasoning theo workflow được thiết kế.
+- Sử dụng tool.
+- Tạo structured output.
 
 Tuy nhiên, hệ thống không được dựa vào assumption rằng LLM luôn đưa ra kết quả chính xác.
 
-#### ***1.10.4 User Assumptions***
+#### **_1.10.4 User Assumptions_**
 
 Giả định rằng người dùng có kiến thức cơ bản về nghiệp vụ hoặc Data Warehouse đủ để review và phê duyệt kết quả AI khi cần thiết.
 
-#### ***1.10.5 Architecture Assumptions***
+#### **_1.10.5 Architecture Assumptions_**
 
 Hệ thống được thiết kế theo hướng Multi-Agent và có khả năng sử dụng nhiều Agent chuyên trách.
 
@@ -1135,15 +1136,15 @@ Phần này định nghĩa các thuật ngữ được sử dụng xuyên suốt
 
 Các thuật ngữ có định nghĩa chính thức trong phần này phải được sử dụng thống nhất trong toàn bộ project.
 
-#### ***AI Agent***
+#### **_AI Agent_**
 
 Một thành phần phần mềm sử dụng mô hình AI/LLM để thực hiện một nhiệm vụ cụ thể theo context, instruction, tool và quyền hạn được cung cấp.
 
-#### ***Multi-Agent System***
+#### **_Multi-Agent System_**
 
 Hệ thống bao gồm nhiều AI Agent có trách nhiệm khác nhau và có khả năng phối hợp để hoàn thành một nhiệm vụ lớn.
 
-#### ***ReAct***
+#### **_ReAct_**
 
 Pattern trong đó Agent thực hiện chu trình:
 
@@ -1159,7 +1160,7 @@ Reason / Analyze
 
 Agent có thể sử dụng tool, quan sát kết quả và tiếp tục quyết định hành động tiếp theo.
 
-#### ***Plan-and-Execute***
+#### **_Plan-and-Execute_**
 
 Pattern trong đó Agent:
 
@@ -1175,83 +1176,83 @@ Plan
 
 Nhiệm vụ được phân rã thành các bước trước khi thực hiện.
 
-#### ***Agent điều phối***
+#### **_Agent điều phối_**
 
 Thành phần chịu trách nhiệm điều phối quá trình thực hiện giữa các Agent.
 
-#### ***Tool***
+#### **_Tool_**
 
 Một chức năng hoặc interface mà Agent được phép gọi để thực hiện một hành động cụ thể, chẳng hạn như đọc schema, truy vấn dữ liệu hoặc kiểm tra model.
 
-#### ***Business Requirement***
+#### **_Business Requirement_**
 
 Yêu cầu mô tả nhu cầu hoặc mục tiêu của nghiệp vụ mà hệ thống cần đáp ứng.
 
-#### ***Business Rule***
+#### **_Business Rule_**
 
 Một quy tắc hoặc điều kiện nghiệp vụ mà hệ thống phải tuân thủ.
 
-#### ***KPI***
+#### **_KPI_**
 
 Chỉ số được sử dụng để đo lường một khía cạnh quan trọng của hoạt động nghiệp vụ.
 
-#### ***Data Warehouse***
+#### **_Data Warehouse_**
 
 Hệ thống lưu trữ dữ liệu được tổ chức nhằm phục vụ phân tích và báo cáo.
 
-#### ***Fact Table***
+#### **_Fact Table_**
 
 Bảng lưu trữ các sự kiện hoặc hoạt động nghiệp vụ có thể được đo lường.
 
-#### ***Dimension Table***
+#### **_Dimension Table_**
 
 Bảng cung cấp ngữ cảnh mô tả cho các sự kiện được lưu trong Fact Table.
 
-#### ***Grain***
+#### **_Grain_**
 
 Mức độ chi tiết được biểu diễn bởi một dòng trong Fact Table.
 
-#### ***Measure***
+#### **_Measure_**
 
 Giá trị có thể được đo lường hoặc tổng hợp trong quá trình phân tích.
 
-#### ***Source Data***
+#### **_Source Data_**
 
 Dữ liệu được lấy từ các hệ thống hoặc nguồn dữ liệu đầu vào của quá trình thiết kế Data Warehouse.
 
-#### ***Data Model***
+#### **_Data Model_**
 
 Mô hình mô tả cấu trúc dữ liệu, các thực thể, thuộc tính và mối quan hệ giữa chúng.
 
-#### ***ERD***
+#### **_ERD_**
 
 Entity Relationship Diagram — sơ đồ biểu diễn các entity, thuộc tính và relationship giữa chúng.
 
-#### ***DDL***
+#### **_DDL_**
 
 Data Definition Language — tập hợp các câu lệnh SQL được sử dụng để định nghĩa cấu trúc database, chẳng hạn như CREATE TABLE, ALTER TABLE và CREATE INDEX.
 
-#### ***Human-in-the-Loop***
+#### **_Human-in-the-Loop_**
 
 Cơ chế trong đó con người tham gia vào một hoặc nhiều bước của quá trình AI để review, điều chỉnh, xác nhận hoặc phê duyệt kết quả.
 
-#### ***Single Source of Truth***
+#### **_Single Source of Truth_**
 
 Nguồn thông tin chính thức được sử dụng làm căn cứ thống nhất khi có nhiều nguồn thông tin khác nhau.
 
-#### ***Requirement***
+#### **_Requirement_**
 
 Một yêu cầu hoặc quy định mà hệ thống hoặc quá trình phát triển phải đáp ứng.
 
-#### ***Functional Requirement***
+#### **_Functional Requirement_**
 
 Yêu cầu mô tả **hệ thống phải thực hiện chức năng gì**.
 
-#### ***Non-Functional Requirement***
+#### **_Non-Functional Requirement_**
 
 Yêu cầu mô tả **hệ thống phải hoạt động như thế nào**, chẳng hạn như performance, security, availability hoặc scalability.
 
-#### ***AI Coding Agent***
+#### **_AI Coding Agent_**
 
 AI Agent được sử dụng để hỗ trợ hoặc thực hiện các công việc phát triển phần mềm như phân tích requirement, viết code, sửa code, tạo test và review implementation.
 
@@ -1263,17 +1264,17 @@ Chương này mô tả các yêu cầu và logic nghiệp vụ cốt lõi của 
 
 Khác với Chương 1 tập trung mô tả mục tiêu, phạm vi và định hướng của dự án, Chương 2 mô tả cách hệ thống phải vận hành ở mức nghiệp vụ và hành vi hệ thống, bao gồm:
 
-* Các đối tượng nghiệp vụ chính của hệ thống.  
-* Vòng đời của Project, Requirement, Agent Session và Data Model.  
-* Quy trình tiếp nhận và phân tích Requirement.  
-* Quy trình tiếp nhận và phân tích Source Data.  
-* Quy trình Multi-Agent thực hiện phân tích và thiết kế.  
-* Quy trình tạo, kiểm tra, review và phê duyệt Data Model.  
-* Quy tắc Human-in-the-Loop.  
-* Business Rules và System Rules.  
-* State và State Transition.  
-* Error Handling và Edge Cases.  
-* Traceability giữa Requirement, Agent Processing, Data Model và Generated Output.
+- Các đối tượng nghiệp vụ chính của hệ thống.
+- Vòng đời của Project, Requirement, Agent Session và Data Model.
+- Quy trình tiếp nhận và phân tích Requirement.
+- Quy trình tiếp nhận và phân tích Source Data.
+- Quy trình Multi-Agent thực hiện phân tích và thiết kế.
+- Quy trình tạo, kiểm tra, review và phê duyệt Data Model.
+- Quy tắc Human-in-the-Loop.
+- Business Rules và System Rules.
+- State và State Transition.
+- Error Handling và Edge Cases.
+- Traceability giữa Requirement, Agent Processing, Data Model và Generated Output.
 
 Các yêu cầu trong chương này là cơ sở để xây dựng Use Case, Functional Requirements, AI Agent Architecture, Database, API, UI/UX và Test Cases ở các chương tiếp theo.
 
@@ -1287,47 +1288,47 @@ Luồng nghiệp vụ tổng quát:
 
 User
 
-  ↓
+↓
 
 Project
 
-  ↓
+↓
 
 Business / Analytical / Technical Requirements \+ Business Rules / KPI \+ Source Data / Schema / Metadata
 
-  ↓
+↓
 
 AI Agent System
 
-  ↓
+↓
 
 Requirement Analysis
 
-  ↓
+↓
 
 Source Data Analysis
 
-  ↓
+↓
 
 Analytical Analysis
 
-  ↓
+↓
 
 Data Warehouse Design
 
-  ↓
+↓
 
 Validation / Critique
 
-  ↓
+↓
 
 Human Review
 
-  ↓
+↓
 
 Approved Data Model
 
-  ↓
+↓
 
 ERD / DDL / Documentation / Mapping
 
@@ -1337,68 +1338,68 @@ Hệ thống không mặc định thay thế hoàn toàn Business Analyst, Data 
 
 Hệ thống sử dụng các đối tượng nghiệp vụ chính sau:
 
-| Object | Ý nghĩa |
-| ----- | ----- |
-| User | Người sử dụng hệ thống |
-| Project | Không gian làm việc chứa toàn bộ dữ liệu và kết quả của một bài toán |
-| Project Member | Các thành viên trong một Project |
-| Requirement | Yêu cầu đầu vào của người dùng |
-| Analytical Requirement | Yêu cầu phân tích được Agent suy ra từ Requirement |
-| Data Source | Nguồn dữ liệu đầu vào |
-| Agent Session | Một phiên tương tác/xử lý của Multi-Agent |
-| Session Event | Một sự kiện xảy ra trong Agent Session |
-| Data Model | Data Warehouse Model hiện tại của Project |
-| Data Model Change | Một thay đổi được đề xuất đối với Data Model |
+| Object                 | Ý nghĩa                                                              |
+| ---------------------- | -------------------------------------------------------------------- |
+| User                   | Người sử dụng hệ thống                                               |
+| Project                | Không gian làm việc chứa toàn bộ dữ liệu và kết quả của một bài toán |
+| Project Member         | Các thành viên trong một Project                                     |
+| Requirement            | Yêu cầu đầu vào của người dùng                                       |
+| Analytical Requirement | Yêu cầu phân tích được Agent suy ra từ Requirement                   |
+| Data Source            | Nguồn dữ liệu đầu vào                                                |
+| Agent Session          | Một phiên tương tác/xử lý của Multi-Agent                            |
+| Session Event          | Một sự kiện xảy ra trong Agent Session                               |
+| Data Model             | Data Warehouse Model hiện tại của Project                            |
+| Data Model Change      | Một thay đổi được đề xuất đối với Data Model                         |
 
 Các object này phải được duy trì nhất quán giữa Business Logic, Database, API và UI.
 
-Application Database hiện tại đã phản ánh các object chính này thông qua ***users, projects, project\_members, requirements, analytical\_requirements, data\_sources, agent\_sessions, session\_events, data\_models và data\_model\_changes.***
+Application Database hiện tại đã phản ánh các object chính này thông qua **_users, projects, project_members, requirements, analytical_requirements, data_sources, agent_sessions, session_events, data_models và data_model_changes._**
 
 ### **2.4 User & Project Business Logic**
 
-#### ***2.4.1 User***
+#### **_2.4.1 User_**
 
 User là người sử dụng hệ thống.
 
 Mỗi User có:
 
-* Identity.  
-* Role.  
-* Status.  
-* Thông tin tạo/cập nhật.
+- Identity.
+- Role.
+- Status.
+- Thông tin tạo/cập nhật.
 
 Các role hiện tại:
 
-* ADMIN
+- ADMIN
 
-* USER
+- USER
 
 User chỉ được thực hiện các hành động phù hợp với role của mình.
 
-#### ***2.4.2 Project***
+#### **_2.4.2 Project_**
 
 Project là đơn vị làm việc chính của hệ thống.
 
 Một Project chứa các thành phần liên quan đến một bài toán Data Warehouse, bao gồm:
 
-* Requirement.  
-* Analytical Requirement.  
-* Data Source.  
-* Agent Session.  
-* Data Model.  
-* Data Model Change.
+- Requirement.
+- Analytical Requirement.
+- Data Source.
+- Agent Session.
+- Data Model.
+- Data Model Change.
 
-Project phải có một người tạo (created\_by) và có thể có nhiều thành viên.
+Project phải có một người tạo (created_by) và có thể có nhiều thành viên.
 
 Project là boundary chính để phân tách dữ liệu giữa các bài toán khác nhau.
 
-#### ***2.4.3 Project Membership***
+#### **_2.4.3 Project Membership_**
 
 User có thể tham gia Project với vai trò:
 
-* OWNER
+- OWNER
 
-* MEMBER
+- MEMBER
 
 Owner có quyền quản lý Project và các thành phần thuộc Project theo Authorization Rules.
 
@@ -1412,54 +1413,54 @@ Project có các trạng thái:
 
 DRAFT
 
-  ↓
+↓
 
 ANALYZING
 
-   ↓
+↓
 
 ARCHIVED
 
-#### ***2.5.1 ACTIVE***
+#### **_2.5.1 ACTIVE_**
 
 Project đang hoạt động và người dùng có thể tiếp tục làm việc với Project.
 
 Người dùng có thể:
 
-* Chỉnh sửa thông tin Project.  
-* Thêm, sửa hoặc xóa Requirement.  
-* Thêm, sửa hoặc xóa Data Source.  
-* Cấu hình hoặc thay đổi các input cần thiết.  
-* Xem và chỉnh sửa Data Model hiện tại.  
-* Trao đổi với Agent và yêu cầu thực hiện các thay đổi.
+- Chỉnh sửa thông tin Project.
+- Thêm, sửa hoặc xóa Requirement.
+- Thêm, sửa hoặc xóa Data Source.
+- Cấu hình hoặc thay đổi các input cần thiết.
+- Xem và chỉnh sửa Data Model hiện tại.
+- Trao đổi với Agent và yêu cầu thực hiện các thay đổi.
 
 Project ở trạng thái `ACTIVE` **không có nghĩa là đã hoàn thành**. Đây là trạng thái bình thường khi Project không có workflow phân tích đang chạy.
 
-#### ***2.5.2 ANALYZING***
+#### **_2.5.2 ANALYZING_**
 
 Project đang có một hoặc nhiều tác vụ phân tích được Multi-Agent thực hiện.
 
 Trong trạng thái này:
 
-* Agent có thể thực hiện các nhiệm vụ được giao.  
-* Agent có thể sử dụng Tool.  
-* Agent có thể gọi Agent khác.  
-* Agent có thể tạo intermediate result.  
-* Agent có thể yêu cầu User cung cấp thông tin còn thiếu.  
-* User vẫn có thể xem lịch sử và kết quả hiện tại.
+- Agent có thể thực hiện các nhiệm vụ được giao.
+- Agent có thể sử dụng Tool.
+- Agent có thể gọi Agent khác.
+- Agent có thể tạo intermediate result.
+- Agent có thể yêu cầu User cung cấp thông tin còn thiếu.
+- User vẫn có thể xem lịch sử và kết quả hiện tại.
 
 Sau khi workflow hoàn thành hoặc bị dừng, Project quay về `ACTIVE`.
 
-#### ***2.5.3 ARCHIVED***
+#### **_2.5.3 ARCHIVED_**
 
 Project không còn được sử dụng để làm việc thường xuyên nhưng vẫn được lưu trữ.
 
 Trong trạng thái này:
 
-* Người dùng có thể xem Project và các kết quả đã tạo.  
-* Có thể xem Requirement, Data Source, Session và Data Model đã lưu.  
-* Không thực hiện workflow Agent mới.  
-* Không cho phép thay đổi dữ liệu nếu chưa khôi phục Project về `ACTIVE`.
+- Người dùng có thể xem Project và các kết quả đã tạo.
+- Có thể xem Requirement, Data Source, Session và Data Model đã lưu.
+- Không thực hiện workflow Agent mới.
+- Không cho phép thay đổi dữ liệu nếu chưa khôi phục Project về `ACTIVE`.
 
 Project có thể được **Unarchive/Restore** để tiếp tục làm việc.
 
@@ -1469,11 +1470,11 @@ Requirement là thông tin đầu vào mô tả điều người dùng hoặc do
 
 Requirement hiện tại được phân loại thành:
 
-* BUSINESS
+- BUSINESS
 
-* ANALYTICAL
+- ANALYTICAL
 
-* TECHNICAL
+- TECHNICAL
 
 Trong đó:
 
@@ -1501,7 +1502,7 @@ Ví dụ:
 
 > Các bảng dữ liệu phải có khóa chính rõ ràng và không được sử dụng khóa tự sinh làm business key.
 
-> Dữ liệu nhạy cảm phải được ẩn danh trước khi đưa vào Data Warehouse. 
+> Dữ liệu nhạy cảm phải được ẩn danh trước khi đưa vào Data Warehouse.
 
 ### **2.7 Requirement Processing Workflow**
 
@@ -1541,54 +1542,54 @@ Validation
 
 Approved Requirement
 
-#### ***2.7.1 Requirement Intake***
+#### **_2.7.1 Requirement Intake_**
 
 User nhập Requirement dưới dạng text thông qua các giao diện được hệ thống hỗ trợ.
 
 Requirement phải thuộc một Project.
 
-#### ***2.7.2 Requirement Classification***
+#### **_2.7.2 Requirement Classification_**
 
 Hệ thống xác định Requirement thuộc loại nào:
 
-* Business.  
-* Analytical.  
-* Technical.
+- Business.
+- Analytical.
+- Technical.
 
 Nếu không thể xác định chắc chắn, Agent không được tự ý gán loại khi việc gán loại có thể ảnh hưởng đến workflow.
 
 Agent phải yêu cầu clarification hoặc đánh dấu uncertainty theo quy định của AI Agent Architecture.
 
-#### ***2.7.3 Requirement Analysis***
+#### **_2.7.3 Requirement Analysis_**
 
 Agent phân tích Requirement để xác định những thông tin liên quan, có thể bao gồm:
 
-* Business objective.  
-* Business process.  
-* Business entity.  
-* KPI / Measure.  
-* Dimension.  
-* Time dimension.  
-* Business rule.  
-* Analytical requirement.  
-* Required source data.
+- Business objective.
+- Business process.
+- Business entity.
+- KPI / Measure.
+- Dimension.
+- Time dimension.
+- Business rule.
+- Analytical requirement.
+- Required source data.
 
-#### ***2.7.4 Missing Information Detection***
+#### **_2.7.4 Missing Information Detection_**
 
 Nếu Requirement không đủ thông tin để thực hiện bước tiếp theo, hệ thống phải xác định thông tin còn thiếu và hỏi người dùng để xác nhận.
 
 Hệ thống không được tự động tạo ra thông tin không có căn cứ chỉ để hoàn thành workflow.
 
-#### ***2.7.5 Clarification***
+#### **_2.7.5 Clarification_**
 
 Agent có thể đặt câu hỏi cho User khi:
 
-* Requirement không rõ nghĩa.  
-* Có nhiều cách hiểu hợp lý.  
-* Thiếu thông tin quan trọng.  
-* Có mâu thuẫn giữa các Requirement.  
-* Có business rule chưa xác định.  
-* Không thể xác định Grain/KPI/Dimension một cách đáng tin cậy.
+- Requirement không rõ nghĩa.
+- Có nhiều cách hiểu hợp lý.
+- Thiếu thông tin quan trọng.
+- Có mâu thuẫn giữa các Requirement.
+- Có business rule chưa xác định.
+- Không thể xác định Grain/KPI/Dimension một cách đáng tin cậy.
 
 Khi Agent đặt câu hỏi có tính chất blocking, workflow phải tạm dừng cho đến khi User trả lời.
 
@@ -1598,11 +1599,11 @@ Analytical Requirement là cấu trúc hóa yêu cầu phân tích từ Requirem
 
 Một Analytical Requirement có thể bao gồm:
 
-* Metric.  
-* Dimension.  
-* Time Granularity.  
-* Aggregation Method.  
-* Grain.
+- Metric.
+- Dimension.
+- Time Granularity.
+- Aggregation Method.
+- Grain.
 
 Ví dụ:
 
@@ -1632,7 +1633,7 @@ Grain:
 
 Revenue per Department per Month
 
-Database hiện tại đã có các trường tương ứng trong analytical\_requirements.
+Database hiện tại đã có các trường tương ứng trong analytical_requirements.
 
 Agent phải phân biệt:
 
@@ -1650,17 +1651,17 @@ Data Source là nguồn dữ liệu được sử dụng làm cơ sở cho quá 
 
 Data Source có thể chứa:
 
-* Schema.  
-* Table.  
-* Column.  
-* Data Type.  
-* Primary Key.  
-* Foreign Key.  
-* Relationship.  
-* Metadata.  
-* Sample Data nếu được cung cấp.
+- Schema.
+- Table.
+- Column.
+- Data Type.
+- Primary Key.
+- Foreign Key.
+- Relationship.
+- Metadata.
+- Sample Data nếu được cung cấp.
 
-Trong MVP, Data Source ưu tiên hỗ trợ file CSV theo thiết kế hiện tại; các loại nguồn khác có thể được mở rộng theo Requirement tương ứng. Database hiện tại lưu **schema\_metadata** dưới dạng JSONB để lưu metadata được trích xuất từ source.
+Trong MVP, Data Source ưu tiên hỗ trợ file CSV theo thiết kế hiện tại; các loại nguồn khác có thể được mở rộng theo Requirement tương ứng. Database hiện tại lưu **schema_metadata** dưới dạng JSONB để lưu metadata được trích xuất từ source.
 
 ### **2.10 Source Data Analysis Workflow**
 
@@ -1700,13 +1701,13 @@ Source Analysis Result
 
 Agent phải phân biệt:
 
-* Thông tin có thật trong source.  
-* Thông tin được suy luận.  
-* Thông tin chưa xác định.
+- Thông tin có thật trong source.
+- Thông tin được suy luận.
+- Thông tin chưa xác định.
 
 Agent không được coi một thông tin suy luận là source fact nếu không có căn cứ.
 
-### **2.11 Business Rules, KPI & Measures** 
+### **2.11 Business Rules, KPI & Measures**
 
 Business Rule là quy tắc nghiệp vụ được sử dụng làm căn cứ trong quá trình phân tích Requirement và thiết kế Data Warehouse.
 
@@ -1780,14 +1781,14 @@ Data Warehouse Model
 
 Kết quả có thể bao gồm:
 
-* Fact Tables.  
-* Dimension Tables.  
-* Attributes.  
-* Measures.  
-* Keys.  
-* Relationships.  
-* Grain.  
-* Source-to-target mapping.
+- Fact Tables.
+- Dimension Tables.
+- Attributes.
+- Measures.
+- Keys.
+- Relationships.
+- Grain.
+- Source-to-target mapping.
 
 ### **2.13 AI Agent Execution Logic**
 
@@ -1843,16 +1844,16 @@ Mỗi quá trình tương tác hoặc xử lý của Agent được quản lý t
 
 Một Session thuộc về:
 
-* Một Project.  
-* Một User.
+- Một Project.
+- Một User.
 
 Session có các trạng thái:
 
-* ACTIVE
+- ACTIVE
 
-* COMPLETED
+- COMPLETED
 
-* ARCHIVED
+- ARCHIVED
 
 Trong Session, mọi hoạt động quan trọng của Agent được ghi nhận dưới dạng Session Event.
 
@@ -1862,19 +1863,19 @@ Session Event được sử dụng để ghi nhận quá trình Agent và User t
 
 Các Event Type hiện tại:
 
-* MESSAGE
+- MESSAGE
 
-* QUESTION
+- QUESTION
 
-* ANSWER
+- ANSWER
 
-* AGENT\_CALL
+- AGENT_CALL
 
-* AGENT\_RESULT
+- AGENT_RESULT
 
-* TOOL\_CALL
+- TOOL_CALL
 
-* TOOL\_RESULT
+- TOOL_RESULT
 
 Ví dụ:
 
@@ -1890,23 +1891,23 @@ USER ANSWER
 
       ↓
 
-AGENT\_CALL
+AGENT_CALL
 
       ↓
 
-TOOL\_CALL
+TOOL_CALL
 
       ↓
 
-TOOL\_RESULT
+TOOL_RESULT
 
       ↓
 
-AGENT\_RESULT
+AGENT_RESULT
 
 Event phải được lưu theo thứ tự thời gian và phải đủ thông tin để truy xuất lại quá trình xử lý.
 
-Thiết kế **session\_events** hiện tại đã phản ánh mô hình này.
+Thiết kế **session_events** hiện tại đã phản ánh mô hình này.
 
 ### **2.16 Human-in-the-Loop Logic**
 
@@ -1914,13 +1915,13 @@ Human-in-the-Loop được áp dụng khi kết quả hoặc hành động của
 
 User có thể:
 
-* Xem kết quả.  
-* Xem căn cứ hoặc lý do của đề xuất nếu hệ thống hỗ trợ.  
-* Chỉnh sửa.  
-* Accept.  
-* Reject.  
-* Yêu cầu Agent thực hiện lại.  
-* Cung cấp thêm thông tin.
+- Xem kết quả.
+- Xem căn cứ hoặc lý do của đề xuất nếu hệ thống hỗ trợ.
+- Chỉnh sửa.
+- Accept.
+- Reject.
+- Yêu cầu Agent thực hiện lại.
+- Cung cấp thêm thông tin.
 
 AI không được coi kết quả của chính mình là kết quả cuối cùng nếu workflow yêu cầu Human Review.
 
@@ -1930,14 +1931,14 @@ Data Model là phiên bản thiết kế Data Warehouse hiện tại của Proje
 
 Data Model có:
 
-* DBML.  
-* Revision.  
-* Created At.  
-* Updated At.
+- DBML.
+- Revision.
+- Created At.
+- Updated At.
 
 Revision được sử dụng để kiểm soát thay đổi đồng thời.
 
-#### ***2.17.1 User Editing***
+#### **_2.17.1 User Editing_**
 
 Khi User chỉnh sửa Data Model:
 
@@ -1957,33 +1958,33 @@ Check Current Revision
 
 Nếu revision vẫn khớp:
 
-* Update DBML  
-* Increase Revision  
-* Commit
+- Update DBML
+- Increase Revision
+- Commit
 
 Nếu revision không khớp:
 
-* Reject Update  
-* Notify Conflict  
-* Require Reload / Review
+- Reject Update
+- Notify Conflict
+- Require Reload / Review
 
 ### **2.18 Data Model Change Proposal**
 
 Agent không được trực tiếp ghi đè Data Model hiện tại khi workflow yêu cầu Human Review.
 
-Thay vào đó Agent tạo: Data Model Change 
+Thay vào đó Agent tạo: Data Model Change
 
 bao gồm:
 
-* Data Model ID.  
-* Base Revision.  
-* Proposed DBML.  
-* Reason.  
-* Status.
+- Data Model ID.
+- Base Revision.
+- Proposed DBML.
+- Reason.
+- Status.
 
 Proposal ban đầu có trạng thái: PROPOSED
 
-Thiết kế này đã được phản ánh trong **data\_model\_changes**.
+Thiết kế này đã được phản ánh trong **data_model_changes**.
 
 ### **2.19 Proposal Review Logic**
 
@@ -1991,21 +1992,21 @@ Proposal có thể chuyển trạng thái:
 
 PROPOSED
 
-   ├── ACCEPTED
+├── ACCEPTED
 
-   ├── REJECTED
+├── REJECTED
 
-   └── CONFLICTED
+└── CONFLICTED
 
-#### ***Accept***
+#### **_Accept_**
 
 Khi User Accept:
 
-Check base\_revision
+Check base_revision
 
         ↓
 
-base\_revision \== current\_revision ?
+base_revision \== current_revision ?
 
         ↓
 
@@ -2039,57 +2040,58 @@ Require User Review
 
 Hệ thống phải xử lý trường hợp nhiều User hoặc Agent cùng làm việc trên một Data Model.
 
-#### ***Happy Case 1 — Một User chỉnh sửa***
+#### **_Happy Case 1 — Một User chỉnh sửa_**
 
 User gửi revision hiện tại và hệ thống cập nhật thành công nếu revision vẫn hợp lệ.
 
-#### ***Happy Case 2 — Nhiều User cùng mở nhưng chỉ một User lưu trước***
+#### **_Happy Case 2 — Nhiều User cùng mở nhưng chỉ một User lưu trước_**
 
 User lưu trước thành công.
 
 User lưu sau gửi revision cũ và nhận conflict.
 
-#### ***Happy Case 3 — Agent tạo Proposal***
+#### **_Happy Case 3 — Agent tạo Proposal_**
 
-Agent tạo **data\_model\_change** dựa trên revision tại thời điểm xử lý.
+Agent tạo **data_model_change** dựa trên revision tại thời điểm xử lý.
 
 Agent không ghi đè Data Model hiện tại.
 
-#### ***Happy Case 4 — User Accept Proposal***
+#### **_Happy Case 4 — User Accept Proposal_**
 
 Proposal được Apply nếu `base_revision == current_revision`.
 
-#### ***Edge Case 1 — Accept Proposal cũ***
+#### **_Edge Case 1 — Accept Proposal cũ_**
 
 Proposal chuyển thành `CONFLICTED`.
 
-#### ***Edge Case 2 — Hai User cùng Accept***
+#### **_Edge Case 2 — Hai User cùng Accept_**
 
 Database Transaction \+ Optimistic Locking đảm bảo chỉ một request cập nhật revision thành công.
 
-#### ***Edge Case 3 — Proposal không còn phù hợp với Data Model hiện tại***
+#### **_Edge Case 3 — Proposal không còn phù hợp với Data Model hiện tại_**
 
 Một `Data Model Change Proposal` được tạo dựa trên một phiên bản (`base_revision`) cụ thể của Data Model. Trong thời gian Proposal đang chờ review, Data Model hiện tại có thể đã được User hoặc Proposal khác cập nhật lên revision mới.
 
 Hệ thống **không tự động merge** Proposal cũ với Data Model mới, vì việc merge có thể làm thay đổi hoặc loại bỏ các thay đổi đã được User thực hiện trên phiên bản mới.
 
-#### ***Edge Case 4 — Agent xử lý trong khi Data Model thay đổi***
+#### **_Edge Case 4 — Agent xử lý trong khi Data Model thay đổi_**
 
 Agent vẫn có thể hoàn thành proposal nhưng proposal không được phép ghi đè Data Model nếu base revision đã cũ.
 
-#### ***Edge Case 5 — User mở Data Model quá lâu***
+#### **_Edge Case 5 — User mở Data Model quá lâu_**
 
 Khi lưu phải kiểm tra revision. Nếu revision đã thay đổi, yêu cầu User cập nhật trước khi tiếp tục.
 
-#### ***Edge Case 6 — Reject Proposal***
+#### **_Edge Case 6 — Reject Proposal_**
 
 Chỉ cập nhật trạng thái proposal thành `REJECTED`. Data Model hiện tại không thay đổi.
 
-#### ***Edge Case 7 — Nhiều Proposal***
+#### **_Edge Case 7 — Nhiều Proposal_**
 
-Trong MVP chỉ cho phép một proposal `PROPOSED` đang hoạt động trên một Data Model. Quy tắc chi tiết được kiểm soát ở Functional Requirements và Database Rules.
+Trong MVP, mỗi cặp `(data_model_id, user_id)` chỉ được có một proposal `PROPOSED`.
+Khi proposal đó còn chờ review, cùng người dùng không được tạo proposal thứ hai trên cùng Data Model và hệ thống không tự thay thế proposal cũ. Cần Accept, Reject hoặc kết thúc proposal cũ do conflict trước khi tạo proposal mới. Người dùng khác vẫn có thể có proposal riêng trên cùng Data Model.
 
-#### ***Edge Case 8 — Concurrent Request***
+#### **_Edge Case 8 — Concurrent Request_**
 
 Transaction \+ Optimistic Locking phải đảm bảo không xảy ra lost update.
 
@@ -2097,29 +2099,29 @@ Transaction \+ Optimistic Locking phải đảm bảo không xảy ra lost updat
 
 Các trạng thái quan trọng phải được quản lý theo State Machine thay vì thay đổi tùy ý.
 
-#### ***Project***
+#### **_Project_**
 
 ACTIVE
 
- → ANALYZING hoặc ARCHIVED
+→ ANALYZING hoặc ARCHIVED
 
-#### ***Agent Session***
+#### **_Agent Session_**
 
 ACTIVE
 
- → COMPLETED
+→ COMPLETED
 
- → ARCHIVED
+→ ARCHIVED
 
-#### ***Data Model Change***
+#### **_Data Model Change_**
 
 PROPOSED
 
- → ACCEPTED
+→ ACCEPTED
 
- → REJECTED
+→ REJECTED
 
- → CONFLICTED
+→ CONFLICTED
 
 Không được chuyển trạng thái ngoài các transition đã được định nghĩa nếu không có Requirement mới được phê duyệt.
 
@@ -2127,35 +2129,35 @@ Không được chuyển trạng thái ngoài các transition đã được đ�
 
 Hệ thống phải phân biệt ít nhất các nhóm lỗi sau:
 
-#### ***Input Error***
+#### **_Input Error_**
 
 Input không hợp lệ hoặc thiếu dữ liệu bắt buộc.
 
-#### ***Business Error***
+#### **_Business Error_**
 
 Input hoặc thao tác vi phạm Business Rule.
 
-#### ***Agent Error***
+#### **_Agent Error_**
 
 Agent không thể hoàn thành nhiệm vụ.
 
-#### ***Tool Error***
+#### **_Tool Error_**
 
 Tool được Agent gọi thất bại.
 
-#### ***Validation Error***
+#### **_Validation Error_**
 
 Kết quả không đáp ứng validation rules.
 
-#### ***Conflict Error***
+#### **_Conflict Error_**
 
 Dữ liệu đã thay đổi trong khi một thao tác khác đang được thực hiện.
 
-#### ***Authorization Error***
+#### **_Authorization Error_**
 
 User không có quyền thực hiện thao tác.
 
-#### ***System Error***
+#### **_System Error_**
 
 Lỗi infrastructure hoặc application không thuộc các nhóm trên.
 
@@ -2179,23 +2181,23 @@ Chi tiết API error format được quy định tại Chương 13\.
 
 Các trường hợp đặc biệt cần được xử lý:
 
-* Requirement quá mơ hồ.  
-* Requirement thiếu thông tin.  
-* Requirement mâu thuẫn.  
-* Không xác định được Business Process.  
-* Không xác định được KPI/Measure.  
-* Không xác định được Grain.  
-* Source Data thiếu schema.  
-* Source Data không phù hợp với Requirement.  
-* Source Data không có dữ liệu cần thiết.  
-* Agent không đủ thông tin để tiếp tục.  
-* Agent trả kết quả không hợp lệ.  
-* Agent hoặc Tool thất bại.  
-* Validation phát hiện lỗi.  
-* Proposal dựa trên revision cũ.  
-* Hai User cùng cập nhật Data Model.  
-* User Reject kết quả.  
-* User yêu cầu Agent thực hiện lại.
+- Requirement quá mơ hồ.
+- Requirement thiếu thông tin.
+- Requirement mâu thuẫn.
+- Không xác định được Business Process.
+- Không xác định được KPI/Measure.
+- Không xác định được Grain.
+- Source Data thiếu schema.
+- Source Data không phù hợp với Requirement.
+- Source Data không có dữ liệu cần thiết.
+- Agent không đủ thông tin để tiếp tục.
+- Agent trả kết quả không hợp lệ.
+- Agent hoặc Tool thất bại.
+- Validation phát hiện lỗi.
+- Proposal dựa trên revision cũ.
+- Hai User cùng cập nhật Data Model.
+- User Reject kết quả.
+- User yêu cầu Agent thực hiện lại.
 
 Khi thông tin không đủ, hệ thống phải ưu tiên yêu cầu bổ sung thông tin hoặc đánh dấu uncertainty thay vì tự tạo thông tin không có căn cứ.
 
@@ -2321,13 +2323,13 @@ ERD / DDL / Documentation
 
 Mục tiêu là cho phép xác định:
 
-* Data Model được tạo dựa trên Requirement nào.  
-* Fact được tạo để đáp ứng Analytical Requirement nào.  
-* Measure xuất phát từ KPI nào.  
-* Column của Data Warehouse lấy dữ liệu từ Source nào.  
-* Một Proposal thay đổi thành phần nào.  
-* Agent nào tạo ra kết quả.  
-* User nào phê duyệt kết quả.
+- Data Model được tạo dựa trên Requirement nào.
+- Fact được tạo để đáp ứng Analytical Requirement nào.
+- Measure xuất phát từ KPI nào.
+- Column của Data Warehouse lấy dữ liệu từ Source nào.
+- Một Proposal thay đổi thành phần nào.
+- Agent nào tạo ra kết quả.
+- User nào phê duyệt kết quả.
 
 ### **2.26 Business/System Rules Summary**
 
@@ -2384,26 +2386,26 @@ Chương 2 định nghĩa **what the system means and how it behaves**.
 
 Các chương sau chịu trách nhiệm mô tả cách hiện thực hóa các behavior này.
 
-| Nội dung | Chương chính |
-| ----- | ----- |
-| Business/System Logic | Chapter 2 |
-| Use Case | Chapter 3 |
-| Functional Requirements | Chapter 4 |
-| Agent Architecture | Chapter 5 |
-| Agent Patterns | Chapter 6 |
-| Agent Specification | Chapter 7 |
-| Agent Input/Output | Chapter 8 |
-| LLM/Prompt | Chapter 9 |
-| DW Design Rules | Chapter 10 |
-| Data Source | Chapter 11 |
-| Application Database | Chapter 12 |
-| API | Chapter 13 |
-| UI/UX | Chapter 14 |
-| Security | Chapter 15 |
-| Coding Standards | Chapter 16–18 |
-| Testing | Chapter 19+ |
-| Git/CI/CD/Deployment | Later Chapters |
-| AI Coding Agent Rules | Chapter 34 |
+| Nội dung                | Chương chính   |
+| ----------------------- | -------------- |
+| Business/System Logic   | Chapter 2      |
+| Use Case                | Chapter 3      |
+| Functional Requirements | Chapter 4      |
+| Agent Architecture      | Chapter 5      |
+| Agent Patterns          | Chapter 6      |
+| Agent Specification     | Chapter 7      |
+| Agent Input/Output      | Chapter 8      |
+| LLM/Prompt              | Chapter 9      |
+| DW Design Rules         | Chapter 10     |
+| Data Source             | Chapter 11     |
+| Application Database    | Chapter 12     |
+| API                     | Chapter 13     |
+| UI/UX                   | Chapter 14     |
+| Security                | Chapter 15     |
+| Coding Standards        | Chapter 16–18  |
+| Testing                 | Chapter 19+    |
+| Git/CI/CD/Deployment    | Later Chapters |
+| AI Coding Agent Rules   | Chapter 34     |
 
 Không được lặp lại cùng một requirement ở nhiều chương nếu không cần thiết. Nếu một rule liên quan đến nhiều tầng, một chương phải là **source of truth**, các chương khác chỉ tham chiếu đến rule đó.
 
@@ -2411,17 +2413,17 @@ Không được lặp lại cùng một requirement ở nhiều chương nếu k
 
 Khi implement hệ thống dựa trên tài liệu này, AI Coding Agent phải:
 
-1. Đọc Project Overview trước khi implement.  
-2. Đọc Chương 2 để hiểu business/system behavior.  
-3. Đọc Use Case và Functional Requirement liên quan.  
-4. Đọc architecture/design liên quan trước khi thay đổi code.  
-5. Kiểm tra Database/API/UI requirements trước khi thay đổi contract tương ứng.  
-6. Không tự thay đổi Business Rules.  
-7. Không tự thay đổi State Transition.  
-8. Không tự bỏ qua Human-in-the-Loop.  
-9. Không tự thêm behavior chỉ vì implementation hiện tại thuận tiện hơn.  
-10. Nếu requirement mâu thuẫn hoặc chưa đủ rõ, phải tuân thủ AI Decision-Making Rules.  
-11. Khi thay đổi một behavior, phải kiểm tra ảnh hưởng đến API, Database, UI, Agent và Test.  
+1. Đọc Project Overview trước khi implement.
+2. Đọc Chương 2 để hiểu business/system behavior.
+3. Đọc Use Case và Functional Requirement liên quan.
+4. Đọc architecture/design liên quan trước khi thay đổi code.
+5. Kiểm tra Database/API/UI requirements trước khi thay đổi contract tương ứng.
+6. Không tự thay đổi Business Rules.
+7. Không tự thay đổi State Transition.
+8. Không tự bỏ qua Human-in-the-Loop.
+9. Không tự thêm behavior chỉ vì implementation hiện tại thuận tiện hơn.
+10. Nếu requirement mâu thuẫn hoặc chưa đủ rõ, phải tuân thủ AI Decision-Making Rules.
+11. Khi thay đổi một behavior, phải kiểm tra ảnh hưởng đến API, Database, UI, Agent và Test.
 12. Không coi implementation hiện tại là nguồn sự thật cao hơn requirement đã được Approved.
 
 Các quy tắc chi tiết dành riêng cho AI Coding Agent được quy định tại Chapter 34\.
@@ -2430,19 +2432,19 @@ Các quy tắc chi tiết dành riêng cho AI Coding Agent được quy định 
 
 Chương 2 được coi là đủ cơ sở để chuyển sang thiết kế Use Case khi có thể trả lời rõ các câu hỏi:
 
-* Hệ thống quản lý những Business/System Object nào?  
-* User và Project hoạt động như thế nào?  
-* Requirement được tiếp nhận và xử lý ra sao?  
-* Analytical Requirement được tạo như thế nào?  
-* Source Data được đưa vào và phân tích như thế nào?  
-* Multi-Agent được kích hoạt khi nào?  
-* Agent có thể thực hiện những loại hành động nào?  
-* Khi nào cần Human Review?  
-* Data Model được tạo và thay đổi như thế nào?  
-* Revision Conflict được xử lý ra sao?  
-* Các State và State Transition là gì?  
-* Các Business/System Rules quan trọng là gì?  
-* Các Edge Case chính là gì?  
-* Kết quả có thể trace ngược về Requirement và Source Data như thế nào?
+- Hệ thống quản lý những Business/System Object nào?
+- User và Project hoạt động như thế nào?
+- Requirement được tiếp nhận và xử lý ra sao?
+- Analytical Requirement được tạo như thế nào?
+- Source Data được đưa vào và phân tích như thế nào?
+- Multi-Agent được kích hoạt khi nào?
+- Agent có thể thực hiện những loại hành động nào?
+- Khi nào cần Human Review?
+- Data Model được tạo và thay đổi như thế nào?
+- Revision Conflict được xử lý ra sao?
+- Các State và State Transition là gì?
+- Các Business/System Rules quan trọng là gì?
+- Các Edge Case chính là gì?
+- Kết quả có thể trace ngược về Requirement và Source Data như thế nào?
 
 Nếu một câu hỏi quan trọng chưa thể trả lời từ Chương 2 hoặc các chương được tham chiếu, nội dung đó phải được đánh dấu `TBD` thay vì tự suy diễn.

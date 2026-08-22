@@ -33,12 +33,14 @@ def test_generate_uuid_str() -> None:
 
 def test_is_valid_uuid() -> None:
     """Kiểm tra is_valid_uuid với các loại input khác nhau."""
-    valid_str = "123e4567-e89b-12d3-a456-426614174000"
+    valid_str = "550e8400-e29b-41d4-a716-446655440000"
     valid_obj = uuid.UUID(valid_str)
+    version_one = "123e4567-e89b-12d3-a456-426614174000"
 
     assert is_valid_uuid(valid_obj) is True
     assert is_valid_uuid(valid_str) is True
     assert is_valid_uuid(valid_str.upper()) is True
+    assert is_valid_uuid(version_one) is False
     assert is_valid_uuid("invalid-uuid-string") is False
-    assert is_valid_uuid(12345) is False
-    assert is_valid_uuid(None) is False
+    assert is_valid_uuid(12345) is False  # type: ignore[arg-type]
+    assert is_valid_uuid(None) is False  # type: ignore[arg-type]

@@ -1,8 +1,10 @@
 // @vitest-environment jsdom
 
 import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { MainLayout } from './MainLayout';
+
+vi.mock('./AppHeader', () => ({ AppHeader: () => <header>app-header</header> }));
 
 afterEach(cleanup);
 

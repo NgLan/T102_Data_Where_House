@@ -7,6 +7,7 @@ import pytest_asyncio
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 from pydantic import BaseModel
+from src.common.exceptions.base import ExceptionDetail
 from src.common.exceptions.business import BusinessException
 from src.common.exceptions.error_codes import ErrorCode
 from src.common.exceptions.error_status import ERROR_STATUS_MAP, get_http_status_code
@@ -29,9 +30,12 @@ def create_test_app() -> FastAPI:
     @app.get("/test/business-conflict")
     async def route_business_conflict():
         raise BusinessException(
-            code=ErrorCode.REVISION_CONFLICT,
+            code=ErrorCode.DATA_MODEL_REVISION_CONFLICT,
             message="The current revision is outdated.",
-            details={"current_revision": 2, "provided_revision": 1},
+            details=[
+                ExceptionDetail(field="current_revision", message="2"),
+                ExceptionDetail(field="provided_revision", message="1"),
+            ],
         )
 
     @app.get("/test/system-db-error")
@@ -59,6 +63,10 @@ def create_test_app() -> FastAPI:
     @app.get("/test/unexpected-error")
     async def route_unexpected_error():
         raise RuntimeError("Secret DB password or internal crash trace")
+
+    @app.get("/test/get-only")
+    async def route_get_only():
+        return {"status": "ok"}
 
     return app
 
@@ -88,9 +96,12 @@ async def test_business_exception_conflict(test_client: AsyncClient):
     assert response.status_code == HTTPStatus.CONFLICT
     data = response.json()
     assert data["code"] == 409
-    assert data["error_code"] == "REVISION_CONFLICT"
+    assert data["error_code"] == "DATA_MODEL_REVISION_CONFLICT"
     assert data["message"] == "The current revision is outdated."
-    assert data["details"] == {"current_revision": 2, "provided_revision": 1}
+    assert data["details"] == [
+        {"field": "current_revision", "message": "2"},
+        {"field": "provided_revision", "message": "1"},
+    ]
 
 
 @pytest.mark.asyncio
@@ -100,7 +111,7 @@ async def test_system_exception_db_error(test_client: AsyncClient):
     data = response.json()
     assert data["code"] == 500
     assert data["error_code"] == "DATABASE_ERROR"
-    assert data["message"] == "Database operation failed."
+    assert data["message"] == "Internal server error."
 
 
 @pytest.mark.asyncio
@@ -110,7 +121,7 @@ async def test_system_exception_llm_error(test_client: AsyncClient):
     data = response.json()
     assert data["code"] == 502
     assert data["error_code"] == "LLM_ERROR"
-    assert data["message"] == "LLM service is unavailable."
+    assert data["message"] == "Internal server error."
 
 
 @pytest.mark.asyncio
@@ -136,6 +147,24 @@ async def test_unhandled_unexpected_exception(test_client: AsyncClient):
     assert data["message"] == "Internal server error."
     # Kiểm tra không rò rỉ secret / stack trace ở response
     assert "Secret DB password" not in response.text
+
+
+@pytest.mark.asyncio
+async def test_router_not_found_uses_generic_error_code(test_client: AsyncClient):
+    """Đảm bảo router 404 không bị gán thành lỗi USER_NOT_FOUND."""
+    response = await test_client.get("/route-does-not-exist")
+
+    assert response.status_code == HTTPStatus.NOT_FOUND
+    assert response.json()["error_code"] == ErrorCode.RESOURCE_NOT_FOUND.value
+
+
+@pytest.mark.asyncio
+async def test_method_not_allowed_uses_generic_error_code(test_client: AsyncClient):
+    """Đảm bảo router 405 có mã lỗi presentation riêng."""
+    response = await test_client.post("/test/get-only")
+
+    assert response.status_code == HTTPStatus.METHOD_NOT_ALLOWED
+    assert response.json()["error_code"] == ErrorCode.METHOD_NOT_ALLOWED.value
 
 
 def test_all_error_codes_are_mapped():

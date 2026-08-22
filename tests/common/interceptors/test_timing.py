@@ -11,7 +11,7 @@ from src.common.interceptors.timing import TimingInterceptor
 async def test_timing_interceptor_duration_calculation() -> None:
     """Kiểm tra TimingInterceptor tính toán duration_ms chính xác khi operation chạy."""
     interceptor = TimingInterceptor()
-    context = InterceptorContext.create("SlowOperation")
+    context = InterceptorContext("SlowOperation")
 
     async def slow_op() -> str:
         await asyncio.sleep(0.05)  # 50ms
@@ -30,7 +30,7 @@ async def test_timing_interceptor_duration_calculation() -> None:
 async def test_timing_interceptor_records_duration_on_exception() -> None:
     """Kiểm tra TimingInterceptor vẫn ghi nhận duration_ms khi operation bị lỗi."""
     interceptor = TimingInterceptor()
-    context = InterceptorContext.create("FailingTimedOperation")
+    context = InterceptorContext("FailingTimedOperation")
 
     async def failing_op() -> None:
         await asyncio.sleep(0.02)

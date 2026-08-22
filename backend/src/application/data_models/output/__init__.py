@@ -1,9 +1,15 @@
-"""Các output model của application service Data Model."""
+"""Public output models của Data Model application service."""
 
 from src.application.data_models.output.models import (
+    ChangeProposalDetailOutput,
+    ChangeProposalSummaryOutput,
     DataModelDdlOutput,
-    DataModelInsightOutput,
     DataModelOutput,
 )
 
-__all__ = ["DataModelDdlOutput", "DataModelInsightOutput", "DataModelOutput"]
+__all__ = [
+    "ChangeProposalDetailOutput",
+    "ChangeProposalSummaryOutput",
+    "DataModelDdlOutput",
+    "DataModelOutput",
+]

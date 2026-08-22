@@ -2,7 +2,7 @@
 
 import { type Client, type ClientMeta, formDataBodySerializer, type Options as Options2, type RequestResult, type TDataShape } from './client';
 import { client } from './client.gen';
-import type { CreateProjectData, CreateProjectErrors, CreateProjectResponses, DeleteProjectData, DeleteProjectDataSourceData, DeleteProjectDataSourceErrors, DeleteProjectDataSourceResponses, DeleteProjectErrors, DeleteProjectResponses, GetDataModelData, GetDataModelErrors, GetDataModelResponses, GetProjectData, GetProjectDataSourcePreviewData, GetProjectDataSourcePreviewErrors, GetProjectDataSourcePreviewResponses, GetProjectErrors, GetProjectResponses, HealthCheckData, HealthCheckErrors, HealthCheckResponses, ListProjectDataSourcesData, ListProjectDataSourcesErrors, ListProjectDataSourcesResponses, ListProjectsData, ListProjectsErrors, ListProjectsResponses, UpdateDataModelData, UpdateDataModelErrors, UpdateDataModelResponses, UpdateProjectData, UpdateProjectDataSourceColumnData, UpdateProjectDataSourceColumnErrors, UpdateProjectDataSourceColumnResponses, UpdateProjectErrors, UpdateProjectResponses, UploadProjectDataSourcesData, UploadProjectDataSourcesErrors, UploadProjectDataSourcesResponses } from './types.gen';
+import type { AcceptChangeProposalData, AcceptChangeProposalErrors, AcceptChangeProposalResponses, CreateAiDataModelProposalData, CreateAiDataModelProposalErrors, CreateAiDataModelProposalResponses, CreateProjectData, CreateProjectErrors, CreateProjectResponses, CreateProjectSessionData, CreateProjectSessionErrors, CreateProjectSessionResponses, DeleteProjectData, DeleteProjectDataSourceData, DeleteProjectDataSourceErrors, DeleteProjectDataSourceResponses, DeleteProjectErrors, DeleteProjectResponses, ExecuteSandboxDdlData, ExecuteSandboxDdlErrors, ExecuteSandboxDdlResponses, GenerateDataModelData, GenerateDataModelDdlData, GenerateDataModelDdlErrors, GenerateDataModelDdlResponses, GenerateDataModelErrors, GenerateDataModelResponses, GetCurrentActorData, GetCurrentActorErrors, GetCurrentActorResponses, GetDataModelData, GetDataModelErrors, GetDataModelResponses, GetDataModelValidationIssuesData, GetDataModelValidationIssuesErrors, GetDataModelValidationIssuesResponses, GetPendingProjectDataModelChangeData, GetPendingProjectDataModelChangeErrors, GetPendingProjectDataModelChangeResponses, GetProjectAnalysisStatusData, GetProjectAnalysisStatusErrors, GetProjectAnalysisStatusResponses, GetProjectData, GetProjectDataModelChangeData, GetProjectDataModelChangeErrors, GetProjectDataModelChangeResponses, GetProjectDataSourcePreviewData, GetProjectDataSourcePreviewErrors, GetProjectDataSourcePreviewResponses, GetProjectErrors, GetProjectResponses, GetProjectSessionData, GetProjectSessionErrors, GetProjectSessionResponses, GetSandboxConfigData, GetSandboxConfigErrors, GetSandboxConfigResponses, HealthCheckData, HealthCheckErrors, HealthCheckResponses, ListProjectDataSourcesData, ListProjectDataSourcesErrors, ListProjectDataSourcesResponses, ListProjectsData, ListProjectsErrors, ListProjectSessionEventsData, ListProjectSessionEventsErrors, ListProjectSessionEventsResponses, ListProjectSessionsData, ListProjectSessionsErrors, ListProjectSessionsResponses, ListProjectsResponses, ListRequirementsData, ListRequirementsErrors, ListRequirementsResponses, ReanalyzeProjectData, ReanalyzeProjectErrors, ReanalyzeProjectResponses, RegenerateDataModelData, RegenerateDataModelErrors, RegenerateDataModelResponses, RejectChangeProposalData, RejectChangeProposalErrors, RejectChangeProposalResponses, RenameProjectSessionData, RenameProjectSessionErrors, RenameProjectSessionResponses, SaveSandboxConfigData, SaveSandboxConfigErrors, SaveSandboxConfigResponses, SendProjectSessionMessageData, SendProjectSessionMessageErrors, SendProjectSessionMessageResponses, StreamProjectSessionEventsData, StreamProjectSessionEventsErrors, StreamProjectSessionEventsResponses, TestSandboxConnectionData, TestSandboxConnectionErrors, TestSandboxConnectionResponses, UpdateDataModelData, UpdateDataModelErrors, UpdateDataModelResponses, UpdateProjectData, UpdateProjectDataSourceColumnData, UpdateProjectDataSourceColumnErrors, UpdateProjectDataSourceColumnResponses, UpdateProjectErrors, UpdateProjectResponses, UploadProjectDataSourcesData, UploadProjectDataSourcesErrors, UploadProjectDataSourcesResponses, ValidateDataModelDraftData, ValidateDataModelDraftErrors, ValidateDataModelDraftResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -17,6 +17,13 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
      */
     meta?: keyof ClientMeta extends never ? Record<string, unknown> : ClientMeta;
 };
+
+/**
+ * Get Current Actor
+ *
+ * Trả danh tính actor MVP đang được backend sử dụng.
+ */
+export const getCurrentActor = <ThrowOnError extends boolean = false>(options?: Options<GetCurrentActorData, ThrowOnError>): RequestResult<GetCurrentActorResponses, GetCurrentActorErrors, ThrowOnError> => (options?.client ?? client).get<GetCurrentActorResponses, GetCurrentActorErrors, ThrowOnError>({ url: '/api/v1/auth/me', ...options });
 
 /**
  * List Projects
@@ -68,6 +75,27 @@ export const updateProject = <ThrowOnError extends boolean = false>(options: Opt
 });
 
 /**
+ * List Requirements
+ *
+ * Liệt kê toàn bộ yêu cầu nghiệp vụ của dự án.
+ */
+export const listRequirements = <ThrowOnError extends boolean = false>(options: Options<ListRequirementsData, ThrowOnError>): RequestResult<ListRequirementsResponses, ListRequirementsErrors, ThrowOnError> => (options.client ?? client).get<ListRequirementsResponses, ListRequirementsErrors, ThrowOnError>({ url: '/api/v1/projects/{project_id}/requirements', ...options });
+
+/**
+ * Get Project Analysis Status
+ *
+ * Đọc trạng thái outdated mà không gọi LLM.
+ */
+export const getProjectAnalysisStatus = <ThrowOnError extends boolean = false>(options: Options<GetProjectAnalysisStatusData, ThrowOnError>): RequestResult<GetProjectAnalysisStatusResponses, GetProjectAnalysisStatusErrors, ThrowOnError> => (options.client ?? client).get<GetProjectAnalysisStatusResponses, GetProjectAnalysisStatusErrors, ThrowOnError>({ url: '/api/v1/projects/{project_id}/analysis-status', ...options });
+
+/**
+ * Reanalyze Project
+ *
+ * Chạy RequirementAgent cho những analysis đã outdated.
+ */
+export const reanalyzeProject = <ThrowOnError extends boolean = false>(options: Options<ReanalyzeProjectData, ThrowOnError>): RequestResult<ReanalyzeProjectResponses, ReanalyzeProjectErrors, ThrowOnError> => (options.client ?? client).post<ReanalyzeProjectResponses, ReanalyzeProjectErrors, ThrowOnError>({ url: '/api/v1/projects/{project_id}/reanalyze', ...options });
+
+/**
  * Get Current Data Model
  *
  * Lấy DBML và revision hiện tại của dự án.
@@ -77,7 +105,7 @@ export const getDataModel = <ThrowOnError extends boolean = false>(options: Opti
 /**
  * Update Current Data Model
  *
- * Lưu snapshot DBML mới bằng optimistic locking.
+ * Lưu trực tiếp DBML do người dùng chỉnh sửa thủ công.
  */
 export const updateDataModel = <ThrowOnError extends boolean = false>(options: Options<UpdateDataModelData, ThrowOnError>): RequestResult<UpdateDataModelResponses, UpdateDataModelErrors, ThrowOnError> => (options.client ?? client).put<UpdateDataModelResponses, UpdateDataModelErrors, ThrowOnError>({
     url: '/api/v1/projects/{project_id}/data-model',
@@ -89,6 +117,88 @@ export const updateDataModel = <ThrowOnError extends boolean = false>(options: O
 });
 
 /**
+ * Get Data Model Validation Issues
+ *
+ * Trả các lỗi và cảnh báo validation của snapshot DBML hiện tại.
+ */
+export const getDataModelValidationIssues = <ThrowOnError extends boolean = false>(options: Options<GetDataModelValidationIssuesData, ThrowOnError>): RequestResult<GetDataModelValidationIssuesResponses, GetDataModelValidationIssuesErrors, ThrowOnError> => (options.client ?? client).get<GetDataModelValidationIssuesResponses, GetDataModelValidationIssuesErrors, ThrowOnError>({ url: '/api/v1/projects/{project_id}/data-model/validation-issues', ...options });
+
+/**
+ * Validate Data Model Draft
+ *
+ * Kiểm tra draft hiện tại mà không gọi LLM hoặc ghi snapshot.
+ */
+export const validateDataModelDraft = <ThrowOnError extends boolean = false>(options: Options<ValidateDataModelDraftData, ThrowOnError>): RequestResult<ValidateDataModelDraftResponses, ValidateDataModelDraftErrors, ThrowOnError> => (options.client ?? client).post<ValidateDataModelDraftResponses, ValidateDataModelDraftErrors, ThrowOnError>({
+    url: '/api/v1/projects/{project_id}/data-model/validate',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Generate Data Model Ddl
+ *
+ * Sinh DDL từ revision Data Model hiện hành.
+ */
+export const generateDataModelDdl = <ThrowOnError extends boolean = false>(options: Options<GenerateDataModelDdlData, ThrowOnError>): RequestResult<GenerateDataModelDdlResponses, GenerateDataModelDdlErrors, ThrowOnError> => (options.client ?? client).get<GenerateDataModelDdlResponses, GenerateDataModelDdlErrors, ThrowOnError>({ url: '/api/v1/projects/{project_id}/data-model/ddl', ...options });
+
+/**
+ * Generate Data Model
+ *
+ * Chạy Save & Analyze và chỉ tạo Data Model đầu tiên.
+ */
+export const generateDataModel = <ThrowOnError extends boolean = false>(options: Options<GenerateDataModelData, ThrowOnError>): RequestResult<GenerateDataModelResponses, GenerateDataModelErrors, ThrowOnError> => (options.client ?? client).post<GenerateDataModelResponses, GenerateDataModelErrors, ThrowOnError>({ url: '/api/v1/projects/{project_id}/data-model/generate', ...options });
+
+/**
+ * Regenerate Data Model
+ *
+ * Sinh lại, validate và ghi đè trực tiếp Data Model hiện hành.
+ */
+export const regenerateDataModel = <ThrowOnError extends boolean = false>(options: Options<RegenerateDataModelData, ThrowOnError>): RequestResult<RegenerateDataModelResponses, RegenerateDataModelErrors, ThrowOnError> => (options.client ?? client).post<RegenerateDataModelResponses, RegenerateDataModelErrors, ThrowOnError>({ url: '/api/v1/projects/{project_id}/data-model/regenerate', ...options });
+
+/**
+ * Revise Data Model With Ai
+ *
+ * Tạo Human Review proposal từ instruction và full project context.
+ */
+export const createAiDataModelProposal = <ThrowOnError extends boolean = false>(options: Options<CreateAiDataModelProposalData, ThrowOnError>): RequestResult<CreateAiDataModelProposalResponses, CreateAiDataModelProposalErrors, ThrowOnError> => (options.client ?? client).post<CreateAiDataModelProposalResponses, CreateAiDataModelProposalErrors, ThrowOnError>({
+    url: '/api/v1/projects/{project_id}/data-model/proposals/ai-edit',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Get Pending Change Proposal
+ */
+export const getPendingProjectDataModelChange = <ThrowOnError extends boolean = false>(options: Options<GetPendingProjectDataModelChangeData, ThrowOnError>): RequestResult<GetPendingProjectDataModelChangeResponses, GetPendingProjectDataModelChangeErrors, ThrowOnError> => (options.client ?? client).get<GetPendingProjectDataModelChangeResponses, GetPendingProjectDataModelChangeErrors, ThrowOnError>({ url: '/api/v1/projects/{project_id}/data-model-changes/pending', ...options });
+
+/**
+ * Xem chi tiết một đề xuất thay đổi mô hình dữ liệu
+ *
+ * Trả về DBML đề xuất kèm DBML hiện hành để dựng khung so sánh khác biệt.
+ */
+export const getProjectDataModelChange = <ThrowOnError extends boolean = false>(options: Options<GetProjectDataModelChangeData, ThrowOnError>): RequestResult<GetProjectDataModelChangeResponses, GetProjectDataModelChangeErrors, ThrowOnError> => (options.client ?? client).get<GetProjectDataModelChangeResponses, GetProjectDataModelChangeErrors, ThrowOnError>({ url: '/api/v1/projects/{project_id}/data-model-changes/{change_id}', ...options });
+
+/**
+ * Chấp nhận đề xuất và áp dụng vào mô hình dữ liệu hiện tại
+ *
+ * Áp dụng DBML đề xuất vào mô hình dữ liệu, tăng revision và trả về mô hình mới.
+ */
+export const acceptChangeProposal = <ThrowOnError extends boolean = false>(options: Options<AcceptChangeProposalData, ThrowOnError>): RequestResult<AcceptChangeProposalResponses, AcceptChangeProposalErrors, ThrowOnError> => (options.client ?? client).post<AcceptChangeProposalResponses, AcceptChangeProposalErrors, ThrowOnError>({ url: '/api/v1/data-model-changes/{change_id}/accept', ...options });
+
+/**
+ * Từ chối một đề xuất thay đổi mô hình dữ liệu
+ *
+ * Đánh dấu đề xuất là REJECTED; nội dung và revision của mô hình giữ nguyên.
+ */
+export const rejectChangeProposal = <ThrowOnError extends boolean = false>(options: Options<RejectChangeProposalData, ThrowOnError>): RequestResult<RejectChangeProposalResponses, RejectChangeProposalErrors, ThrowOnError> => (options.client ?? client).post<RejectChangeProposalResponses, RejectChangeProposalErrors, ThrowOnError>({ url: '/api/v1/data-model-changes/{change_id}/reject', ...options });
+
+/**
  * List Data Sources
  *
  * Liệt kê nguồn nếu người dùng là thành viên dự án.
@@ -98,7 +208,7 @@ export const listProjectDataSources = <ThrowOnError extends boolean = false>(opt
 /**
  * Upload Data Sources
  *
- * Upload và phân tích batch file nếu người dùng là OWNER.
+ * Upload và phân tích batch file CSV nếu người dùng là OWNER.
  */
 export const uploadProjectDataSources = <ThrowOnError extends boolean = false>(options: Options<UploadProjectDataSourcesData, ThrowOnError>): RequestResult<UploadProjectDataSourcesResponses, UploadProjectDataSourcesErrors, ThrowOnError> => (options.client ?? client).post<UploadProjectDataSourcesResponses, UploadProjectDataSourcesErrors, ThrowOnError>({
     ...formDataBodySerializer,
@@ -115,15 +225,15 @@ export const uploadProjectDataSources = <ThrowOnError extends boolean = false>(o
  *
  * Đọc preview CSV theo yêu cầu, không lưu bản sao trong database.
  */
-export const getProjectDataSourcePreview = <ThrowOnError extends boolean = false>(options: Options<GetProjectDataSourcePreviewData, ThrowOnError>): RequestResult<GetProjectDataSourcePreviewResponses, GetProjectDataSourcePreviewErrors, ThrowOnError> => (options.client ?? client).get<GetProjectDataSourcePreviewResponses, GetProjectDataSourcePreviewErrors, ThrowOnError>({ url: '/api/v1/projects/{project_id}/data-sources/{data_source_id}/preview', ...options });
+export const getProjectDataSourcePreview = <ThrowOnError extends boolean = false>(options: Options<GetProjectDataSourcePreviewData, ThrowOnError>): RequestResult<GetProjectDataSourcePreviewResponses, GetProjectDataSourcePreviewErrors, ThrowOnError> => (options.client ?? client).get<GetProjectDataSourcePreviewResponses, GetProjectDataSourcePreviewErrors, ThrowOnError>({ url: '/api/v1/projects/{project_id}/data-sources/{source_id}/preview', ...options });
 
 /**
  * Update Data Source Column
  *
- * Cập nhật kiểu và options của một cột nếu người dùng là OWNER.
+ * Cập nhật một phần metadata của cột nếu người dùng là OWNER.
  */
 export const updateProjectDataSourceColumn = <ThrowOnError extends boolean = false>(options: Options<UpdateProjectDataSourceColumnData, ThrowOnError>): RequestResult<UpdateProjectDataSourceColumnResponses, UpdateProjectDataSourceColumnErrors, ThrowOnError> => (options.client ?? client).patch<UpdateProjectDataSourceColumnResponses, UpdateProjectDataSourceColumnErrors, ThrowOnError>({
-    url: '/api/v1/projects/{project_id}/data-sources/{data_source_id}/column',
+    url: '/api/v1/projects/{project_id}/data-sources/{source_id}/tables/{table_name}/columns/{column_name}',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -136,7 +246,112 @@ export const updateProjectDataSourceColumn = <ThrowOnError extends boolean = fal
  *
  * Xóa nguồn và file vật lý nếu người dùng là OWNER.
  */
-export const deleteProjectDataSource = <ThrowOnError extends boolean = false>(options: Options<DeleteProjectDataSourceData, ThrowOnError>): RequestResult<DeleteProjectDataSourceResponses, DeleteProjectDataSourceErrors, ThrowOnError> => (options.client ?? client).delete<DeleteProjectDataSourceResponses, DeleteProjectDataSourceErrors, ThrowOnError>({ url: '/api/v1/projects/{project_id}/data-sources/{data_source_id}', ...options });
+export const deleteProjectDataSource = <ThrowOnError extends boolean = false>(options: Options<DeleteProjectDataSourceData, ThrowOnError>): RequestResult<DeleteProjectDataSourceResponses, DeleteProjectDataSourceErrors, ThrowOnError> => (options.client ?? client).delete<DeleteProjectDataSourceResponses, DeleteProjectDataSourceErrors, ThrowOnError>({ url: '/api/v1/projects/{project_id}/data-sources/{source_id}', ...options });
+
+/**
+ * Get Sandbox Config
+ *
+ * Lấy cấu hình Sandbox DB của dự án.
+ */
+export const getSandboxConfig = <ThrowOnError extends boolean = false>(options: Options<GetSandboxConfigData, ThrowOnError>): RequestResult<GetSandboxConfigResponses, GetSandboxConfigErrors, ThrowOnError> => (options.client ?? client).get<GetSandboxConfigResponses, GetSandboxConfigErrors, ThrowOnError>({ url: '/api/v1/projects/{project_id}/sandbox/config', ...options });
+
+/**
+ * Save Sandbox Config
+ *
+ * Lưu hoặc cập nhật thông tin cấu hình Sandbox DB cho dự án.
+ */
+export const saveSandboxConfig = <ThrowOnError extends boolean = false>(options: Options<SaveSandboxConfigData, ThrowOnError>): RequestResult<SaveSandboxConfigResponses, SaveSandboxConfigErrors, ThrowOnError> => (options.client ?? client).post<SaveSandboxConfigResponses, SaveSandboxConfigErrors, ThrowOnError>({
+    url: '/api/v1/projects/{project_id}/sandbox/config',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Test Sandbox Connection Endpoint
+ *
+ * Kiểm tra thử kết nối đến cơ sở dữ liệu Sandbox.
+ */
+export const testSandboxConnection = <ThrowOnError extends boolean = false>(options: Options<TestSandboxConnectionData, ThrowOnError>): RequestResult<TestSandboxConnectionResponses, TestSandboxConnectionErrors, ThrowOnError> => (options.client ?? client).post<TestSandboxConnectionResponses, TestSandboxConnectionErrors, ThrowOnError>({
+    url: '/api/v1/projects/{project_id}/sandbox/test-connection',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Execute Sandbox Ddl Endpoint
+ *
+ * Thực thi mã DDL script trên Sandbox Database đã cấu hình của dự án.
+ */
+export const executeSandboxDdl = <ThrowOnError extends boolean = false>(options: Options<ExecuteSandboxDdlData, ThrowOnError>): RequestResult<ExecuteSandboxDdlResponses, ExecuteSandboxDdlErrors, ThrowOnError> => (options.client ?? client).post<ExecuteSandboxDdlResponses, ExecuteSandboxDdlErrors, ThrowOnError>({
+    url: '/api/v1/projects/{project_id}/sandbox/execute-ddl',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * List Project Sessions
+ */
+export const listProjectSessions = <ThrowOnError extends boolean = false>(options: Options<ListProjectSessionsData, ThrowOnError>): RequestResult<ListProjectSessionsResponses, ListProjectSessionsErrors, ThrowOnError> => (options.client ?? client).get<ListProjectSessionsResponses, ListProjectSessionsErrors, ThrowOnError>({ url: '/api/v1/projects/{project_id}/sessions', ...options });
+
+/**
+ * Create Project Session
+ */
+export const createProjectSession = <ThrowOnError extends boolean = false>(options: Options<CreateProjectSessionData, ThrowOnError>): RequestResult<CreateProjectSessionResponses, CreateProjectSessionErrors, ThrowOnError> => (options.client ?? client).post<CreateProjectSessionResponses, CreateProjectSessionErrors, ThrowOnError>({
+    url: '/api/v1/projects/{project_id}/sessions',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Get Project Session
+ */
+export const getProjectSession = <ThrowOnError extends boolean = false>(options: Options<GetProjectSessionData, ThrowOnError>): RequestResult<GetProjectSessionResponses, GetProjectSessionErrors, ThrowOnError> => (options.client ?? client).get<GetProjectSessionResponses, GetProjectSessionErrors, ThrowOnError>({ url: '/api/v1/sessions/{session_id}', ...options });
+
+/**
+ * Rename Project Session
+ */
+export const renameProjectSession = <ThrowOnError extends boolean = false>(options: Options<RenameProjectSessionData, ThrowOnError>): RequestResult<RenameProjectSessionResponses, RenameProjectSessionErrors, ThrowOnError> => (options.client ?? client).patch<RenameProjectSessionResponses, RenameProjectSessionErrors, ThrowOnError>({
+    url: '/api/v1/sessions/{session_id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * List Project Session Events
+ */
+export const listProjectSessionEvents = <ThrowOnError extends boolean = false>(options: Options<ListProjectSessionEventsData, ThrowOnError>): RequestResult<ListProjectSessionEventsResponses, ListProjectSessionEventsErrors, ThrowOnError> => (options.client ?? client).get<ListProjectSessionEventsResponses, ListProjectSessionEventsErrors, ThrowOnError>({ url: '/api/v1/sessions/{session_id}/events', ...options });
+
+/**
+ * Send Project Session Message
+ */
+export const sendProjectSessionMessage = <ThrowOnError extends boolean = false>(options: Options<SendProjectSessionMessageData, ThrowOnError>): RequestResult<SendProjectSessionMessageResponses, SendProjectSessionMessageErrors, ThrowOnError> => (options.client ?? client).post<SendProjectSessionMessageResponses, SendProjectSessionMessageErrors, ThrowOnError>({
+    url: '/api/v1/sessions/{session_id}/messages',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Stream Project Session Events
+ */
+export const streamProjectSessionEvents = <ThrowOnError extends boolean = false>(options: Options<StreamProjectSessionEventsData, ThrowOnError>): RequestResult<StreamProjectSessionEventsResponses, StreamProjectSessionEventsErrors, ThrowOnError> => (options.client ?? client).get<StreamProjectSessionEventsResponses, StreamProjectSessionEventsErrors, ThrowOnError>({ url: '/api/v1/sessions/{session_id}/events/stream', ...options });
 
 /**
  * Health Check

@@ -6,7 +6,7 @@ from uuid import UUID
 from fastapi import Path
 from pydantic import BaseModel, ConfigDict, Field
 from src.application.projects.input import CreateProjectInput, UpdateProjectInput
-from src.domain.project.rules import (
+from src.domain.project.project_details_rules import (
     MAX_PROJECT_DOMAIN_LENGTH,
     MAX_PROJECT_NAME_LENGTH,
     MIN_PROJECT_NAME_LENGTH,
@@ -26,9 +26,10 @@ class ProjectMutationRequest(BaseModel):
         max_length=MAX_PROJECT_NAME_LENGTH,
         description="Tên Project",
     )
-    requirement: str = Field(
+    requirement: str | None = Field(
+        default=None,
         min_length=MIN_PROJECT_REQUIREMENT_LENGTH,
-        description="Yêu cầu nghiệp vụ thô",
+        description="Yêu cầu nghiệp vụ thô, có thể bổ sung sau khi tạo Project",
     )
     domain: str | None = Field(
         default=None,

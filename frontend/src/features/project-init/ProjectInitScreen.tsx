@@ -6,34 +6,50 @@ import { useTranslation } from "react-i18next";
 import { MainLayout } from "@/common/components/layout/MainLayout";
 import { Button } from "@/common/components/ui/button";
 import { createWorkflowHref } from "@/common/routing/workflow-routing";
-import { ProjectInitSkeleton } from "./components/ProjectInitSkeleton";
-import { DataSourceSection } from "./data-sources/components/DataSourceSection";
-import { useDataSources } from "./data-sources/hooks/use-data-sources";
-import { PiiGuardNotice } from "./pii-guard/components/PiiGuardNotice";
-import { ProjectDetailsForm } from "./project-details/components/ProjectDetailsForm";
-import { useProjectDetails } from "./project-details/hooks/use-project-details";
+import { DataSourceSection } from "./project-init-screen/DataSourceSection";
+import { useDataSources } from "./project-init-screen/data-sources/hooks/use-data-sources";
+import { PiiGuardNotice } from "./project-init-screen/PiiGuardNotice";
+import { ProjectInitSkeleton } from "./project-init-screen/ProjectInitSkeleton";
+import { useProjectAnalysis } from "./project-init-screen/hooks/use-project-analysis";
+import { ProjectDetailsForm } from "./project-init-screen/ProjectDetailsForm";
+import { useProjectDetails } from "./project-init-screen/project-details/hooks/use-project-details";
 
-interface ProjectInitScreenProps {
-  projectId: string;
-}
-
-/** Màn hình Step 1 cho một project hiện hữu.
- * @param props ID Project lấy trực tiếp từ route workspace.
- * @returns Màn hình chỉnh thông tin Project và quản lý Data Source.
- */
-export function ProjectInitScreen({ projectId }: ProjectInitScreenProps) {
+/** Màn hình Project Init: lưu/phân tích tại chỗ và chỉ điều hướng bằng Continue. */
+export function ProjectInitScreen({ projectId }: { projectId: string }) {
   const { t } = useTranslation("project-init");
   const router = useRouter();
   const project = useProjectDetails(projectId);
-  const sources = useDataSources(projectId, project.appendRequirement);
-  const isBusy = project.isSaving || sources.isMutating;
-  const continueToModeling = async () => {
-    const saved = sources.canEdit ? await project.save() : true;
-    if (saved) router.push(createWorkflowHref("modeling", projectId));
+  const sources = useDataSources(projectId);
+  const analysis = useProjectAnalysis(projectId);
+  const isBusy =
+    project.updateMutation.isPending ||
+    sources.isMutating ||
+    analysis.analysisMutation.isPending;
+  const isAnalysisCurrent = Boolean(
+    analysis.statusQuery.data &&
+    !analysis.statusQuery.data.requirement_analysis_outdated &&
+    !analysis.statusQuery.data.source_analysis_outdated,
+  );
+  const canContinue =
+    !project.form.formState.isDirty && !isBusy && isAnalysisCurrent;
+  const handleSaveAndAnalyze = async () => {
+    try {
+      if (!(await project.save())) return;
+      const action = await analysis.analyze();
+      if (action === "generated") {
+        router.push(createWorkflowHref("modeling", projectId));
+      }
+    } catch {
+      /* API layer owns toast. */
+    }
   };
+  const handleContinue = () =>
+    router.push(createWorkflowHref("modeling", projectId));
+  const isLoading =
+    project.projectQuery.isLoading || sources.sourcesQuery.isLoading;
   return (
-    <MainLayout>
-      <main className="mx-auto w-full max-w-6xl space-y-5 pb-10">
+    <MainLayout selectedProjectId={projectId}>
+      <section className="mx-auto w-full max-w-6xl space-y-5 pb-10">
         <header className="flex items-start justify-between gap-4 rounded-xl border bg-background p-5">
           <div>
             <h1 className="text-xl font-bold">{t("TXT_SCREEN_TITLE")}</h1>
@@ -45,54 +61,72 @@ export function ProjectInitScreen({ projectId }: ProjectInitScreenProps) {
             {t("TXT_STEP_PROGRESS")}
           </span>
         </header>
-        {project.isLoading || sources.isLoading ? (
+        {isLoading ? (
           <ProjectInitSkeleton />
-        ) : project.loadError ? (
-          <LoadError onRetry={project.reload} />
+        ) : project.projectQuery.isError ? (
+          <LoadError onRetry={() => project.projectQuery.refetch()} />
         ) : (
           <>
             <ProjectDetailsForm
               form={project.form}
-              errors={project.errors}
+              requirements={project.projectQuery.data?.requirements ?? []}
               disabled={!sources.canEdit || isBusy}
-              onChange={project.updateField}
             />
             <DataSourceSection
               projectId={projectId}
               sources={sources.sources}
               canEdit={sources.canEdit}
               disabled={isBusy}
-              loadError={sources.loadError}
-              onDelete={sources.deleteSource}
-              onReload={sources.reload}
-              onUpdate={sources.updateColumn}
-              onUpload={sources.uploadFiles}
+              hasError={sources.sourcesQuery.isError}
+              onDelete={(id) => void sources.deleteSource(id)}
+              onReload={() => void sources.sourcesQuery.refetch()}
+              onUpload={(files) => void sources.uploadCsvFiles(files)}
             />
             <PiiGuardNotice />
-            <div className="flex justify-end">
+            {!sources.canEdit && !isAnalysisCurrent && (
+              <p className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:bg-amber-950 dark:text-amber-100">
+                {t("TXT_MEMBER_ANALYSIS_OUTDATED")}
+              </p>
+            )}
+            <div className="flex flex-wrap justify-end gap-3">
+              {sources.canEdit && (
+                <Button
+                  type="button"
+                  size="lg"
+                  disabled={isBusy}
+                  onClick={() => void handleSaveAndAnalyze()}
+                >
+                  <Save />
+                  {isBusy
+                    ? t(
+                        analysis.analysisMutation.isPending
+                          ? "MSG_ANALYZING"
+                          : "MSG_SAVING",
+                      )
+                    : t("BTN_SAVE_ANALYZE")}
+                </Button>
+              )}
               <Button
                 type="button"
                 size="lg"
-                disabled={isBusy}
-                onClick={() => void continueToModeling()}
+                variant="outline"
+                disabled={!canContinue}
+                onClick={handleContinue}
               >
-                {sources.canEdit ? <Save /> : <ArrowRight />}
-                {project.isSaving
-                  ? t("MSG_SAVING")
-                  : sources.canEdit
-                    ? t("BTN_SAVE_CONTINUE")
-                    : t("BTN_CONTINUE")}
+                {t("BTN_CONTINUE")}
+                <ArrowRight />
               </Button>
             </div>
           </>
         )}
-      </main>
+      </section>
     </MainLayout>
   );
 }
 
 function LoadError({ onRetry }: { onRetry: () => void }) {
   const { t } = useTranslation("project-init");
+  const { t: tCommon } = useTranslation("common");
   return (
     <section className="rounded-xl border border-destructive/30 bg-background p-8 text-center">
       <h2 className="font-semibold">{t("TXT_PROJECT_LOAD_ERROR_TITLE")}</h2>
@@ -105,7 +139,7 @@ function LoadError({ onRetry }: { onRetry: () => void }) {
         variant="outline"
         onClick={onRetry}
       >
-        {t("BTN_RETRY")}
+        {tCommon("BTN_RETRY")}
       </Button>
     </section>
   );

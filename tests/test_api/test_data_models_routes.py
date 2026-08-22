@@ -1,91 +1,216 @@
-"""Integration tests cho Data Models API Router (GET & PUT /api/v1/projects/{project_id}/data-model)."""
+"""Integration test cho router Data Model (GET & PUT /api/v1/projects/{id}/data-model)."""
 
-from uuid import uuid4
+from datetime import UTC, datetime
+from uuid import UUID, uuid4
 
 import pytest
+from httpx import ASGITransport, AsyncClient
 from main import app
-from src.application.data_models.dto import DataModelDto
-from src.application.data_models.IGetDataModelService import IGetDataModelService
-from src.application.data_models.IUpdateDataModelService import (
-    IUpdateDataModelService,
+from src.application.data_models.i_data_model_service import IDataModelService
+from src.application.data_models.input import (
+    ChangeProposalIdInput,
+    GenerateDataModelDdlInput,
+    GetChangeProposalInput,
+    GetDataModelInput,
+    UpdateDataModelInput,
 )
-from src.domain.user.entities import User
-from src.presentation.dependencies.application import (
-    get_data_model_service,
-    get_update_data_model_service,
+from src.application.data_models.output import (
+    ChangeProposalDetailOutput,
+    ChangeProposalSummaryOutput,
+    DataModelDdlOutput,
+    DataModelOutput,
 )
-from src.presentation.dependencies.auth import get_current_user
+from src.application.data_warehouse_workflows.output import ValidationIssue
+from src.common.exceptions.business import BusinessException
+from src.common.exceptions.error_codes import ErrorCode
+from src.domain.data_model.entities import DataModel
+from src.presentation.dependencies.data_models import get_data_model_service
+
+API_PREFIX = "/api/v1"
+SAMPLE_DBML = "Table users {\n  id uuid [pk]\n}"
 
 
-class DummyGetDataModelService(IGetDataModelService):
-    """Fake GetDataModelService cho route test."""
-
-    async def execute(self, project_id: object) -> DataModelDto | None:
-        return DataModelDto(
-            id=uuid4(),
-            project_id=project_id,  # type: ignore[arg-type]
-            dbml="Table Users { id uuid [pk] }",
-            revision=1,
-            created_at="2026-08-15T00:00:00Z",
-            updated_at="2026-08-15T00:00:00Z",
-        )
-
-
-class DummyUpdateDataModelService(IUpdateDataModelService):
-    """Fake UpdateDataModelService cho route test."""
-
-    async def execute(self, command: object) -> DataModelDto:
-        return DataModelDto(
-            id=uuid4(),
-            project_id=command.project_id,  # type: ignore[attr-defined]
-            dbml=command.dbml,  # type: ignore[attr-defined]
-            revision=2,
-            created_at="2026-08-15T00:00:00Z",
-            updated_at="2026-08-15T00:01:00Z",
-        )
-
-
-def get_mock_current_user() -> User:
-    """Trả về Mock User cho test."""
-    return User(
+def _output(project_id: UUID, revision: int = 1) -> DataModelOutput:
+    """Dựng output Data Model tối thiểu cho test."""
+    now = datetime.now(UTC)
+    return DataModelOutput(
         id=uuid4(),
-        username="test_user",
-        email="test@example.com",  # type: ignore[arg-type]
+        project_id=project_id,
+        dbml=SAMPLE_DBML,
+        revision=revision,
+        created_at=now,
+        updated_at=now,
     )
 
 
+class StubDataModelService(IDataModelService):
+    """Service giả lập, ghi lại input nhận được để kiểm tra ánh xạ request."""
+
+    def __init__(self, *, missing: bool = False) -> None:
+        """Khởi tạo; `missing=True` để mô phỏng dự án chưa có Data Model."""
+        self.missing = missing
+        self.received: UpdateDataModelInput | None = None
+
+    def _require_present(self, project_id: UUID) -> DataModelOutput:
+        if self.missing:
+            raise BusinessException(
+                code=ErrorCode.DATA_MODEL_NOT_FOUND,
+                message="Không tìm thấy Data Model của dự án.",
+            )
+        return _output(project_id)
+
+    async def get_data_model(self, data: GetDataModelInput) -> DataModelOutput:
+        return self._require_present(data.project_id)
+
+    async def update_data_model(
+        self, data: UpdateDataModelInput
+    ) -> DataModelOutput:
+        self.received = data
+        model = DataModel(
+            id=data.data_model_id,
+            project_id=data.project_id,
+            dbml=data.dbml,
+            revision=data.base_revision + 1,
+        )
+        return DataModelOutput.from_domain(model)
+
+    async def get_validation_issues(
+        self, data: GetDataModelInput
+    ) -> tuple[ValidationIssue, ...]:
+        del data
+        return ()
+
+    async def get_change_proposal(
+        self, data: GetChangeProposalInput
+    ) -> ChangeProposalDetailOutput:
+        raise NotImplementedError
+
+    async def accept_change_proposal(self, data: ChangeProposalIdInput) -> DataModelOutput:
+        raise NotImplementedError
+
+    async def reject_change_proposal(
+        self, data: ChangeProposalIdInput
+    ) -> ChangeProposalSummaryOutput:
+        raise NotImplementedError
+
+    async def generate_ddl(
+        self, data: GenerateDataModelDdlInput
+    ) -> DataModelDdlOutput:
+        return DataModelDdlOutput(
+            ddl="CREATE TABLE users (id uuid PRIMARY KEY);",
+            db_type=data.db_type,
+            data_model_revision=1,
+        )
+
+
+async def _call(service: IDataModelService, method: str, url: str, **kwargs):
+    """Gọi API với service đã được override, luôn dọn override sau khi xong."""
+    app.dependency_overrides[get_data_model_service] = lambda: service
+    try:
+        transport = ASGITransport(app=app)
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
+            return await getattr(client, method)(url, **kwargs)
+    finally:
+        app.dependency_overrides.clear()
+
+
 @pytest.mark.asyncio
-async def test_get_data_model_endpoint(client) -> None:
-    """Kiểm tra gọi GET /api/v1/projects/{id}/data-model trả về 200 OK và ApiResponse chuẩn."""
-    app.dependency_overrides[get_data_model_service] = lambda: DummyGetDataModelService()
-    app.dependency_overrides[get_current_user] = get_mock_current_user
-
+async def test_get_data_model_returns_success_envelope() -> None:
+    """GET trả về snapshot DBML trong success envelope chuẩn."""
     project_id = uuid4()
-    response = await client.get(f"/api/v1/projects/{project_id}/data-model")
 
-    app.dependency_overrides.clear()
+    response = await _call(
+        StubDataModelService(), "get", f"{API_PREFIX}/projects/{project_id}/data-model"
+    )
 
     assert response.status_code == 200
-    json_data = response.json()
-    assert json_data["status"] == "success"
-    assert json_data["data"]["dbml"] == "Table Users { id uuid [pk] }"
-    assert json_data["data"]["revision"] == 1
+    body = response.json()
+    assert body["status"] == "success"
+    assert body["data"]["project_id"] == str(project_id)
+    assert body["data"]["dbml"] == SAMPLE_DBML
 
 
 @pytest.mark.asyncio
-async def test_put_data_model_endpoint(client) -> None:
-    """Kiểm tra gọi PUT /api/v1/projects/{id}/data-model cập nhật DBML thành công."""
-    app.dependency_overrides[get_update_data_model_service] = lambda: DummyUpdateDataModelService()
-    app.dependency_overrides[get_current_user] = get_mock_current_user
+async def test_get_data_model_returns_404_when_absent() -> None:
+    """Dự án chưa có Data Model thì trả 404 kèm error_code ổn định."""
+    response = await _call(
+        StubDataModelService(missing=True),
+        "get",
+        f"{API_PREFIX}/projects/{uuid4()}/data-model",
+    )
 
+    assert response.status_code == 404
+    assert response.json()["error_code"] == "DATA_MODEL_NOT_FOUND"
+
+
+@pytest.mark.asyncio
+async def test_generate_ddl_is_exposed_by_data_model_resource() -> None:
+    """DDL được sinh qua Data Model API, không còn thuộc Sandbox resource."""
     project_id = uuid4()
-    payload = {"dbml": "Table Rides { ride_id int [pk] }", "expected_revision": 1}
-    response = await client.put(f"/api/v1/projects/{project_id}/data-model", json=payload)
 
-    app.dependency_overrides.clear()
+    response = await _call(
+        StubDataModelService(),
+        "get",
+        f"{API_PREFIX}/projects/{project_id}/data-model/ddl",
+        params={"db_type": "POSTGRESQL"},
+    )
 
     assert response.status_code == 200
-    json_data = response.json()
-    assert json_data["status"] == "success"
-    assert json_data["data"]["dbml"] == "Table Rides { ride_id int [pk] }"
-    assert json_data["data"]["revision"] == 2
+    assert response.json()["data"]["data_model_revision"] == 1
+
+
+@pytest.mark.asyncio
+async def test_update_data_model_maps_optimistic_locking_fields() -> None:
+    """PUT chuyển đúng data_model_id và base_revision xuống application input."""
+    service = StubDataModelService()
+    project_id = uuid4()
+    data_model_id = uuid4()
+
+    response = await _call(
+        service,
+        "put",
+        f"{API_PREFIX}/projects/{project_id}/data-model",
+        json={
+            "data_model_id": str(data_model_id),
+            "dbml": SAMPLE_DBML,
+            "base_revision": 4,
+        },
+    )
+
+    assert response.status_code == 200
+    assert service.received is not None
+    assert service.received.data_model_id == data_model_id
+    assert service.received.base_revision == 4
+    assert response.json()["data"]["revision"] == 5
+
+
+@pytest.mark.asyncio
+async def test_update_data_model_rejects_first_save_without_revision() -> None:
+    """Model đầu tiên chỉ được tạo qua Save & Analyze workflow."""
+    service = StubDataModelService()
+
+    response = await _call(
+        service,
+        "put",
+        f"{API_PREFIX}/projects/{uuid4()}/data-model",
+        json={"dbml": SAMPLE_DBML},
+    )
+
+    assert response.status_code == 422
+    assert service.received is None
+
+
+@pytest.mark.asyncio
+async def test_update_data_model_rejects_empty_dbml() -> None:
+    """DBML rỗng bị chặn tại HTTP shape boundary."""
+    service = StubDataModelService()
+
+    response = await _call(
+        service,
+        "put",
+        f"{API_PREFIX}/projects/{uuid4()}/data-model",
+        json={"dbml": ""},
+    )
+
+    assert response.status_code == 422
+    assert service.received is None

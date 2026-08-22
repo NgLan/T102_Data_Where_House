@@ -96,10 +96,10 @@ def test_mask_schema_is_noop_when_no_sensitive_column(guard: PiiGuard) -> None:
 @pytest.mark.parametrize(
     ("raw", "expected_placeholder"),
     [
-        ("liên hệ qua a.nguyen@example.com nhé", "[PII_EMAIL]"),
-        ("số điện thoại 0901234567", "[PII_PHONE]"),
-        ("số điện thoại +84901234567", "[PII_PHONE]"),
-        ("căn cước 012345678901", "[PII_NATIONAL_ID]"),
+        ("liên hệ qua a.nguyen@example.com nhé", "<EMAIL>"),
+        ("số điện thoại 0901234567", "<PHONE>"),
+        ("số điện thoại +84901234567", "<PHONE>"),
+        ("căn cước 012345678901", "<ID_NUMBER>"),
     ],
     ids=["email", "phone_local", "phone_intl", "national_id"],
 )

@@ -3,10 +3,12 @@
 from typing import TYPE_CHECKING
 from uuid import UUID
 
-from sqlalchemy import ForeignKey, Integer, String, Text
+from sqlalchemy import ForeignKey, Index, Integer, String, Text, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from src.infrastructure.database.base import Base
 from src.infrastructure.database.constants import MAX_STATUS_LENGTH
+
+ACTIVE_PROPOSAL_UNIQUE_INDEX = "uq_data_model_changes_proposed_model_user"
 
 if TYPE_CHECKING:
     from src.infrastructure.database.models.data_model import DataModelModel
@@ -17,11 +19,22 @@ class DataModelChangeModel(Base):
     """SQLAlchemy 2.0 ORM Model cho bảng data_model_changes."""
 
     __tablename__ = "data_model_changes"
+    __table_args__ = (
+        Index(
+            ACTIVE_PROPOSAL_UNIQUE_INDEX,
+            "data_model_id",
+            "user_id",
+            unique=True,
+            postgresql_where=text("status = 'PROPOSED'"),
+            sqlite_where=text("status = 'PROPOSED'"),
+        ),
+    )
 
     data_model_id: Mapped[UUID] = mapped_column(
         ForeignKey("data_models.id", ondelete="CASCADE"), nullable=False, index=True
     )
     base_revision: Mapped[int] = mapped_column(Integer, nullable=False)
+    base_dbml: Mapped[str] = mapped_column(Text, nullable=False)
     proposed_dbml: Mapped[str] = mapped_column(Text, nullable=False)
     status: Mapped[str] = mapped_column(String(MAX_STATUS_LENGTH), nullable=False, default="PROPOSED")
     user_id: Mapped[UUID] = mapped_column(

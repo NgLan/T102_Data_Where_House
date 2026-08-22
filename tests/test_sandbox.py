@@ -1,30 +1,67 @@
 """Unit tests cho UC9.1 và UC9.2 không phụ thuộc PostgreSQL localhost."""
 
+from pathlib import Path
 from uuid import uuid4
 
 import pytest
-from src.application.sandbox.dto import (
-    ExecuteDdlRequest,
-    SandboxConfigRequest,
+from src.application.common.project_access_policy import ProjectAccessPolicy
+from src.application.sandbox.input import (
+    ExecuteSandboxDdlInput,
+    GetSandboxConfigInput,
+    SandboxConnectionInput,
+    SaveSandboxConfigInput,
 )
-from src.application.sandbox.dto import (
-    TestConnectionRequest as SandboxConnectionRequest,
+from src.application.sandbox.input import (
+    TestSandboxConnectionInput as SandboxConnectionTestInput,
 )
-from src.application.sandbox.execute_ddl_service import ExecuteDdlService
-from src.application.sandbox.sandbox_config_service import SandboxConfigService
+from src.application.sandbox.sandbox_service import SandboxService
 from src.common.exceptions.business import BusinessException
+from src.common.exceptions.error_codes import ErrorCode
+from src.common.exceptions.infrastructure import InfrastructureException
+from src.domain.project.entities import Project, ProjectMember
+from src.domain.sandbox.entities import SandboxConfig
 from src.domain.sandbox.enums import SandboxDbType
-from src.domain.sandbox.sandbox import SandboxConfig
 from src.infrastructure.repositories.postgres_sandbox_config_repository import (
     PostgresSandboxConfigRepository,
 )
 from src.infrastructure.sandbox import sandbox_executor
 from src.infrastructure.sandbox.sandbox_executor import (
+    PostgresSandboxExecutor,
     check_sandbox_connection,
     execute_sandbox_ddl,
     split_ddl_statements,
 )
 from src.infrastructure.security.credential_cipher import CredentialCipher
+
+from tests.fakes import (
+    FakeProjectMemberRepository,
+    FakeProjectRepository,
+)
+
+
+def test_forward_migration_drops_unused_sandbox_status() -> None:
+    migration = Path("backend/migrations/20260819_drop_sandbox_config_status.sql")
+    sql = migration.read_text(encoding="utf-8").upper()
+    assert "DROP COLUMN IF EXISTS STATUS" in sql
+
+
+def build_sandbox_service(
+    repository,
+    unit_of_work,
+    project: Project,
+    actor_id,
+    members: list[ProjectMember] | None = None,
+) -> SandboxService:
+    return SandboxService(
+        configs=repository,
+        unit_of_work=unit_of_work,
+        executor=PostgresSandboxExecutor(),
+        access=ProjectAccessPolicy(
+            FakeProjectRepository([project]),
+            FakeProjectMemberRepository(members or []),
+            actor_id,
+        ),
+    )
 
 
 class MockSandboxRepository:
@@ -40,6 +77,16 @@ class MockSandboxRepository:
         self.store[str(config.project_id)] = config
         return config
 
+    async def get_by_id(self, entity_id):
+        return next((item for item in self.store.values() if item.id == entity_id), None)
+
+    async def delete(self, entity_id):
+        config = await self.get_by_id(entity_id)
+        if config is None:
+            return False
+        self.store.pop(str(config.project_id))
+        return True
+
 
 class MockUnitOfWork:
     """Theo dõi commit mà không mở transaction thật."""
@@ -52,6 +99,13 @@ class MockUnitOfWork:
 
     async def rollback(self) -> None:
         return None
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc, traceback) -> None:
+        if exc_type is not None:
+            await self.rollback()
 
 
 class FakeTransaction:
@@ -82,7 +136,7 @@ class FakeConnection:
     async def execute(self, statement: str) -> None:
         self.executed.append(statement)
         if self.failing_fragment and self.failing_fragment in statement:
-            raise RuntimeError("synthetic SQL failure")
+            raise sandbox_executor.asyncpg.PostgresError("synthetic SQL failure")
 
     async def close(self) -> None:
         self.closed = True
@@ -149,7 +203,7 @@ def test_ddl_scope_allows_generated_postgresql_enum_in_target_schema():
 async def test_sandbox_connection_executor_success(monkeypatch):
     connection = FakeConnection()
     install_fake_connection(monkeypatch, connection)
-    request = SandboxConnectionRequest(
+    request = SandboxConnectionInput(
         db_type=SandboxDbType.POSTGRESQL,
         host="localhost",
         port=5432,
@@ -211,42 +265,114 @@ async def test_execute_sandbox_ddl_rolls_back_on_statement_error(monkeypatch):
 async def test_sandbox_config_service_commits_and_reads_config():
     repository = MockSandboxRepository()
     unit_of_work = MockUnitOfWork()
-    service = SandboxConfigService(repository, unit_of_work)
     project_id = uuid4()
-    assert await service.get_config(project_id) is None
+    owner_id = uuid4()
+    project = Project(
+        name="Demo", requirement="Design data warehouse", user_id=owner_id, id=project_id
+    )
+    service = build_sandbox_service(repository, unit_of_work, project, owner_id)
+    assert await service.get_config(GetSandboxConfigInput(project_id)) is None
 
     response = await service.save_config(
-        project_id,
-        SandboxConfigRequest(
+        SaveSandboxConfigInput(
+            project_id,
+            SandboxConnectionInput(
             host="127.0.0.1",
             port=5433,
             database_name="sandbox_dwh",
             username="admin",
             password="secretpassword",
             schema_name="public",
-        ),
+            db_type=SandboxDbType.POSTGRESQL,
+            ),
+        )
     )
     assert response.host == "127.0.0.1"
     assert response.database_name == "sandbox_dwh"
     assert unit_of_work.commit_count == 1
-    assert (await service.get_config(project_id)).id == response.id
+    assert (await service.get_config(GetSandboxConfigInput(project_id))).id == response.id
 
 
 @pytest.mark.asyncio
 async def test_execute_ddl_service_requires_saved_config(monkeypatch):
     repository = MockSandboxRepository()
-    service = ExecuteDdlService(repository)
     project_id = uuid4()
-    request = ExecuteDdlRequest(ddl_script="CREATE TABLE dim_customer (id INT);")
+    owner_id = uuid4()
+    project = Project(
+        name="Demo", requirement="Design data warehouse", user_id=owner_id, id=project_id
+    )
+    service = build_sandbox_service(repository, MockUnitOfWork(), project, owner_id)
+    request = ExecuteSandboxDdlInput(project_id, "CREATE TABLE dim_customer (id INT);")
     with pytest.raises(BusinessException) as exc_info:
-        await service.execute_ddl(project_id, request)
+        await service.execute_ddl(request)
     assert exc_info.value.code.value == "SANDBOX_CONFIG_NOT_FOUND"
 
     await repository.save(SandboxConfig(project_id=project_id))
     install_fake_connection(monkeypatch, FakeConnection())
-    response = await service.execute_ddl(project_id, request)
+    response = await service.execute_ddl(request)
     assert response.success is True
     assert response.succeeded_statements == 1
+
+
+@pytest.mark.asyncio
+async def test_sandbox_member_can_read_but_cannot_save_config():
+    repository = MockSandboxRepository()
+    owner_id, member_id, project_id = uuid4(), uuid4(), uuid4()
+    project = Project(
+        id=project_id,
+        name="Demo",
+        requirement="Design data warehouse",
+        user_id=owner_id,
+    )
+    member = ProjectMember(project_id=project_id, user_id=member_id)
+    await repository.save(SandboxConfig(project_id=project_id))
+    service = build_sandbox_service(
+        repository,
+        MockUnitOfWork(),
+        project,
+        member_id,
+        [member],
+    )
+
+    assert await service.get_config(GetSandboxConfigInput(project_id)) is not None
+    with pytest.raises(BusinessException) as exc_info:
+        await service.save_config(
+            SaveSandboxConfigInput(project_id, SandboxConnectionInput(SandboxDbType.POSTGRESQL, "localhost", 5432, "db"))
+        )
+    assert exc_info.value.code == ErrorCode.PERMISSION_DENIED
+
+
+@pytest.mark.asyncio
+async def test_sandbox_test_connection_requires_owner():
+    owner_id, member_id, project_id = uuid4(), uuid4(), uuid4()
+    project = Project(
+        id=project_id,
+        name="Demo",
+        requirement="Design data warehouse",
+        user_id=owner_id,
+    )
+    member = ProjectMember(project_id=project_id, user_id=member_id)
+    service = build_sandbox_service(
+        MockSandboxRepository(),
+        MockUnitOfWork(),
+        project,
+        member_id,
+        [member],
+    )
+
+    with pytest.raises(BusinessException) as exc_info:
+        await service.test_connection(
+            SandboxConnectionTestInput(
+                project_id,
+                SandboxConnectionInput(
+                    SandboxDbType.POSTGRESQL,
+                    "localhost",
+                    5432,
+                    "sandbox",
+                ),
+            )
+        )
+    assert exc_info.value.code == ErrorCode.PERMISSION_DENIED
 
 
 def test_credential_cipher_does_not_store_plaintext():
@@ -255,6 +381,16 @@ def test_credential_cipher_does_not_store_plaintext():
     assert encrypted is not None
     assert "database-password" not in encrypted
     assert cipher.decrypt(encrypted) == "database-password"
+
+
+def test_credential_cipher_keeps_legacy_plaintext_and_translates_invalid_token():
+    cipher = CredentialCipher("test-secret-key")
+    assert cipher.decrypt("legacy-password") == "legacy-password"
+
+    with pytest.raises(InfrastructureException) as exc_info:
+        cipher.decrypt("fernet:not-a-token")
+
+    assert exc_info.value.code == ErrorCode.STORAGE_ERROR
 
 
 @pytest.mark.asyncio

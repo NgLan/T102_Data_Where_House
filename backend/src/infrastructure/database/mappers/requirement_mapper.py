@@ -28,10 +28,10 @@ class RequirementMapper:
         return RequirementModel(
             id=entity.id,
             project_id=entity.project_id,
-            type=str(entity.type.value if hasattr(entity.type, "value") else entity.type),
+            type=entity.type.value,
             title=entity.title,
             description=entity.description,
-            priority=str(entity.priority.value if hasattr(entity.priority, "value") else entity.priority),
+            priority=entity.priority.value,
             created_at=entity.created_at,
             updated_at=entity.updated_at,
         )
@@ -40,10 +40,9 @@ class RequirementMapper:
     def update_model(model: RequirementModel, entity: Requirement) -> RequirementModel:
         """Cập nhật dữ liệu từ Requirement Entity sang RequirementModel đã tồn tại."""
         model.project_id = entity.project_id
-        model.type = str(entity.type.value if hasattr(entity.type, "value") else entity.type)
+        model.type = entity.type.value
         model.title = entity.title
         model.description = entity.description
-        model.priority = str(entity.priority.value if hasattr(entity.priority, "value") else entity.priority)
-        model.created_at = entity.created_at
+        model.priority = entity.priority.value
         model.updated_at = entity.updated_at
         return model

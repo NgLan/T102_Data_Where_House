@@ -1,11 +1,16 @@
 """In-memory adapters dùng chung cho kiểm thử Project application service."""
 
+from types import TracebackType
+
 from src.application.common.unit_of_work import IUnitOfWork
-from src.application.projects.i_project_artifact_store import IProjectArtifactStore
+from src.application.projects.i_project_service import IProjectArtifactStore
 from src.domain.data_source.entities import DataSource
-from src.domain.data_source.repository import IDataSourceRepository
+from src.domain.data_source.i_data_source_repository import IDataSourceRepository
 from src.domain.project.entities import Project, ProjectMember
-from src.domain.project.repository import IProjectMemberRepository, IProjectRepository
+from src.domain.project.i_project_member_repository import IProjectMemberRepository
+from src.domain.project.i_project_repository import IProjectRepository
+from src.domain.requirement.entities import Requirement
+from src.domain.requirement.i_requirement_repository import IRequirementRepository
 from src.domain.shared.types import EntityID
 from typing_extensions import override
 
@@ -99,16 +104,45 @@ class InMemoryDataSourceRepository(IDataSourceRepository):
         self.items.pop(id, None)
 
 
+class InMemoryRequirementRepository(IRequirementRepository):
+    """Requirement repository cho Project detail tests."""
+
+    def __init__(self) -> None:
+        self.items: dict[EntityID, Requirement] = {}
+
+    @override
+    async def get_by_id(self, id: EntityID) -> Requirement | None:
+        return self.items.get(id)
+
+    @override
+    async def list_by_project(self, project_id: EntityID) -> list[Requirement]:
+        return [item for item in self.items.values() if item.project_id == project_id]
+
+    @override
+    async def replace_by_project(
+        self, project_id: EntityID, entities: tuple[Requirement, ...]
+    ) -> list[Requirement]:
+        self.items = {
+            key: item for key, item in self.items.items() if item.project_id != project_id
+        }
+        self.items.update({item.id: item for item in entities})
+        return list(entities)
+
+    @override
+    async def save(self, entity: Requirement) -> Requirement:
+        self.items[entity.id] = entity
+        return entity
+
+    @override
+    async def delete(self, id: EntityID) -> None:
+        self.items.pop(id, None)
+
+
 class RecordingArtifactStore(IProjectArtifactStore):
     """Ghi nhận artifact đã được yêu cầu xóa."""
 
     def __init__(self) -> None:
-        self.files: list[str] = []
         self.projects: list[EntityID] = []
-
-    @override
-    async def delete_file(self, file_path: str) -> None:
-        self.files.append(file_path)
 
     @override
     async def delete_project_directory(self, project_id: EntityID) -> None:
@@ -129,3 +163,14 @@ class RecordingUnitOfWork(IUnitOfWork):
     @override
     async def rollback(self) -> None:
         self.rollbacks += 1
+
+    @override
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> None:
+        """Rollback khi khối `async with` thoát ra do ngoại lệ, giống bản thật."""
+        if exc_type is not None:
+            await self.rollback()

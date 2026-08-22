@@ -5,42 +5,9 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 from src.application.projects.output import ProjectOutput, ProjectSummaryOutput
-from src.domain.data_source.enums import DataSourceType
 from src.domain.project.enums import ProjectStatus
-
-
-class ProjectColumnResponse(BaseModel):
-    """Metadata cột nguồn trả về cho client."""
-
-    model_config = ConfigDict(from_attributes=True)
-
-    name: str = Field(description="Tên cột")
-    data_type: str = Field(description="Kiểu dữ liệu")
-    nullable: bool = Field(description="Cột cho phép NULL")
-    primary_key: bool = Field(description="Cột là khóa chính")
-    options: list[str] = Field(default_factory=list, description="Giá trị OPTION")
-
-
-class ProjectTableResponse(BaseModel):
-    """Metadata bảng nguồn trả về cho client."""
-
-    model_config = ConfigDict(from_attributes=True)
-
-    name: str = Field(description="Tên bảng")
-    columns: list[ProjectColumnResponse] = Field(description="Danh sách cột")
-
-
-class ProjectDataSourceResponse(BaseModel):
-    """Nguồn dữ liệu thuộc Project, không chứa storage location."""
-
-    model_config = ConfigDict(from_attributes=True)
-
-    id: UUID = Field(description="ID nguồn dữ liệu")
-    project_id: UUID = Field(description="ID Project sở hữu")
-    name: str = Field(description="Tên nguồn dữ liệu")
-    type: DataSourceType = Field(description="Loại nguồn dữ liệu")
-    description: str | None = Field(description="Mô tả nguồn dữ liệu")
-    tables: list[ProjectTableResponse] = Field(description="Metadata bảng")
+from src.domain.requirement.enums import RequirementPriority, RequirementType
+from src.presentation.dtos.data_sources.response import DataSourceResponse
 
 
 class ProjectSummaryResponse(BaseModel):
@@ -50,7 +17,6 @@ class ProjectSummaryResponse(BaseModel):
 
     id: UUID = Field(description="ID Project")
     name: str = Field(description="Tên Project")
-    requirement: str = Field(description="Yêu cầu nghiệp vụ")
     user_id: UUID = Field(description="ID người tạo Project")
     status: ProjectStatus = Field(description="Trạng thái Project")
     domain: str | None = Field(description="Lĩnh vực nghiệp vụ")
@@ -58,6 +24,9 @@ class ProjectSummaryResponse(BaseModel):
     created_at: datetime = Field(description="Thời điểm tạo")
     updated_at: datetime = Field(description="Thời điểm cập nhật")
     data_source_count: int = Field(ge=0, description="Số nguồn dữ liệu thuộc Project")
+    is_data_model_outdated: bool = Field(
+        description="Data Model hiện hữu không còn khớp analysis revisions"
+    )
 
     @classmethod
     def from_summary(cls, output: ProjectSummaryOutput) -> "ProjectSummaryResponse":
@@ -72,10 +41,21 @@ class ProjectSummaryResponse(BaseModel):
         return cls.model_validate(output)
 
 
-class ProjectResponse(ProjectSummaryResponse):
+class ProjectResponse(BaseModel):
     """Payload chi tiết Project."""
 
-    data_sources: list[ProjectDataSourceResponse] = Field(description="Nguồn dữ liệu")
+    id: UUID = Field(description="ID Project")
+    name: str = Field(description="Tên Project")
+    user_id: UUID = Field(description="ID người tạo Project")
+    status: ProjectStatus = Field(description="Trạng thái Project")
+    domain: str | None = Field(description="Lĩnh vực nghiệp vụ")
+    description: str | None = Field(description="Mô tả Project")
+    created_at: datetime = Field(description="Thời điểm tạo")
+    updated_at: datetime = Field(description="Thời điểm cập nhật")
+    data_source_count: int = Field(ge=0, description="Số nguồn dữ liệu thuộc Project")
+    requirement: str | None = Field(description="Yêu cầu nghiệp vụ thô")
+    requirements: list["ProjectRequirementResponse"] = Field(description="Requirement đã được chuẩn hóa và phân loại")
+    data_sources: list[DataSourceResponse] = Field(description="Nguồn dữ liệu")
 
     @classmethod
     def from_project(cls, output: ProjectOutput) -> "ProjectResponse":
@@ -87,4 +67,30 @@ class ProjectResponse(ProjectSummaryResponse):
         Returns:
             Payload chi tiết Project đã được Pydantic xác thực.
         """
-        return cls.model_validate(output)
+        summary = output.summary
+        return cls(
+            id=summary.id,
+            name=summary.name,
+            requirement=output.requirement,
+            user_id=summary.user_id,
+            status=summary.status,
+            domain=summary.domain,
+            description=summary.description,
+            created_at=summary.created_at,
+            updated_at=summary.updated_at,
+            data_source_count=summary.data_source_count,
+            requirements=[ProjectRequirementResponse.model_validate(item) for item in output.requirements],
+            data_sources=[DataSourceResponse.model_validate(item) for item in output.data_sources],
+        )
+
+
+class ProjectRequirementResponse(BaseModel):
+    """Một hàng Requirement trong màn Project Init."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    title: str
+    description: str
+    type: RequirementType
+    priority: RequirementPriority

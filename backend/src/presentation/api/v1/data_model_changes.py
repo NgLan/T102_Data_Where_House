@@ -1,74 +1,88 @@
-"""API Endpoints v1 cho Đề xuất Thay đổi Mô hình Dữ liệu (Proposals) — UC6.1."""
-
-from uuid import UUID
+"""REST endpoints cho đề xuất thay đổi Data Model."""
 
 from fastapi import APIRouter
-from src.application.data_models.dto import (
-    AcceptChangeProposalInput,
+from src.application.data_models.input import (
+    ChangeProposalIdInput,
     GetChangeProposalInput,
-    RejectChangeProposalInput,
+    GetPendingChangeProposalInput,
 )
-from src.common.dto.response import ApiResponse
-from src.presentation.dependencies.application import (
-    AcceptChangeProposalUseCase,
-    GetChangeProposalUseCase,
-    RejectChangeProposalUseCase,
-)
-from src.presentation.schemas.data_model_changes.response import (
+from src.presentation.dependencies.data_models import DataModelServiceDependency
+from src.presentation.dtos.data_model_changes.request import ChangeIdPath
+from src.presentation.dtos.data_model_changes.response import (
     ChangeProposalDetailResponse,
     ChangeProposalSummaryResponse,
 )
-from src.presentation.schemas.data_models.response import DataModelResponse
+from src.presentation.dtos.data_models.request import ProjectIdPath
+from src.presentation.dtos.data_models.response import DataModelResponse
+from src.presentation.routing import ApiResponseRoute, error_responses
 
-router = APIRouter(prefix="/data-model-changes", tags=["Data Model Changes"])
+router = APIRouter(
+    prefix="",
+    tags=["Data Model Changes"],
+    route_class=ApiResponseRoute,
+)
 
 
 @router.get(
-    "/{change_id}",
-    response_model=ApiResponse[ChangeProposalDetailResponse],
+    "/projects/{project_id}/data-model-changes/pending",
+    response_model=ChangeProposalDetailResponse | None,
+    operation_id="getPendingProjectDataModelChange",
+    responses=error_responses(401, 403, 404, 500),
+)
+async def get_pending_change_proposal(
+    project_id: ProjectIdPath,
+    service: DataModelServiceDependency,
+) -> ChangeProposalDetailResponse | None:
+    result = await service.get_pending_change_proposal(
+        GetPendingChangeProposalInput(project_id)
+    )
+    return ChangeProposalDetailResponse.from_application(result) if result else None
+
+
+@router.get(
+    "/projects/{project_id}/data-model-changes/{change_id}",
+    response_model=ChangeProposalDetailResponse,
+    operation_id="getProjectDataModelChange",
     summary="Xem chi tiết một đề xuất thay đổi mô hình dữ liệu",
+    responses=error_responses(401, 403, 404, 422, 500),
 )
 async def get_change_proposal(
-    change_id: UUID,
-    use_case: GetChangeProposalUseCase,
-) -> ApiResponse[ChangeProposalDetailResponse]:
-    """Trả về DBML đề xuất kèm DBML hiện hành và base revision để dựng khung so sánh."""
-    result = await use_case.execute(GetChangeProposalInput(change_id=change_id))
-    return ApiResponse[ChangeProposalDetailResponse](
-        message="Lấy chi tiết đề xuất thay đổi thành công.",
-        data=ChangeProposalDetailResponse.model_validate(result.model_dump()),
-    )
+    project_id: ProjectIdPath,
+    change_id: ChangeIdPath,
+    service: DataModelServiceDependency,
+) -> ChangeProposalDetailResponse:
+    """Trả về DBML đề xuất kèm DBML hiện hành để dựng khung so sánh khác biệt."""
+    result = await service.get_change_proposal(GetChangeProposalInput(project_id=project_id, change_id=change_id))
+    return ChangeProposalDetailResponse.from_application(result)
 
 
 @router.post(
-    "/{change_id}/accept",
-    response_model=ApiResponse[DataModelResponse],
+    "/data-model-changes/{change_id}/accept",
+    response_model=DataModelResponse,
+    operation_id="acceptChangeProposal",
     summary="Chấp nhận đề xuất và áp dụng vào mô hình dữ liệu hiện tại",
+    responses=error_responses(401, 403, 404, 409, 422, 500),
 )
 async def accept_change_proposal(
-    change_id: UUID,
-    use_case: AcceptChangeProposalUseCase,
-) -> ApiResponse[DataModelResponse]:
+    change_id: ChangeIdPath,
+    service: DataModelServiceDependency,
+) -> DataModelResponse:
     """Áp dụng DBML đề xuất vào mô hình dữ liệu, tăng revision và trả về mô hình mới."""
-    result = await use_case.execute(AcceptChangeProposalInput(change_id=change_id))
-    return ApiResponse[DataModelResponse](
-        message="Áp dụng đề xuất thay đổi thành công.",
-        data=DataModelResponse.model_validate(result.model_dump()),
-    )
+    result = await service.accept_change_proposal(ChangeProposalIdInput(change_id=change_id))
+    return DataModelResponse.from_application(result)
 
 
 @router.post(
-    "/{change_id}/reject",
-    response_model=ApiResponse[ChangeProposalSummaryResponse],
+    "/data-model-changes/{change_id}/reject",
+    response_model=ChangeProposalSummaryResponse,
+    operation_id="rejectChangeProposal",
     summary="Từ chối một đề xuất thay đổi mô hình dữ liệu",
+    responses=error_responses(401, 403, 404, 422, 500),
 )
 async def reject_change_proposal(
-    change_id: UUID,
-    use_case: RejectChangeProposalUseCase,
-) -> ApiResponse[ChangeProposalSummaryResponse]:
-    """Đánh dấu đề xuất là REJECTED; nội dung và revision của mô hình dữ liệu giữ nguyên."""
-    result = await use_case.execute(RejectChangeProposalInput(change_id=change_id))
-    return ApiResponse[ChangeProposalSummaryResponse](
-        message="Từ chối đề xuất thay đổi thành công.",
-        data=ChangeProposalSummaryResponse.model_validate(result.model_dump()),
-    )
+    change_id: ChangeIdPath,
+    service: DataModelServiceDependency,
+) -> ChangeProposalSummaryResponse:
+    """Đánh dấu đề xuất là REJECTED; nội dung và revision của mô hình giữ nguyên."""
+    result = await service.reject_change_proposal(ChangeProposalIdInput(change_id=change_id))
+    return ChangeProposalSummaryResponse.model_validate(result)

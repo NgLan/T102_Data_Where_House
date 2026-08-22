@@ -1,28 +1,33 @@
-"""Interceptor đo thời gian thực thi Application Operation (timing.py).
-
-Sử dụng time.perf_counter() để đo độ trễ thực thi chính xác theo ms.
-"""
+"""Interceptor đo thời gian application operation bằng monotonic clock."""
 
 import time
 from collections.abc import Awaitable, Callable
-from typing import Any
+from typing import TypeVar
 
+from typing_extensions import override
+
+# isort: split
 from src.common.interceptors.base import BaseInterceptor
 from src.common.interceptors.context import InterceptorContext
 
+R = TypeVar("R")
+MILLISECONDS_PER_SECOND = 1_000
+DURATION_PRECISION = 2
+
 
 class TimingInterceptor(BaseInterceptor):
-    """Interceptor đo thời gian thực thi của operation."""
+    """Ghi duration vào metadata mà không thay đổi operation result."""
 
+    @override
     async def intercept(
         self,
         context: InterceptorContext,
-        call_next: Callable[[], Awaitable[Any]],
-    ) -> Any:
-        start_time = time.perf_counter()
+        call_next: Callable[[], Awaitable[R]],
+    ) -> R:
+        """Đo operation kể cả khi operation phát sinh exception."""
+        started_at = time.perf_counter()
         try:
             return await call_next()
         finally:
-            elapsed = time.perf_counter() - start_time
-            duration_ms = round(elapsed * 1000, 2)
-            context.metadata["duration_ms"] = duration_ms
+            elapsed = (time.perf_counter() - started_at) * MILLISECONDS_PER_SECOND
+            context.metadata["duration_ms"] = round(elapsed, DURATION_PRECISION)

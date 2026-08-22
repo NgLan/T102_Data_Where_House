@@ -248,6 +248,16 @@ Các quy tắc trong mục này có mức ưu tiên cao nhất. Nếu nội dung
 | `collections.py` | `chunked(iterable: Iterable[T], size: int) -> list[list[T]]` | Chia một danh sách/iterable thành nhiều sub-list (chunk) có kích thước tối đa `size`. |
 | | `is_empty(collection: Collection[Any] \| None) -> bool` | Kiểm tra collection (list, dict, set, tuple) bị `None` hoặc có độ dài 0. |
 
+- **Checklist bắt buộc khi sử dụng `src/common` ở các package khác:**
+  1. Khi thêm một `ErrorCode`, bắt buộc thêm mapping tại `common/exceptions/error_status.py`, bản dịch cùng key trong cả `frontend/src/common/i18n/locales/vi/errors.json` và `en/errors.json`, rồi chạy test exhaustiveness ErrorCode/status/i18n.
+  2. Khi một business rule bị vi phạm, dùng `BusinessException(code=ErrorCode..., message=...)`; khi dịch lỗi thư viện/hạ tầng, dùng `InfrastructureException` và `raise ... from exc`. Nếu cần chi tiết theo field, chỉ truyền danh sách `ExceptionDetail(field, message)`, không truyền `dict` hoặc dữ liệu tùy ý.
+  3. Khi module cần application log, khai báo `logger = get_logger(__name__)` một lần ở module scope. Trong `except` cần traceback phải dùng `logger.exception(...)`; structured fields truyền qua `extra` và tuyệt đối không chứa secret.
+  4. Khi mở một request/background-task scope mới, bind `LoggingContextSnapshot` bằng `with bind_logging_context(...)`. Không ghép các hàm `set_*()` với `clear_logging_context()` để quản lý lifecycle vì cách đó làm mất nested context; middleware HTTP có context/streaming phải là pure ASGI middleware.
+  5. Khi tạo timestamp hệ thống, dùng `utc_now()`; dữ liệu `datetime` đi từ boundary ngoài vào phải qua `ensure_utc()`. Không dùng `datetime.now()` naive. Khi tạo ID, dùng `generate_uuid()` cho `UUID` và `generate_uuid_str()` cho chuỗi; dùng `is_valid_uuid()` nếu contract yêu cầu UUIDv4.
+  6. Khi serialize dữ liệu kỹ thuật tại JSON boundary, dùng `safe_json_dumps()`/`safe_json_loads()` thay vì lặp custom conversion. Method override thư viện/framework phải giữ nguyên tên, loại và thứ tự tham số của base contract, đồng thời dùng `@override` khi runtime hỗ trợ.
+  7. Khi endpoint trả danh sách phân trang, dùng `PaginationRequest` và tạo metadata bằng `PaginationMeta.create(...)`; không tự tính `total_pages` hoặc khai báo lại constants phân trang trong từng module.
+  8. Khi application operation cần observability, tạo `InterceptorContext.from_logging_context(...)` và để `LoggingInterceptor` bọc ngoài `TimingInterceptor`, nhờ đó completed log nhận được `duration_ms`. Interceptor phải bảo toàn return value và re-raise exception bằng `raise`.
+
 - **Những Điều CẤM Khi Phát Triển Utilities:**
   - **CẤM** tạo các file mơ hồ như `helpers.py`, `common.py`.
   - **CẤM** đưa I/O utilities (`read_file`, `upload_s3`, `execute_sql`) vào `utils` -> Đặt tại `infrastructure`.

@@ -1,46 +1,20 @@
 """REST endpoints cho Data Model hiện tại của dự án."""
 
-from uuid import UUID
-from typing import Literal
 from fastapi import APIRouter, Query
-from src.application.data_models.input import GenerateDataModelInput, GetDataModelInput
+from src.application.data_models.input import GenerateDataModelDdlInput, GetDataModelInput
+from src.domain.sandbox.enums import SandboxDbType
 from src.presentation.dependencies.data_models import DataModelServiceDependency
-from src.presentation.dtos.common import ApiErrorResponse
 from src.presentation.dtos.data_models.request import (
     ProjectIdPath,
     UpdateDataModelRequest,
+    ValidateDataModelRequest,
 )
 from src.presentation.dtos.data_models.response import (
     DataModelDdlResponse,
-    DataModelInsightResponse,
     DataModelResponse,
+    DataModelValidationIssueResponse,
 )
-from src.presentation.routing import ApiResponseRoute
-
-from fastapi import APIRouter, Query
-from src.application.data_models.dto import (
-    GenerateDdlInput,
-    GetDataModelInput,
-    ListChangeProposalsInput,
-    ReviseDataModelInput,
-)
-from src.common.dto.response import ApiResponse
-from src.domain.data_model.enums import DataModelChangeStatus, SqlDialect
-from src.presentation.dependencies.application import (
-    CreateChangeProposalUseCase,
-    GenerateDdlUseCase,
-    GetDataModelUseCase,
-    ListChangeProposalsUseCase,
-)
-from src.presentation.schemas.data_model_changes.response import (
-    ChangeProposalDetailResponse,
-    ChangeProposalSummaryResponse,
-)
-from src.presentation.schemas.data_models.request import ReviseDataModelRequest
-from src.presentation.schemas.data_models.response import (
-    DataModelResponse,
-    DdlGenerationResponse,
-)
+from src.presentation.routing import ApiResponseRoute, error_responses
 
 router = APIRouter(
     prefix="/projects/{project_id}/data-model",
@@ -53,11 +27,7 @@ router = APIRouter(
     "",
     response_model=DataModelResponse,
     operation_id="getDataModel",
-    responses={
-        404: {"model": ApiErrorResponse},
-        422: {"model": ApiErrorResponse},
-        500: {"model": ApiErrorResponse},
-    },
+    responses=error_responses(401, 403, 404, 422, 500),
 )
 async def get_current_data_model(
     project_id: ProjectIdPath,
@@ -72,138 +42,60 @@ async def get_current_data_model(
     "",
     response_model=DataModelResponse,
     operation_id="updateDataModel",
-    responses={
-        404: {"model": ApiErrorResponse},
-        409: {"model": ApiErrorResponse},
-        422: {"model": ApiErrorResponse},
-        500: {"model": ApiErrorResponse},
-    },
+    responses=error_responses(401, 403, 404, 409, 422, 500),
 )
 async def update_current_data_model(
     project_id: ProjectIdPath,
     request: UpdateDataModelRequest,
     service: DataModelServiceDependency,
 ) -> DataModelResponse:
-    """Lưu snapshot DBML mới bằng optimistic locking."""
+    """Lưu trực tiếp DBML do người dùng chỉnh sửa thủ công."""
     output = await service.update_data_model(request.to_application(project_id))
     return DataModelResponse.from_application(output)
-    
-async def generate_data_model_ddl(
-    data_model_id: UUID,
-    use_case: GenerateDdlUseCase,
-    dialect: SqlDialect = Query(
-        default=SqlDialect.POSTGRESQL,
-        description="Hệ quản trị CSDL đích của script DDL",
-    ),
-    schema_name: str | None = Query(
-        default=None,
-        description="Tên schema Sandbox tùy chọn; bỏ trống sẽ dùng schema mặc định",
-    ),
-) -> ApiResponse[DdlGenerationResponse]:
-    """Trả về script DDL đã gắn tiền tố schema Sandbox, sẵn sàng để tải về dạng `.sql`."""
-    payload = GenerateDdlInput(
-        data_model_id=data_model_id,
-        dialect=dialect,
-        schema_name=schema_name,
-    )
-    result = await use_case.execute(payload)
-    return ApiResponse[DdlGenerationResponse](
-        message="Sinh mã DDL thành công.",
-        data=DdlGenerationResponse.model_validate(result.model_dump()),
-    )
 
 
 @router.get(
-    "/data-models/{data_model_id}/changes",
-    response_model=ApiResponse[list[ChangeProposalSummaryResponse]],
-    summary="Liệt kê đề xuất thay đổi của một mô hình dữ liệu",
+    "/validation-issues",
+    response_model=list[DataModelValidationIssueResponse],
+    operation_id="getDataModelValidationIssues",
+    responses=error_responses(401, 403, 404, 500),
 )
-async def list_data_model_changes(
-    data_model_id: UUID,
-    use_case: ListChangeProposalsUseCase,
-    status: DataModelChangeStatus | None = Query(
-        default=None,
-        description="Lọc theo trạng thái đề xuất; bỏ trống sẽ lấy tất cả",
-    ),
-) -> ApiResponse[list[ChangeProposalSummaryResponse]]:
-    """Trả về danh sách đề xuất thay đổi của mô hình dữ liệu, mới nhất trước."""
-    payload = ListChangeProposalsInput(data_model_id=data_model_id, status=status)
-    results = await use_case.execute(payload)
-    return ApiResponse[list[ChangeProposalSummaryResponse]](
-        message="Lấy danh sách đề xuất thay đổi thành công.",
-        data=[ChangeProposalSummaryResponse.model_validate(item.model_dump()) for item in results],
-    )
-
-
-@router.post(
-    "/data-models/{data_model_id}/ai-revisions",
-    response_model=ApiResponse[ChangeProposalDetailResponse],
-    summary="Nhờ AI Agent chỉnh sửa mô hình dữ liệu bằng ngôn ngữ tự nhiên",
-)
-async def revise_data_model_with_ai(
-    data_model_id: UUID,
-    payload: ReviseDataModelRequest,
-    use_case: CreateChangeProposalUseCase,
-) -> ApiResponse[ChangeProposalDetailResponse]:
-    """Sinh DBML mới theo yêu cầu của người dùng và lưu thành đề xuất chờ duyệt."""
-    result = await use_case.execute(
-        ReviseDataModelInput(
-            data_model_id=data_model_id,
-            instruction=payload.instruction,
-        )
-    )
-    return ApiResponse[ChangeProposalDetailResponse](
-        message="AI Agent đã tạo đề xuất thay đổi thành công.",
-        data=ChangeProposalDetailResponse.model_validate(result.model_dump()),
-    )
-
-
-@router.post(
-    "/generate",
-    response_model=DataModelResponse,
-    operation_id="generateDataModel",
-    responses={
-        404: {"model": ApiErrorResponse},
-        422: {"model": ApiErrorResponse},
-        500: {"model": ApiErrorResponse},
-        502: {"model": ApiErrorResponse},
-    },
-)
-async def generate_data_model(
+async def get_data_model_validation_issues(
     project_id: ProjectIdPath,
     service: DataModelServiceDependency,
-) -> DataModelResponse:
-    """Chạy pipeline 4 agent sinh mô hình dữ liệu từ yêu cầu và nguồn dữ liệu (T-019)."""
-    output = await service.generate_data_model(
-        GenerateDataModelInput(project_id=project_id)
-    )
-    return DataModelResponse.from_application(output)
+) -> list[DataModelValidationIssueResponse]:
+    """Trả các lỗi và cảnh báo validation của snapshot DBML hiện tại."""
+    issues = await service.get_validation_issues(GetDataModelInput(project_id=project_id))
+    return [DataModelValidationIssueResponse.from_application(item) for item in issues]
+
+
+@router.post(
+    "/validate",
+    response_model=list[DataModelValidationIssueResponse],
+    operation_id="validateDataModelDraft",
+    responses=error_responses(401, 403, 404, 422, 500),
+)
+async def validate_data_model_draft(
+    project_id: ProjectIdPath,
+    request: ValidateDataModelRequest,
+    service: DataModelServiceDependency,
+) -> list[DataModelValidationIssueResponse]:
+    """Kiểm tra draft hiện tại mà không gọi LLM hoặc ghi snapshot."""
+    issues = await service.validate_draft(request.to_application(project_id))
+    return [DataModelValidationIssueResponse.from_application(item) for item in issues]
 
 
 @router.get(
     "/ddl",
     response_model=DataModelDdlResponse,
-    operation_id="getDataModelDdl",
+    operation_id="generateDataModelDdl",
+    responses=error_responses(401, 403, 404, 422, 500),
 )
-async def get_data_model_ddl(
+async def generate_data_model_ddl(
     project_id: ProjectIdPath,
     service: DataModelServiceDependency,
-    dialect: Literal["postgresql"] = Query(default="postgresql"),
+    db_type: SandboxDbType = Query(default=SandboxDbType.POSTGRESQL),
 ) -> DataModelDdlResponse:
-    """Sinh PostgreSQL DDL từ snapshot DBML hiện tại."""
-    output = await service.generate_ddl(GetDataModelInput(project_id=project_id), dialect)
+    """Sinh DDL từ revision Data Model hiện hành."""
+    output = await service.generate_ddl(GenerateDataModelDdlInput(project_id, db_type))
     return DataModelDdlResponse.from_application(output)
-
-
-@router.get(
-    "/insights",
-    response_model=list[DataModelInsightResponse],
-    operation_id="getDataModelInsights",
-)
-async def get_data_model_insights(
-    project_id: ProjectIdPath,
-    service: DataModelServiceDependency,
-) -> list[DataModelInsightResponse]:
-    """Phân tích DBML hiện tại thành danh sách insight theo bảng."""
-    outputs = await service.get_insights(GetDataModelInput(project_id=project_id))
-    return [DataModelInsightResponse.from_application(item) for item in outputs]

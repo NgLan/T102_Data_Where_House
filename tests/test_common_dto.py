@@ -20,6 +20,13 @@ class SampleItem(BaseModel):
     name: str
 
 
+class SamplePayloadWithMeta(BaseModel):
+    """Payload ví dụ tự sở hữu metadata tùy chọn."""
+
+    item: SampleItem
+    meta: ResponseMeta | None = None
+
+
 def test_pagination_request_defaults():
     """Test giá trị mặc định của PaginationRequest."""
     req = PaginationRequest()
@@ -117,18 +124,19 @@ def test_api_response_envelope():
         "code": 200,
         "message": "Xử lý thành công",
         "data": {"id": 10, "name": "Test Item"},
-        "meta": None,
     }
 
 
-def test_api_response_with_meta():
-    """Test ApiResponse đi kèm ResponseMeta (request_id, timestamp)."""
+def test_payload_specific_meta():
+    """Test metadata nằm trong payload thay vì top-level envelope."""
     item = SampleItem(id=10, name="Test Item")
     meta = ResponseMeta(request_id="req_9a8b7c6d", timestamp="2026-08-12T10:00:00Z")
-    response = ApiResponse[SampleItem](data=item, meta=meta)
-    dumped = response.model_dump()
+    payload = SamplePayloadWithMeta(item=item, meta=meta)
+    response = ApiResponse[SamplePayloadWithMeta](data=payload)
+    dumped = response.model_dump(mode="json")
 
-    assert dumped["meta"] == {
+    assert "meta" not in dumped
+    assert dumped["data"]["meta"] == {
         "request_id": "req_9a8b7c6d",
         "timestamp": "2026-08-12T10:00:00Z",
     }
@@ -152,7 +160,24 @@ def test_response_meta():
     """Test ResponseMeta DTO."""
     meta = ResponseMeta(request_id="req_12345", timestamp="2026-08-12T10:00:00Z")
     assert meta.request_id == "req_12345"
-    assert meta.timestamp == "2026-08-12T10:00:00Z"
+    assert meta.timestamp is not None
+    assert meta.timestamp.isoformat() == "2026-08-12T10:00:00+00:00"
+
+
+def test_common_dto_forbids_extra_fields():
+    """Test common DTO không âm thầm nhận field ngoài contract."""
+    with pytest.raises(ValidationError):
+        PaginationRequest(page=1, page_size=20, offset=0)
+    with pytest.raises(ValidationError):
+        ApiResponse[SampleItem](data=SampleItem(id=1, name="A"), meta=None)
+
+
+def test_api_response_rejects_invalid_success_contract():
+    """Test status và code chỉ nhận giá trị hợp lệ cho success response."""
+    with pytest.raises(ValidationError):
+        ApiResponse[SampleItem](status="failed", data=None)
+    with pytest.raises(ValidationError):
+        ApiResponse[SampleItem](code=500, data=None)
 
 
 def test_clean_architecture_isolation():

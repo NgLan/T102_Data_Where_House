@@ -11,6 +11,7 @@ from src.common.exceptions import (
     AppException,
     BusinessException,
     ErrorCode,
+    ExceptionDetail,
     InfrastructureException,
     SystemException,
     register_exception_handlers,
@@ -44,14 +45,14 @@ def test_exception_class_hierarchy() -> None:
 def test_business_exception_standard_usage() -> None:
     """Kiểm tra BusinessException sử dụng ErrorCode chuẩn mà không cần tạo class con riêng."""
     exc = BusinessException(
-        code=ErrorCode.REVISION_CONFLICT,
+        code=ErrorCode.DATA_MODEL_REVISION_CONFLICT,
         message="Requirement version conflict.",
-        details={"version": 2},
+        details=[ExceptionDetail(field="version", message="2")],
     )
-    assert exc.code == ErrorCode.REVISION_CONFLICT
+    assert exc.code == ErrorCode.DATA_MODEL_REVISION_CONFLICT
     assert exc.message == "Requirement version conflict."
-    assert exc.details == {"version": 2}
-    assert "[REVISION_CONFLICT] Requirement version conflict." in str(exc)
+    assert exc.details == (ExceptionDetail(field="version", message="2"),)
+    assert "[DATA_MODEL_REVISION_CONFLICT] Requirement version conflict." in str(exc)
 
 
 def test_infrastructure_exception_chaining() -> None:
@@ -162,7 +163,7 @@ async def test_global_handler_processes_infrastructure_exception_500(test_client
     data = response.json()
     assert data["code"] == 500
     assert data["error_code"] == "DATABASE_ERROR"
-    assert data["message"] == "Database connection error."
+    assert data["message"] == "Internal server error."
     # Bảo mật: không làm rò rỉ raw exception string ở HTTP response
     assert "Postgres connection lost" not in response.text
 
@@ -175,6 +176,6 @@ async def test_global_handler_processes_infrastructure_exception_502(test_client
     data = response.json()
     assert data["code"] == 502
     assert data["error_code"] == "EXTERNAL_SERVICE_ERROR"
-    assert data["message"] == "Cache infrastructure is unavailable."
+    assert data["message"] == "Internal server error."
     # Bảo mật: không làm rò rỉ raw exception string ở HTTP response
     assert "Redis cluster unreachable" not in response.text

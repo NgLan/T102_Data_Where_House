@@ -1,8 +1,8 @@
-"""Log Filters cho việc bổ sung ContextVars và ẩn thông tin nhạy cảm (Sensitive Data Redaction)."""
+"""Bộ lọc gắn context và che dữ liệu nhạy cảm trong log."""
 
 import logging
 import re
-from typing import Any
+from collections.abc import Mapping
 
 from src.common.logging.context import (
     get_agent_name,
@@ -11,27 +11,67 @@ from src.common.logging.context import (
     get_session_id,
 )
 
-SENSITIVE_PATTERNS = [
-    r"password",
-    r"password_hash",
-    r"access_token",
-    r"refresh_token",
-    r"api_key",
-    r"secret",
-    r"client_secret",
-    r"authorization",
-    r"jwt",
-    r"bearer\s+[a-zA-Z0-9\-\._~\+\/]+=*",
-]
-
-SENSITIVE_REGEX = re.compile("|".join(SENSITIVE_PATTERNS), re.IGNORECASE)
 REDACTED_STR = "***REDACTED***"
+SENSITIVE_KEY_PATTERN = (
+    r"password(?:_hash)?|access_token|refresh_token|api_key|secret|"
+    r"client_secret|authorization|jwt|token"
+)
+SENSITIVE_KEY_REGEX = re.compile(SENSITIVE_KEY_PATTERN, re.IGNORECASE)
+QUOTED_VALUE_REGEX = re.compile(
+    rf"(?P<prefix>[\"']?(?:{SENSITIVE_KEY_PATTERN})[\"']?\s*[:=]\s*)"
+    r"(?P<quote>[\"'])(?P<value>.*?)(?P=quote)",
+    re.IGNORECASE,
+)
+PLAIN_VALUE_REGEX = re.compile(
+    rf"(?P<prefix>(?:{SENSITIVE_KEY_PATTERN})\s*=\s*)(?P<value>(?![\"'])[^\s,&]+)",
+    re.IGNORECASE,
+)
+BEARER_TOKEN_REGEX = re.compile(r"(Bearer\s+)[a-zA-Z0-9\-._~+/]+=*", re.IGNORECASE)
+
+
+def redact_sensitive_text(value: str) -> str:
+    """Che secret trong chuỗi log, query string và JSON đơn giản.
+
+    Args:
+        value: Chuỗi chưa được tin cậy.
+
+    Returns:
+        Chuỗi đã thay mọi giá trị nhạy cảm nhận diện được.
+    """
+    redacted = BEARER_TOKEN_REGEX.sub(rf"\1{REDACTED_STR}", value)
+    redacted = QUOTED_VALUE_REGEX.sub(
+        lambda match: f"{match.group('prefix')}{match.group('quote')}"
+        f"{REDACTED_STR}{match.group('quote')}",
+        redacted,
+    )
+    redacted = PLAIN_VALUE_REGEX.sub(
+        lambda match: f"{match.group('prefix')}{REDACTED_STR}",
+        redacted,
+    )
+    return redacted
+
+
+def redact_sensitive_value(value: object) -> object:
+    """Che secret đệ quy trong dữ liệu structured log."""
+    if isinstance(value, str):
+        return redact_sensitive_text(value)
+    if isinstance(value, Mapping):
+        return {
+            key: REDACTED_STR if SENSITIVE_KEY_REGEX.search(str(key)) else redact_sensitive_value(item)
+            for key, item in value.items()
+        }
+    if isinstance(value, tuple):
+        return tuple(redact_sensitive_value(item) for item in value)
+    if isinstance(value, list):
+        return [redact_sensitive_value(item) for item in value]
+    return value
 
 
 class ContextLogFilter(logging.Filter):
-    """Filter tự động gắn thông tin ngữ cảnh (request_id, correlation_id, session_id, agent_name) vào từng LogRecord."""
+    """Gắn request, correlation, session và agent context vào LogRecord."""
 
     def filter(self, record: logging.LogRecord) -> bool:
+        """Bổ sung context còn thiếu cho một log record."""
         record.request_id = getattr(record, "request_id", None) or get_request_id() or "-"
         record.correlation_id = getattr(record, "correlation_id", None) or get_correlation_id() or "-"
         record.session_id = getattr(record, "session_id", None) or get_session_id() or "-"
@@ -40,50 +80,20 @@ class ContextLogFilter(logging.Filter):
 
 
 class SensitiveDataFilter(logging.Filter):
-    """Filter quét và ẩn thông tin nhạy cảm (tokens, passwords, api keys) trong log output."""
-
-    def redact_val(self, val: Any) -> Any:
-        if isinstance(val, str):
-            # Nếu string chứa thông tin nhạy cảm dạng key=val hoặc Bearer token
-            if SENSITIVE_REGEX.search(val):
-                # Mask chuỗi bearer token nếu có
-                val = re.sub(
-                    r"(Bearer\s+)[a-zA-Z0-9\-\._~\+\/]+=*",
-                    r"\1" + REDACTED_STR,
-                    val,
-                    flags=re.IGNORECASE,
-                )
-        elif isinstance(val, dict):
-            return {
-                k: REDACTED_STR if SENSITIVE_REGEX.search(str(k)) else self.redact_val(v)
-                for k, v in val.items()
-            }
-        elif isinstance(val, list | tuple):
-            return [self.redact_val(item) for item in val]
-        return val
+    """Che secret trong message, arguments và structured extras."""
 
     def filter(self, record: logging.LogRecord) -> bool:
-        # Redact message string
-        if isinstance(record.msg, str) and SENSITIVE_REGEX.search(record.msg):
-            # Check key-value assignments in message
-            record.msg = re.sub(
-                r"(password|access_token|refresh_token|api_key|secret|authorization)\s*=\s*['\"][^'\"]+['\"]",
-                r"\1='" + REDACTED_STR + "'",
-                record.msg,
-                flags=re.IGNORECASE,
-            )
-            record.msg = re.sub(
-                r"(Bearer\s+)[a-zA-Z0-9\-\._~\+\/]+=*",
-                r"\1" + REDACTED_STR,
-                record.msg,
-                flags=re.IGNORECASE,
-            )
-
-        # Redact record args if present
-        if record.args:
-            if isinstance(record.args, dict):
-                record.args = self.redact_val(record.args)
-            elif isinstance(record.args, tuple):
-                record.args = tuple(self.redact_val(a) for a in record.args)
-
+        """Thay dữ liệu nhạy cảm trước khi formatter xử lý record."""
+        record.msg = redact_sensitive_value(record.msg)
+        if isinstance(record.args, tuple):
+            record.args = tuple(redact_sensitive_value(item) for item in record.args)
+        elif isinstance(record.args, Mapping):
+            record.args = {
+                key: redact_sensitive_value(value) for key, value in record.args.items()
+            }
+        for key, value in tuple(record.__dict__.items()):
+            if SENSITIVE_KEY_REGEX.search(key):
+                record.__dict__[key] = REDACTED_STR
+            elif key not in {"msg", "args", "exc_info"}:
+                record.__dict__[key] = redact_sensitive_value(value)
         return True

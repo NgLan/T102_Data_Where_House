@@ -1,26 +1,45 @@
 """Value Objects thuộc miền Nguồn dữ liệu (Data Source)."""
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 
-from src.domain.data_source.enums import RelationshipType
+from src.common.exceptions.error_codes import ErrorCode
+from src.domain.data_source.column_update import ColumnUpdate
+from src.domain.data_source.constraints import (
+    ColumnConstraint,
+    normalize_column_constraints,
+)
+from src.domain.data_source.enums import ColumnDataType, RelationshipType
+from src.domain.shared.enum_rules import normalize_str_enum
+from src.domain.shared.types import JsonScalar
 from src.domain.shared.value_object import BaseValueObject
 
 
 @dataclass(frozen=True)
 class ColumnMetadata(BaseValueObject):
-    """Value Object đại diện cho metadata và các ràng buộc của một cột trong nguồn dữ liệu."""
+    """Metadata vật lý, semantic và profile của một cột nguồn dữ liệu."""
 
     name: str
-    data_type: str
+    data_type: ColumnDataType | str
     primary_key: bool = False
     nullable: bool = True
-    unique: bool = False
-    foreign_key_reference: str | None = None
-    default_value: str | None = None
-    # Danh sách các ràng buộc khác của cột (VD: age >= 0, age <= 120, ...)
-    constraints: tuple[str, ...] = field(default_factory=tuple)
-    description: str | None = None # Mô tả chi tiết về ý nghĩa của cột
-    options: tuple[str, ...] = field(default_factory=tuple) # Danh mục các giá trị cho phép nếu là OPTION
+    constraints: tuple[ColumnConstraint, ...] = field(default_factory=tuple)
+    description: str | None = None
+    null_count: int = 0
+    distinct_count: int = 0
+    distinct_values: tuple[JsonScalar, ...] = field(default_factory=tuple)
+    is_unique_candidate: bool = False
+    is_key_candidate: bool = False
+
+    def __post_init__(self) -> None:
+        """Chuẩn hóa kiểu và đóng băng các collection metadata."""
+        data_type = self.data_type.value if isinstance(self.data_type, ColumnDataType) else self.data_type
+        object.__setattr__(self, "data_type", ColumnDataType(data_type.strip().upper()))
+        object.__setattr__(
+            self,
+            "constraints",
+            normalize_column_constraints(self.constraints),
+        )
+        object.__setattr__(self, "distinct_values", tuple(self.distinct_values))
 
 
 @dataclass(frozen=True)
@@ -29,6 +48,10 @@ class TableMetadata(BaseValueObject):
 
     name: str
     columns: tuple[ColumnMetadata, ...] = field(default_factory=tuple)
+
+    def __post_init__(self) -> None:
+        """Đóng băng danh sách cột được truyền từ parser hoặc mapper."""
+        object.__setattr__(self, "columns", tuple(self.columns))
 
 
 @dataclass(frozen=True)
@@ -41,8 +64,11 @@ class RelationshipMetadata(BaseValueObject):
 
     def __post_init__(self) -> None:
         """Đảm bảo trường type được parse thành RelationshipType enum nếu khởi tạo từ string."""
-        if isinstance(self.type, str):
-            object.__setattr__(self, "type", RelationshipType(self.type))
+        object.__setattr__(
+            self,
+            "type",
+            normalize_str_enum(self.type, RelationshipType, ErrorCode.VALIDATION_ERROR),
+        )
 
 
 @dataclass(frozen=True)
@@ -52,21 +78,27 @@ class SchemaMetadata(BaseValueObject):
     tables: tuple[TableMetadata, ...] = field(default_factory=tuple)
     relationships: tuple[RelationshipMetadata, ...] = field(default_factory=tuple)
 
-    def update_column(
-        self,
-        table_name: str,
-        column_name: str,
-        data_type: str,
-        options: tuple[str, ...],
-    ) -> "SchemaMetadata | None":
-        """Tạo schema mới với một cột đã được cập nhật bất biến."""
+    def __post_init__(self) -> None:
+        """Đóng băng toàn bộ collection của snapshot schema."""
+        object.__setattr__(self, "tables", tuple(self.tables))
+        object.__setattr__(self, "relationships", tuple(self.relationships))
+
+    def update_column(self, update: ColumnUpdate) -> "SchemaMetadata | None":
+        """Tạo schema mới với một cột đã được cập nhật bất biến.
+
+        Args:
+            update: Thay đổi cột đã được chuẩn hóa.
+
+        Returns:
+            Snapshot schema mới hoặc ``None`` nếu không tìm thấy cột.
+        """
         tables: list[TableMetadata] = []
         found = False
         for table in self.tables:
             columns = []
             for column in table.columns:
-                if table.name == table_name and column.name == column_name:
-                    column = _replace_column(column, data_type, options)
+                if table.name == update.table_name and column.name == update.column_name:
+                    column = _replace_column(column, update)
                     found = True
                 columns.append(column)
             tables.append(TableMetadata(name=table.name, columns=tuple(columns)))
@@ -77,19 +109,12 @@ class SchemaMetadata(BaseValueObject):
 
 def _replace_column(
     column: ColumnMetadata,
-    data_type: str,
-    options: tuple[str, ...],
+    update: ColumnUpdate,
 ) -> ColumnMetadata:
     """Giữ nguyên metadata không được phép chỉnh từ màn hình khởi tạo."""
-    return ColumnMetadata(
-        name=column.name,
-        data_type=data_type,
-        primary_key=column.primary_key,
-        nullable=column.nullable,
-        unique=column.unique,
-        foreign_key_reference=column.foreign_key_reference,
-        default_value=column.default_value,
-        constraints=column.constraints,
-        description=column.description,
-        options=options if data_type == "OPTION" else (),
+    return replace(
+        column,
+        data_type=update.data_type or column.data_type,
+        distinct_values=(update.distinct_values if update.distinct_values is not None else column.distinct_values),
+        constraints=(update.constraints if update.constraints is not None else column.constraints),
     )

@@ -7,19 +7,35 @@ Tuân thủ nguyên tắc:
 
 import re
 
-# Match 1 hoặc nhiều ký tự khoảng trắng
 WHITESPACE_PATTERN = re.compile(r"\s+")
 
 
 def normalize_whitespace(value: str) -> str:
-    """Loại bỏ khoảng trắng ở 2 đầu và gộp nhiều khoảng trắng liên tiếp thành 1 space."""
+    """Chuẩn hóa các khoảng trắng liên tiếp trong chuỗi.
+
+    Args:
+        value: Chuỗi cần chuẩn hóa.
+
+    Returns:
+        Chuỗi đã bỏ khoảng trắng thừa.
+
+    Raises:
+        TypeError: Khi đầu vào không phải chuỗi.
+    """
     if not isinstance(value, str):
         raise TypeError("Giá trị đầu vào phải là chuỗi (str).")
     return WHITESPACE_PATTERN.sub(" ", value.strip())
 
 
 def is_blank(value: str | None) -> bool:
-    """Kiểm tra chuỗi là None, rỗng ('') hoặc chỉ chứa khoảng trắng."""
+    """Kiểm tra chuỗi là ``None``, rỗng hoặc chỉ có khoảng trắng.
+
+    Args:
+        value: Chuỗi cần kiểm tra.
+
+    Returns:
+        ``True`` khi chuỗi không có nội dung.
+    """
     if value is None:
         return True
     return len(value.strip()) == 0
@@ -28,7 +44,17 @@ def is_blank(value: str | None) -> bool:
 def truncate(value: str, max_length: int, suffix: str = "...") -> str:
     """Cắt ngắn chuỗi nếu vượt quá max_length và gắn suffix ở cuối.
 
-    Ném ValueError nếu max_length nhỏ hơn hoặc bằng độ dài suffix.
+    Args:
+        value: Chuỗi cần cắt.
+        max_length: Độ dài tối đa của kết quả.
+        suffix: Hậu tố đánh dấu chuỗi đã bị cắt.
+
+    Returns:
+        Chuỗi gốc hoặc chuỗi đã cắt kèm hậu tố.
+
+    Raises:
+        TypeError: Khi đầu vào không phải chuỗi.
+        ValueError: Khi độ dài tối đa không lớn hơn hậu tố.
     """
     if not isinstance(value, str):
         raise TypeError("Giá trị đầu vào phải là chuỗi (str).")
@@ -43,7 +69,14 @@ def truncate(value: str, max_length: int, suffix: str = "...") -> str:
 
 
 def safe_strip(value: str | None) -> str | None:
-    """Strip khoảng trắng đầu cuối nếu đầu vào là string, giữ nguyên nếu là None."""
+    """Bỏ khoảng trắng đầu cuối và bảo toàn ``None``.
+
+    Args:
+        value: Chuỗi cần xử lý hoặc ``None``.
+
+    Returns:
+        Chuỗi đã xử lý hoặc ``None``.
+    """
     if value is None:
         return None
     return value.strip()

@@ -1,5 +1,5 @@
-import { dbmlDocumentSchema } from "@/common/dbml/schema";
-import type { DbmlDocument } from "@/common/dbml/types";
+import { dbmlDocumentSchema } from "@/features/modeling-dashboard/modeling-workspace/model-document/dbml/schema";
+import type { DbmlDocument } from "@/features/modeling-dashboard/modeling-workspace/model-document/dbml/types";
 
 import type { DataModelValidationErrors } from "../types/data-model-validation-types";
 import { validateReference } from "./reference-validation";

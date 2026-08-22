@@ -13,7 +13,7 @@ async def test_audit_interceptor_attaches_metadata() -> None:
         action="ApproveProposal",
         resource_id="proposal_123",
     )
-    context = InterceptorContext.create("ApproveProposal")
+    context = InterceptorContext("ApproveProposal")
 
     async def sample_op() -> bool:
         return True
@@ -33,10 +33,12 @@ async def test_audit_interceptor_attaches_metadata() -> None:
 async def test_audit_interceptor_no_sensitive_data_leak() -> None:
     """Kiểm tra AuditInterceptor không rò rỉ dữ liệu nhạy cảm."""
     interceptor = AuditInterceptor(actor="admin_1")
-    context = InterceptorContext.create(
+    context = InterceptorContext(
         "LoginOperation",
-        password="SuperSecretPassword123",  # noqa: S106
-        access_token="Bearer secret_token",  # noqa: S106
+        metadata={
+            "password": "SuperSecretPassword123",  # noqa: S106
+            "access_token": "Bearer secret_token",  # noqa: S106
+        },
     )
 
     async def login_op() -> str:

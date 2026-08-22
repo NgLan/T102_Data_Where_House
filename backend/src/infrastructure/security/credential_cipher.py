@@ -4,6 +4,8 @@ import base64
 import hashlib
 
 from cryptography.fernet import Fernet, InvalidToken
+from src.common.exceptions.error_codes import ErrorCode
+from src.common.exceptions.infrastructure import InfrastructureException
 
 TOKEN_PREFIX = "fernet:"
 
@@ -30,4 +32,7 @@ class CredentialCipher:
             token = value.removeprefix(TOKEN_PREFIX).encode("ascii")
             return self._fernet.decrypt(token).decode("utf-8")
         except (InvalidToken, UnicodeError, ValueError) as exc:
-            raise ValueError("Không thể giải mã Sandbox credential.") from exc
+            raise InfrastructureException(
+                code=ErrorCode.STORAGE_ERROR,
+                message="Không thể giải mã thông tin xác thực Sandbox.",
+            ) from exc

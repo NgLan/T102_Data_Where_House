@@ -10,6 +10,9 @@ def validate_analytical_requirement(requirement_id: EntityID) -> None:
 
     Args:
         requirement_id: Mã UUID của Yêu cầu gốc.
+
+    Raises:
+        BusinessException: Khi tham chiếu yêu cầu gốc bị thiếu.
     """
     if not requirement_id:
         raise BusinessException(

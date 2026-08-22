@@ -32,6 +32,14 @@ export const I18nProvider: React.FC<I18nProviderProps> = ({ children }) => {
         i18n.changeLanguage(savedLang);
       }
     }
+    const handleLanguageChanged = (language: string) => {
+      const normalizedLanguage = language.startsWith('en') ? 'en' : 'vi';
+      document.documentElement.lang = normalizedLanguage;
+      localStorage.setItem('i18nextLng', normalizedLanguage);
+    };
+    i18n.on('languageChanged', handleLanguageChanged);
+    handleLanguageChanged(i18n.resolvedLanguage ?? i18n.language);
+    return () => { i18n.off('languageChanged', handleLanguageChanged); };
   }, []);
 
   return <I18nextProvider i18n={i18n}>{children}</I18nextProvider>;

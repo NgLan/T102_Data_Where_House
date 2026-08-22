@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseDbml } from '@/common/dbml/dbml-adapter';
+import { parseDbml } from '@/features/modeling-dashboard/modeling-workspace/model-document/dbml/dbml-adapter';
 import { getDataTypeChangeImpact, getEffectiveColumnConstraints } from './column-constraints';
 
 function parseFixture(source: string) {

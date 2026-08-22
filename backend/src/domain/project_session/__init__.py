@@ -9,8 +9,13 @@ from src.domain.project_session.enums import (
     SessionStatus,
     ToolResultStatus,
 )
-from src.domain.project_session.repository import IProjectSessionRepository, ISessionEventRepository
-from src.domain.project_session.rules import validate_session_event
+from src.domain.project_session.i_project_session_repository import IProjectSessionRepository
+from src.domain.project_session.i_session_event_repository import ISessionEventRepository
+from src.domain.project_session.rules import (
+    validate_session_event_ref,
+    validate_session_event_shape,
+    validate_session_metadata,
+)
 from src.domain.project_session.value_objects import (
     AgentCallMetadata,
     AgentResultMetadata,
@@ -39,5 +44,7 @@ __all__: list[str] = [
     "LLMCallStats",
     "IProjectSessionRepository",
     "ISessionEventRepository",
-    "validate_session_event",
+    "validate_session_event_ref",
+    "validate_session_event_shape",
+    "validate_session_metadata",
 ]

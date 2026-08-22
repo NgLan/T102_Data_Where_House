@@ -2,21 +2,19 @@
 
 from collections.abc import Callable, Coroutine
 from functools import wraps
-from typing import Any, TypeVar, cast
+from typing import Any, ParamSpec, TypeVar
 
 from sqlalchemy.exc import SQLAlchemyError
 from src.common.exceptions.error_codes import ErrorCode
 from src.common.exceptions.infrastructure import InfrastructureException
 
-AsyncOperation = TypeVar(
-    "AsyncOperation",
-    bound=Callable[..., Coroutine[Any, Any, Any]],
-)
+Parameters = ParamSpec("Parameters")
+Result = TypeVar("Result")
 
 
 def translate_database_errors(
-    operation: AsyncOperation,
-) -> AsyncOperation:
+    operation: Callable[Parameters, Coroutine[Any, Any, Result]],
+) -> Callable[Parameters, Coroutine[Any, Any, Result]]:
     """Bọc async database operation và giữ nguyên chữ ký coroutine.
 
     Args:
@@ -31,9 +29,9 @@ def translate_database_errors(
 
     @wraps(operation)
     async def translated(
-        *args: Any,
-        **kwargs: Any,
-    ) -> Any:
+        *args: Parameters.args,
+        **kwargs: Parameters.kwargs,
+    ) -> Result:
         try:
             return await operation(*args, **kwargs)
         except SQLAlchemyError as exc:
@@ -42,4 +40,4 @@ def translate_database_errors(
                 message="Không thể hoàn tất thao tác cơ sở dữ liệu.",
             ) from exc
 
-    return cast(AsyncOperation, translated)
+    return translated

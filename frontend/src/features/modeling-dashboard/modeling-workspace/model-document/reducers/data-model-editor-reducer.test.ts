@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { parseDbml } from '@/common/dbml/dbml-adapter';
-import type { DbmlColumn, DbmlReference } from '@/common/dbml/types';
+import { parseDbml } from '@/features/modeling-dashboard/modeling-workspace/model-document/dbml/dbml-adapter';
+import type { DbmlColumn, DbmlReference } from '@/features/modeling-dashboard/modeling-workspace/model-document/dbml/types';
 import { SAMPLE_DBML } from '../utils/sample-dbml';
 import { dataModelEditorReducer } from './data-model-editor-reducer';
 

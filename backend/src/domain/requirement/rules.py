@@ -6,12 +6,17 @@ from src.common.exceptions.error_codes import ErrorCode
 MAX_REQUIREMENT_TITLE_LENGTH = 255
 
 
-def validate_requirement_fields(title: str, description: str) -> None:
-    """Kiểm tra tính hợp lệ tiêu đề và mô tả của Yêu cầu.
+def normalize_requirement_fields(title: str, description: str) -> tuple[str, str]:
+    """Kiểm tra và chuẩn hóa tiêu đề, mô tả của yêu cầu.
 
     Args:
         title: Tiêu đề yêu cầu.
         description: Mô tả chi tiết của yêu cầu.
+    Returns:
+        Cặp tiêu đề và mô tả đã loại bỏ khoảng trắng hai đầu.
+
+    Raises:
+        BusinessException: Khi tiêu đề hoặc mô tả không hợp lệ.
     """
     if not title or not title.strip():
         raise BusinessException(
@@ -28,3 +33,4 @@ def validate_requirement_fields(title: str, description: str) -> None:
             code=ErrorCode.INVALID_REQUIREMENT_DESCRIPTION,
             message="Mô tả yêu cầu không được để trống.",
         )
+    return title.strip(), description.strip()

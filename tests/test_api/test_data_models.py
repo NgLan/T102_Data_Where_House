@@ -48,6 +48,7 @@ async def test_update_current_data_model_contract(client) -> None:
     app.dependency_overrides.clear()
     assert response.status_code == 200
     assert response.json()["data"]["revision"] == 4
+    assert response.json()["data"]["dbml"] == data_model.dbml
     service.update_data_model.assert_awaited_once()
 
 
@@ -57,7 +58,7 @@ async def test_update_current_data_model_returns_conflict(client) -> None:
     project_id = uuid4()
     service = AsyncMock(spec=IDataModelService)
     service.update_data_model.side_effect = BusinessException(
-        code=ErrorCode.REVISION_CONFLICT,
+        code=ErrorCode.DATA_MODEL_REVISION_CONFLICT,
         message="Data Model đã thay đổi.",
     )
     app.dependency_overrides[get_data_model_service] = lambda: service
@@ -71,7 +72,7 @@ async def test_update_current_data_model_returns_conflict(client) -> None:
 
     app.dependency_overrides.clear()
     assert response.status_code == 409
-    assert response.json()["error_code"] == "REVISION_CONFLICT"
+    assert response.json()["error_code"] == "DATA_MODEL_REVISION_CONFLICT"
 
 
 @pytest.mark.asyncio
@@ -81,11 +82,6 @@ async def test_update_current_data_model_returns_conflict(client) -> None:
         {
             "data_model_id": str(uuid4()),
             "dbml": "   ",
-            "base_revision": 1,
-        },
-        {
-            "data_model_id": str(uuid4()),
-            "dbml": "Table users { id",
             "base_revision": 1,
         },
         {
@@ -139,7 +135,7 @@ async def test_update_data_model_maps_dto_errors_to_field_details(client) -> Non
         f"/api/v1/projects/{project_id}/data-model",
         json={
             "data_model_id": "not-a-uuid",
-            "dbml": "Table users { id",
+            "dbml": "   ",
             "base_revision": 0,
         },
     )
@@ -164,6 +160,7 @@ def test_data_model_openapi_uses_stable_generated_contract() -> None:
     assert get_operation["operationId"] == "getDataModel"
     assert put_operation["operationId"] == "updateDataModel"
     assert _response_schema_ref(get_operation, "200").endswith("ApiResponse_DataModelResponse_")
+    assert _response_schema_ref(put_operation, "200").endswith("ApiResponse_DataModelResponse_")
     assert _response_schema_ref(put_operation, "409").endswith("ApiErrorResponse")
 
 

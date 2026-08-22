@@ -1,9 +1,7 @@
 "use client";
 
 import { MainLayout } from "@/common/components/layout/MainLayout";
-import { AIInsightsPanel } from "./ai-insights/components/AIInsightsPanel";
-import { useAiInsights } from "./ai-insights/hooks/use-ai-insights";
-import { ModelingWorkspace } from "./modeling-workspace/components/ModelingWorkspace";
+import { ModelingWorkspace } from "./modeling-workspace/ModelingWorkspace";
 
 interface ModelingDashboardScreenProps {
   projectId: string;
@@ -13,24 +11,13 @@ interface ModelingDashboardScreenProps {
  * @param props ID Project lấy trực tiếp từ route workspace.
  * @returns Feature screen toàn chiều rộng cho DBML, ERD và AI insights.
  */
-export function ModelingDashboardScreen({ projectId }: ModelingDashboardScreenProps) {
-  const insights = useAiInsights();
+export function ModelingDashboardScreen({
+  projectId,
+}: ModelingDashboardScreenProps) {
   return (
-    <MainLayout isFullWidth isFlush>
+    <MainLayout isFullWidth isFlush selectedProjectId={projectId}>
       <div className="flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-300">
         <ModelingWorkspace projectId={projectId} />
-        <AIInsightsPanel
-          isOpen={insights.isWidgetOpen}
-          onToggle={insights.toggleWidget}
-          selectedFilter={insights.selectedTableFilter}
-          onFilterChange={insights.setSelectedTableFilter}
-          insights={insights.insights}
-          tableNames={insights.tableNames}
-          totalCount={insights.totalCount}
-          isLoading={insights.isLoading}
-          errorMessage={insights.errorMessage}
-          onRetry={insights.reload}
-        />
       </div>
     </MainLayout>
   );

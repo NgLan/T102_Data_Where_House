@@ -1,0 +1,21 @@
+"""Response payload cho Authentication API."""
+
+from uuid import UUID
+
+from pydantic import BaseModel, ConfigDict, Field
+from src.application.auth.output import CurrentActorOutput
+
+
+class CurrentActorResponse(BaseModel):
+    """Danh tính actor MVP hiện tại."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID = Field(description="ID actor hiện tại")
+    username: str = Field(description="Tên hiển thị của actor")
+    email: str = Field(description="Email của actor")
+
+    @classmethod
+    def from_application(cls, output: CurrentActorOutput) -> "CurrentActorResponse":
+        """Ánh xạ application output sang HTTP payload."""
+        return cls.model_validate(output)

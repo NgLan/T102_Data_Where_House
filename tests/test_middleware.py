@@ -12,7 +12,7 @@ from src.common.exceptions import (
     ErrorCode,
     register_exception_handlers,
 )
-from src.common.logging import get_request_id
+from src.common.logging import clear_logging_context, get_request_id, set_request_id
 from src.common.middleware import (
     HTTPLoggingMiddleware,
     RequestIDMiddleware,
@@ -177,7 +177,51 @@ async def test_security_headers(test_app: FastAPI):
             response.headers.get("Referrer-Policy")
             == "strict-origin-when-cross-origin"
         )
-        assert response.headers.get("X-XSS-Protection") == "1; mode=block"
+        assert response.headers.get("X-XSS-Protection") is None
+
+
+@pytest.mark.asyncio
+async def test_hsts_header_can_be_enabled():
+    """Test HSTS chỉ được phát khi cấu hình bật tường minh."""
+    app = FastAPI()
+    app.add_middleware(SecurityHeadersMiddleware, enable_hsts=True)
+
+    @app.get("/")
+    async def endpoint():
+        return {"status": "ok"}
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="https://test") as client:
+        response = await client.get("/")
+
+    assert response.headers["Strict-Transport-Security"] == "max-age=31536000; includeSubDomains"
+
+
+def test_cors_rejects_wildcard_with_credentials():
+    """Test CORS fail fast với tổ hợp cấu hình không an toàn."""
+
+    class InvalidCorsSettings(DummySettings):
+        cors_origins_list = ["*"]
+        cors_allow_credentials = True
+
+    with pytest.raises(ValueError, match="wildcard origin"):
+        setup_cors_middleware(FastAPI(), InvalidCorsSettings())
+
+
+@pytest.mark.asyncio
+async def test_request_context_restores_outer_value(test_app: FastAPI):
+    """Test middleware khôi phục ContextVar thay vì xóa context bao ngoài."""
+    set_request_id("outer-request")
+    try:
+        async with AsyncClient(
+            transport=ASGITransport(app=test_app), base_url="http://test"
+        ) as client:
+            response = await client.get(
+                "/api/v1/test", headers={"X-Request-ID": "inner-request"}
+            )
+        assert response.json()["request_id"] == "inner-request"
+        assert get_request_id() == "outer-request"
+    finally:
+        clear_logging_context()
 
 
 @pytest.mark.asyncio

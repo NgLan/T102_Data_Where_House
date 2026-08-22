@@ -6,20 +6,35 @@ from uuid import UUID
 from fastapi import Path
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from pydantic_core import PydanticCustomError
-from src.application.data_models.input import UpdateDataModelInput
+from src.application.data_models.input import UpdateDataModelInput, ValidateDataModelInput
 from src.common.exceptions.business import BusinessException
-from src.domain.data_model.rules import validate_dbml
+from src.domain.data_model.dbml_syntax_rules import validate_dbml
 
 MAX_DBML_LENGTH = 1_000_000
+MIN_INSTRUCTION_LENGTH = 5
+MAX_INSTRUCTION_LENGTH = 2_000
+
+
+class ValidateDataModelRequest(BaseModel):
+    """Payload kiểm tra DBML draft mà không ghi dữ liệu."""
+
+    model_config = ConfigDict(extra="forbid")
+    dbml: str = Field(min_length=1, max_length=MAX_DBML_LENGTH, description="DBML draft cần kiểm tra")
+
+    def to_application(self, project_id: UUID) -> ValidateDataModelInput:
+        """Ánh xạ request sang application input."""
+        return ValidateDataModelInput(project_id=project_id, dbml=self.dbml)
 ProjectIdPath = Annotated[UUID, Path(description="ID dự án chứa Data Model")]
 
 
 class UpdateDataModelRequest(BaseModel):
-    """Payload lưu snapshot DBML với revision gốc của client."""
+    """Payload lưu trực tiếp DBML với revision gốc của client."""
 
     model_config = ConfigDict(extra="forbid")
 
-    data_model_id: UUID = Field(description="ID của Data Model cần cập nhật")
+    data_model_id: UUID = Field(
+        description="ID của Data Model cần cập nhật",
+    )
     dbml: str = Field(
         min_length=1,
         max_length=MAX_DBML_LENGTH,
@@ -52,3 +67,23 @@ class UpdateDataModelRequest(BaseModel):
             dbml=self.dbml,
             base_revision=self.base_revision,
         )
+
+
+class ReviseDataModelRequest(BaseModel):
+    """Payload nhờ AI Agent chỉnh sửa mô hình dữ liệu bằng ngôn ngữ tự nhiên."""
+
+    model_config = ConfigDict(
+        extra="forbid",
+        str_strip_whitespace=True,
+        json_schema_extra={
+            "example": {
+                "instruction": "Tách bảng Dim_Driver thành Dim_Driver và Dim_Vehicle.",
+            },
+        },
+    )
+
+    instruction: str = Field(
+        min_length=MIN_INSTRUCTION_LENGTH,
+        max_length=MAX_INSTRUCTION_LENGTH,
+        description="Yêu cầu chỉnh sửa mô hình dữ liệu, viết bằng ngôn ngữ tự nhiên",
+    )

@@ -361,6 +361,9 @@ Table data_model_changes {
 
   created_at timestamp [not null]
   updated_at timestamp [not null]
+
+  // PostgreSQL partial unique index:
+  // UNIQUE (data_model_id, user_id) WHERE status = 'PROPOSED'
 }
 
 Ref: data_model_changes.data_model_id > data_models.id
@@ -386,7 +389,7 @@ Ref: data_model_changes.user_id > users.id
 
 // Edge case 6 — Người dùng Reject thay đổi: Chỉ đánh dấu data_model_change là REJECTED, DBML hiện tại và revision không thay đổi.
 
-// Edge case 7 — Agent tạo nhiều thay đổi liên tiếp: Chỉ cho phép một proposal đang PROPOSED trên một data model; proposal mới có thể thay thế proposal cũ để tránh nhiều thay đổi chồng chéo.
+// Edge case 7 — Agent tạo nhiều thay đổi liên tiếp: Mỗi người dùng chỉ được có một proposal PROPOSED trên cùng một Data Model. Phải Accept, Reject hoặc kết thúc proposal cũ do conflict trước khi tạo proposal mới; hệ thống không tự thay thế proposal cũ.
 
 // Edge case 8 — Hai người cùng thao tác đúng một thời điểm: Database transaction + optimistic locking đảm bảo chỉ một request được cập nhật revision thành công, request còn lại nhận conflict thay vì ghi đè dữ liệu.
 

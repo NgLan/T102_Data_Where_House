@@ -3,20 +3,24 @@
 from uuid import UUID
 
 from fastapi import APIRouter, Path
-from src.application.sandbox.dto import (
+from src.application.sandbox.input import (
+    ExecuteSandboxDdlInput,
+    GetSandboxConfigInput,
+    SaveSandboxConfigInput,
+    TestSandboxConnectionInput,
+)
+from src.presentation.dependencies.sandbox import SandboxServiceDependency
+from src.presentation.dtos.sandbox.request import (
     ExecuteDdlRequest,
-    ExecuteDdlResponse,
     SandboxConfigRequest,
-    SandboxConfigResponse,
     TestConnectionRequest,
+)
+from src.presentation.dtos.sandbox.response import (
+    ExecuteDdlResponse,
+    SandboxConfigResponse,
     TestConnectionResponse,
 )
-from src.presentation.dependencies.sandbox import (
-    ExecuteDdlServiceDependency,
-    SandboxConfigServiceDependency,
-)
-from src.presentation.dtos.common import ApiErrorResponse
-from src.presentation.routing import ApiResponseRoute
+from src.presentation.routing import ApiResponseRoute, error_responses
 
 router = APIRouter(
     prefix="",
@@ -29,68 +33,60 @@ router = APIRouter(
     "/projects/{project_id}/sandbox/config",
     response_model=SandboxConfigResponse | None,
     operation_id="getSandboxConfig",
-    responses={
-        404: {"model": ApiErrorResponse},
-        500: {"model": ApiErrorResponse},
-    },
+    responses=error_responses(401, 403, 404, 500),
 )
 async def get_sandbox_config(
+    service: SandboxServiceDependency,
     project_id: UUID = Path(..., description="ID dự án"),
-    service: SandboxConfigServiceDependency = None,
 ) -> SandboxConfigResponse | None:
     """Lấy cấu hình Sandbox DB của dự án."""
-    return await service.get_config(project_id)
+    output = await service.get_config(GetSandboxConfigInput(project_id))
+    return SandboxConfigResponse.from_application(output) if output else None
 
 
 @router.post(
     "/projects/{project_id}/sandbox/config",
     response_model=SandboxConfigResponse,
     operation_id="saveSandboxConfig",
-    responses={
-        422: {"model": ApiErrorResponse},
-        500: {"model": ApiErrorResponse},
-    },
+    responses=error_responses(401, 403, 422, 500),
 )
 async def save_sandbox_config(
     request: SandboxConfigRequest,
+    service: SandboxServiceDependency,
     project_id: UUID = Path(..., description="ID dự án"),
-    service: SandboxConfigServiceDependency = None,
 ) -> SandboxConfigResponse:
     """Lưu hoặc cập nhật thông tin cấu hình Sandbox DB cho dự án."""
-    return await service.save_config(project_id, request)
+    output = await service.save_config(SaveSandboxConfigInput(project_id, request.to_application()))
+    return SandboxConfigResponse.from_application(output)
 
 
 @router.post(
-    "/sandbox/test-connection",
+    "/projects/{project_id}/sandbox/test-connection",
     response_model=TestConnectionResponse,
     operation_id="testSandboxConnection",
-    responses={
-        400: {"model": ApiErrorResponse},
-        422: {"model": ApiErrorResponse},
-        500: {"model": ApiErrorResponse},
-    },
+    responses=error_responses(400, 401, 403, 404, 422, 500),
 )
 async def test_sandbox_connection_endpoint(
     request: TestConnectionRequest,
-    service: SandboxConfigServiceDependency = None,
+    service: SandboxServiceDependency,
+    project_id: UUID = Path(..., description="ID dự án"),
 ) -> TestConnectionResponse:
     """Kiểm tra thử kết nối đến cơ sở dữ liệu Sandbox."""
-    return await service.test_connection(request)
+    output = await service.test_connection(TestSandboxConnectionInput(project_id, request.to_application()))
+    return TestConnectionResponse.from_application(output)
 
 
 @router.post(
     "/projects/{project_id}/sandbox/execute-ddl",
     response_model=ExecuteDdlResponse,
     operation_id="executeSandboxDdl",
-    responses={
-        422: {"model": ApiErrorResponse},
-        500: {"model": ApiErrorResponse},
-    },
+    responses=error_responses(401, 403, 404, 422, 500),
 )
 async def execute_sandbox_ddl_endpoint(
     request: ExecuteDdlRequest,
+    service: SandboxServiceDependency,
     project_id: UUID = Path(..., description="ID dự án"),
-    service: ExecuteDdlServiceDependency = None,
 ) -> ExecuteDdlResponse:
     """Thực thi mã DDL script trên Sandbox Database đã cấu hình của dự án."""
-    return await service.execute_ddl(project_id, request)
+    output = await service.execute_ddl(ExecuteSandboxDdlInput(project_id, request.ddl_script, request.reset_schema))
+    return ExecuteDdlResponse.from_application(output)

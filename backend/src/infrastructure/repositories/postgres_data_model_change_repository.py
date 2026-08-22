@@ -1,14 +1,22 @@
 """Triển khai PostgreSQL Repository cho thực thể DataModelChange."""
 
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
+from src.common.exceptions.business import BusinessException
+from src.common.exceptions.error_codes import ErrorCode
 from src.domain.data_model.entities import DataModelChange
-from src.domain.data_model.repository import IDataModelChangeRepository
+from src.domain.data_model.enums import DataModelChangeStatus
+from src.domain.data_model.i_data_model_change_repository import IDataModelChangeRepository
 from src.domain.shared.types import EntityID
+from src.infrastructure.database.error_translation import translate_database_errors
 from src.infrastructure.database.mappers.data_model_change_mapper import (
     DataModelChangeMapper,
 )
-from src.infrastructure.database.models.data_model_change import DataModelChangeModel
+from src.infrastructure.database.models.data_model_change import (
+    ACTIVE_PROPOSAL_UNIQUE_INDEX,
+    DataModelChangeModel,
+)
 from typing_extensions import override
 
 
@@ -20,6 +28,7 @@ class PostgresDataModelChangeRepository(IDataModelChangeRepository):
         self._session: AsyncSession = session
 
     @override
+    @translate_database_errors
     async def get_by_id(self, entity_id: EntityID) -> DataModelChange | None:
         """Lấy Đề xuất Thay đổi theo ID."""
         stmt = select(DataModelChangeModel).where(DataModelChangeModel.id == entity_id)
@@ -28,14 +37,24 @@ class PostgresDataModelChangeRepository(IDataModelChangeRepository):
         return DataModelChangeMapper.to_domain(model) if model else None
 
     @override
-    async def list_by_data_model(self, data_model_id: EntityID) -> list[DataModelChange]:
-        """Danh sách các đề xuất thay đổi thuộc một mô hình dữ liệu."""
-        stmt = select(DataModelChangeModel).where(DataModelChangeModel.data_model_id == data_model_id)
+    @translate_database_errors
+    async def get_proposed_by_data_model_and_user(
+        self,
+        data_model_id: EntityID,
+        user_id: EntityID,
+    ) -> DataModelChange | None:
+        """Lấy đề xuất PROPOSED duy nhất của người dùng trên Data Model."""
+        stmt = select(DataModelChangeModel).where(
+            DataModelChangeModel.data_model_id == data_model_id,
+            DataModelChangeModel.user_id == user_id,
+            DataModelChangeModel.status == DataModelChangeStatus.PROPOSED.value,
+        )
         result = await self._session.execute(stmt)
-        models = result.scalars().all()
-        return [DataModelChangeMapper.to_domain(m) for m in models]
+        model = result.scalar_one_or_none()
+        return DataModelChangeMapper.to_domain(model) if model else None
 
     @override
+    @translate_database_errors
     async def save(self, entity: DataModelChange) -> DataModelChange:
         """Lưu (tạo mới hoặc cập nhật) thực thể DataModelChange."""
         stmt = select(DataModelChangeModel).where(DataModelChangeModel.id == entity.id)
@@ -48,10 +67,19 @@ class PostgresDataModelChangeRepository(IDataModelChangeRepository):
             model = DataModelChangeMapper.to_model(entity)
             self._session.add(model)
 
-        await self._session.flush()
+        try:
+            await self._session.flush()
+        except IntegrityError as exc:
+            if ACTIVE_PROPOSAL_UNIQUE_INDEX in str(exc.orig):
+                raise BusinessException(
+                    code=ErrorCode.DATA_MODEL_CHANGE_ALREADY_PENDING,
+                    message="Người dùng đã có một đề xuất đang chờ trên Data Model này.",
+                ) from exc
+            raise
         return DataModelChangeMapper.to_domain(model)
 
     @override
+    @translate_database_errors
     async def delete(self, entity_id: EntityID) -> bool:
         """Xóa thực thể DataModelChange theo ID."""
         stmt = select(DataModelChangeModel).where(DataModelChangeModel.id == entity_id)

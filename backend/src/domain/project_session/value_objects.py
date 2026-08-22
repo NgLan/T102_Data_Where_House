@@ -2,7 +2,9 @@
 
 from dataclasses import dataclass
 
+from src.common.exceptions.error_codes import ErrorCode
 from src.domain.project_session.enums import AgentResultStatus, AgentType, ToolResultStatus
+from src.domain.shared.enum_rules import normalize_str_enum
 from src.domain.shared.types import EntityID
 from src.domain.shared.value_object import BaseValueObject
 
@@ -40,10 +42,16 @@ class AgentCallMetadata(BaseValueObject):
 
     def __post_init__(self) -> None:
         """Đảm bảo các thuộc tính agent được convert sang AgentType enum nếu truyền chuỗi str."""
-        if isinstance(self.caller_agent, str):
-            object.__setattr__(self, "caller_agent", AgentType(self.caller_agent))
-        if isinstance(self.target_agent, str):
-            object.__setattr__(self, "target_agent", AgentType(self.target_agent))
+        object.__setattr__(
+            self,
+            "caller_agent",
+            normalize_str_enum(self.caller_agent, AgentType, ErrorCode.VALIDATION_ERROR),
+        )
+        object.__setattr__(
+            self,
+            "target_agent",
+            normalize_str_enum(self.target_agent, AgentType, ErrorCode.VALIDATION_ERROR),
+        )
 
 
 @dataclass(frozen=True)
@@ -59,10 +67,16 @@ class AgentResultMetadata(BaseValueObject):
 
     def __post_init__(self) -> None:
         """Đảm bảo thuộc tính agent & status được convert sang Enum và gán message mặc định cho CANCELLED."""
-        if isinstance(self.agent, str):
-            object.__setattr__(self, "agent", AgentType(self.agent))
-        if isinstance(self.status, str):
-            object.__setattr__(self, "status", AgentResultStatus(self.status))
+        object.__setattr__(
+            self,
+            "agent",
+            normalize_str_enum(self.agent, AgentType, ErrorCode.VALIDATION_ERROR),
+        )
+        object.__setattr__(
+            self,
+            "status",
+            normalize_str_enum(self.status, AgentResultStatus, ErrorCode.VALIDATION_ERROR),
+        )
 
         if self.status == AgentResultStatus.CANCELLED and not self.error:
             object.__setattr__(self, "error", DEFAULT_CANCELLED_ERROR_MESSAGE)
@@ -78,8 +92,11 @@ class ToolCallMetadata(BaseValueObject):
 
     def __post_init__(self) -> None:
         """Đảm bảo agent được convert sang AgentType enum nếu truyền chuỗi str."""
-        if isinstance(self.agent, str):
-            object.__setattr__(self, "agent", AgentType(self.agent))
+        object.__setattr__(
+            self,
+            "agent",
+            normalize_str_enum(self.agent, AgentType, ErrorCode.VALIDATION_ERROR),
+        )
 
 
 @dataclass(frozen=True)
@@ -94,8 +111,11 @@ class ToolResultMetadata(BaseValueObject):
 
     def __post_init__(self) -> None:
         """Đảm bảo status được convert sang ToolResultStatus enum nếu truyền chuỗi str."""
-        if isinstance(self.status, str):
-            object.__setattr__(self, "status", ToolResultStatus(self.status))
+        object.__setattr__(
+            self,
+            "status",
+            normalize_str_enum(self.status, ToolResultStatus, ErrorCode.VALIDATION_ERROR),
+        )
 
 
 SessionEventMetadata = (

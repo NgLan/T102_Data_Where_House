@@ -1,0 +1,21 @@
+{
+  "TXT_DIFF_TITLE": "Proposed DBML comparison",
+  "BTN_MODE_UNIFIED": "Unified",
+  "BTN_MODE_SPLIT": "Split",
+  "TXT_CURRENT_DBML": "Current DBML",
+  "TXT_PROPOSED_DBML": "Proposed DBML",
+  "TXT_BASE_REVISION": "Base revision {{revision}}",
+  "TXT_CURRENT_REVISION": "Current revision {{revision}}",
+  "MSG_DIFF_EMPTY": "There is no pending proposal for this data model yet.",
+  "MSG_DIFF_NO_CHANGE": "This proposal does not change the current DBML.",
+  "MSG_STATUS_PROPOSED": "Pending review",
+  "MSG_STATUS_ACCEPTED": "Accepted",
+  "MSG_STATUS_REJECTED": "Rejected",
+  "MSG_STATUS_CONFLICTED": "Revision conflict",
+  "TXT_OUTDATED_TITLE": "Proposal is outdated",
+  "MSG_OUTDATED_DESCRIPTION": "This proposal is based on revision {{baseRevision}} but the data model is now at revision {{currentRevision}}. Applying it now would conflict — ask the AI to regenerate the proposal against the latest model.",
+  "TXT_REVIEW_HINT": "Confirm applying this proposal to the official data model",
+  "BTN_RETRY_PROPOSAL": "Ask AI to retry",
+  "BTN_REJECT_PROPOSAL": "Reject",
+  "BTN_ACCEPT_PROPOSAL": "Accept changes"
+}

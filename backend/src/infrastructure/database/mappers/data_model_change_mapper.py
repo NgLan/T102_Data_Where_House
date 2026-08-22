@@ -16,6 +16,7 @@ class DataModelChangeMapper:
             data_model_id=model.data_model_id,
             user_id=model.user_id,
             base_revision=model.base_revision,
+            base_dbml=model.base_dbml,
             proposed_dbml=model.proposed_dbml,
             status=DataModelChangeStatus(model.status),
             created_at=model.created_at,
@@ -30,8 +31,9 @@ class DataModelChangeMapper:
             data_model_id=entity.data_model_id,
             user_id=entity.user_id,
             base_revision=entity.base_revision,
+            base_dbml=entity.base_dbml,
             proposed_dbml=entity.proposed_dbml,
-            status=str(entity.status.value if hasattr(entity.status, "value") else entity.status),
+            status=entity.status.value,
             created_at=entity.created_at,
             updated_at=entity.updated_at,
         )
@@ -42,8 +44,8 @@ class DataModelChangeMapper:
         model.data_model_id = entity.data_model_id
         model.user_id = entity.user_id
         model.base_revision = entity.base_revision
+        model.base_dbml = entity.base_dbml
         model.proposed_dbml = entity.proposed_dbml
-        model.status = str(entity.status.value if hasattr(entity.status, "value") else entity.status)
-        model.created_at = entity.created_at
+        model.status = entity.status.value
         model.updated_at = entity.updated_at
         return model

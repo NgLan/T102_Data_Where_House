@@ -1,66 +1,59 @@
-"""Middleware quản lý và xác thực Request ID / Correlation ID (request_id.py)."""
+"""Pure ASGI middleware quản lý request và correlation ID."""
 
 import re
-import uuid
-from collections.abc import Callable
 
-from fastapi import Request, Response
-from src.common.logging.context import (
-    clear_logging_context,
-    set_correlation_id,
-    set_request_id,
-)
-from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.datastructures import Headers, MutableHeaders
+from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
-# Regex cho phép alphanumeric, gạch ngang, gạch dưới, độ dài 1-64
-VALID_ID_PATTERN = re.compile(r"^[a-zA-Z0-9_\-]{1,64}$")
+# isort: split
+from src.common.logging.context import LoggingContextSnapshot, bind_logging_context
+from src.common.utils.uuid import generate_uuid_str
 
-
-def _is_valid_id(request_id: str | None) -> bool:
-    """Kiểm tra request ID có hợp lệ và an toàn không (chống log injection)."""
-    if not request_id:
-        return False
-    return bool(VALID_ID_PATTERN.match(request_id.strip()))
+REQUEST_ID_HEADER = "X-Request-ID"
+CORRELATION_ID_HEADER = "X-Correlation-ID"
+MAX_CONTEXT_ID_LENGTH = 64
+VALID_ID_PATTERN = re.compile(rf"^[a-zA-Z0-9_-]{{1,{MAX_CONTEXT_ID_LENGTH}}}$")
 
 
-class RequestIDMiddleware(BaseHTTPMiddleware):
-    """Middleware trích xuất hoặc khởi tạo Request ID & Correlation ID cho từng HTTP Request.
+def _validated_id(value: str | None) -> str | None:
+    """Chuẩn hóa ID an toàn cho header và log context."""
+    if value is None:
+        return None
+    normalized = value.strip()
+    return normalized if VALID_ID_PATTERN.fullmatch(normalized) else None
 
-    Đảm bảo:
-    - Validate input ID của client (ngăn chặn log injection, newline, control chars).
-    - Tạo UUID4 mới nếu thiếu hoặc ID của client không hợp lệ.
-    - Đồng bộ Request ID & Correlation ID vào ContextVar bất đồng bộ.
-    - Đính kèm X-Request-ID và X-Correlation-ID vào HTTP Response Headers.
-    - Tự động dọn dẹp ContextVar sau khi kết thúc vòng đời request.
-    """
 
-    async def dispatch(self, request: Request, call_next: Callable) -> Response:
-        # 1. Trích xuất X-Request-ID & X-Correlation-ID từ request headers
-        raw_request_id = request.headers.get("X-Request-ID")
-        raw_correlation_id = request.headers.get("X-Correlation-ID")
+class RequestIDMiddleware:
+    """Bind request identifiers và khôi phục ContextVar sau mỗi HTTP request."""
 
-        # 2. Validation & Fallback generation
-        if _is_valid_id(raw_request_id):
-            request_id = raw_request_id.strip()
-        else:
-            request_id = str(uuid.uuid4())
+    def __init__(self, app: ASGIApp) -> None:
+        """Khởi tạo middleware.
 
-        correlation_id = raw_correlation_id.strip() if _is_valid_id(raw_correlation_id) else None
+        Args:
+            app: ASGI application phía trong.
+        """
+        self._app = app
 
-        # 3. Ghi nhận contextvars
-        set_request_id(request_id)
-        if correlation_id:
-            set_correlation_id(correlation_id)
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        """Xử lý một ASGI connection và bỏ qua protocol ngoài HTTP."""
+        if scope["type"] != "http":
+            await self._app(scope, receive, send)
+            return
+        headers = Headers(scope=scope)
+        request_id = _validated_id(headers.get(REQUEST_ID_HEADER)) or generate_uuid_str()
+        correlation_id = _validated_id(headers.get(CORRELATION_ID_HEADER))
+        snapshot = LoggingContextSnapshot(
+            request_id=request_id,
+            correlation_id=correlation_id,
+        )
 
-        try:
-            response: Response = await call_next(request)
+        async def _send_with_identifiers(message: Message) -> None:
+            if message["type"] == "http.response.start":
+                response_headers = MutableHeaders(scope=message)
+                response_headers[REQUEST_ID_HEADER] = request_id
+                if correlation_id:
+                    response_headers[CORRELATION_ID_HEADER] = correlation_id
+            await send(message)
 
-            # 4. Gắn X-Request-ID và X-Correlation-ID vào response headers
-            response.headers["X-Request-ID"] = request_id
-            if correlation_id:
-                response.headers["X-Correlation-ID"] = correlation_id
-
-            return response
-        finally:
-            # 5. Dọn dẹp context sau khi kết thúc request
-            clear_logging_context()
+        with bind_logging_context(snapshot):
+            await self._app(scope, receive, _send_with_identifiers)
