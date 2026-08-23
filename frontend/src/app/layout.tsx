@@ -7,6 +7,11 @@ import './globals.css';
 export const metadata: Metadata = {
   title: commonVi.TXT_APP_NAME,
   description: commonVi.TXT_APP_DESCRIPTION,
+  icons: {
+    icon: "/AIDWH.png",
+    shortcut: "/AIDWH.png",
+    apple: "/AIDWH.png",
+  },
 };
 
 /** Cấu hình document root, font và provider dùng chung của App Router.

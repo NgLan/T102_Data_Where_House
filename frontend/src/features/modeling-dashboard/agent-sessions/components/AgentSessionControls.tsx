@@ -48,20 +48,20 @@ export function AgentSessionControls(props: {
       </form>
     );
   return (
-    <div className="flex items-center gap-1.5 border-b border-slate-800/80 bg-slate-900/40 p-2">
+    <div className="flex items-center gap-1.5 border-b border-amber-200/80 bg-amber-100/30 p-2 dark:border-slate-800/80 dark:bg-slate-900/40">
       <div className="min-w-0 flex-1">
         <NativeSelect
           value={props.selectedSessionId ?? ""}
           onChange={(event) => props.onSelectSession(event.target.value)}
           aria-label={t("TXT_SESSION_LIST")}
           className="w-full"
-          selectClassName="h-8 border-slate-700/80 bg-slate-900 px-2.5 text-xs text-slate-200 focus-visible:border-sky-500 focus-visible:ring-1 focus-visible:ring-sky-500/50"
+          selectClassName="h-8 border-amber-200 bg-white px-2.5 text-xs text-slate-800 focus-visible:border-amber-500 focus-visible:ring-1 focus-visible:ring-amber-500/50 dark:border-slate-700/80 dark:bg-slate-900 dark:text-slate-200 dark:focus-visible:border-sky-500 dark:focus-visible:ring-sky-500/50"
         >
-          <NativeSelectOption value="" disabled className="bg-slate-900 text-slate-400">
+          <NativeSelectOption value="" disabled className="bg-white text-slate-400 dark:bg-slate-900 dark:text-slate-400">
             {t("TXT_SELECT_SESSION")}
           </NativeSelectOption>
           {props.sessions.map((session) => (
-            <NativeSelectOption key={session.id} value={session.id} className="bg-slate-900 text-slate-200">
+            <NativeSelectOption key={session.id} value={session.id} className="bg-white text-slate-800 dark:bg-slate-900 dark:text-slate-200">
               {session.title}
             </NativeSelectOption>
           ))}
@@ -71,7 +71,7 @@ export function AgentSessionControls(props: {
         <Button
           size="icon-xs"
           variant="ghost"
-          className="size-8 shrink-0 text-slate-400 hover:bg-slate-800 hover:text-slate-200"
+          className="size-8 shrink-0 text-slate-600 hover:bg-amber-200/60 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
           onClick={() => setTitle(selected.title)}
           aria-label={t("BTN_RENAME_SESSION")}
         >
@@ -82,9 +82,9 @@ export function AgentSessionControls(props: {
         size="sm"
         variant="secondary"
         onClick={props.onNewSession}
-        className="h-8 shrink-0 gap-1.5 border border-slate-700/80 bg-slate-800/90 px-2.5 text-xs font-medium text-slate-200 hover:bg-slate-700 hover:text-white"
+        className="h-8 shrink-0 gap-1.5 border border-amber-300 bg-amber-500 px-2.5 text-xs font-semibold text-white shadow-xs hover:bg-amber-600 dark:border-slate-700/80 dark:bg-slate-800/90 dark:text-slate-200 dark:hover:bg-slate-700 dark:hover:text-white"
       >
-        <MessageSquarePlus className="size-3.5 text-sky-400" />
+        <MessageSquarePlus className="size-3.5 text-amber-100 dark:text-sky-400" />
         <span>{t("BTN_NEW_SESSION")}</span>
       </Button>
     </div>

@@ -32,13 +32,13 @@ export function AgentSessionPanel(props: AgentSessionPanelProps) {
   const { t } = useTranslation("ai-chat");
   const { getErrorMessage } = useAppNotification();
   return (
-    <section className="flex h-full min-h-0 flex-col bg-slate-950 text-slate-200">
-      <header className="flex items-center gap-2 border-b border-slate-800/80 bg-slate-900/60 px-3 py-2">
+    <section className="flex h-full min-h-0 flex-col bg-amber-50/40 text-slate-800 dark:bg-slate-950 dark:text-slate-200">
+      <header className="flex items-center gap-2 border-b border-amber-200/80 bg-amber-100/50 px-3 py-2 dark:border-slate-800/80 dark:bg-slate-900/60">
         <div className="mr-auto flex min-w-0 items-center gap-2">
-          <div className="flex size-6 shrink-0 items-center justify-center rounded-lg bg-sky-500/10 text-sky-400 ring-1 ring-sky-500/25">
+          <div className="flex size-6 shrink-0 items-center justify-center rounded-lg bg-amber-500/15 text-amber-700 ring-1 ring-amber-500/30 dark:bg-sky-500/10 dark:text-sky-400 dark:ring-sky-500/25">
             <Bot className="size-3.5" />
           </div>
-          <strong className="truncate text-xs font-semibold tracking-tight text-slate-100">
+          <strong className="truncate text-xs font-semibold tracking-tight text-slate-900 dark:text-slate-100">
             {t("TXT_AI_CHAT_TITLE")}
           </strong>
         </div>
@@ -46,7 +46,7 @@ export function AgentSessionPanel(props: AgentSessionPanelProps) {
           <Button
             size="icon-xs"
             variant="ghost"
-            className="text-slate-400 hover:bg-slate-800 hover:text-slate-200"
+            className="text-slate-600 hover:bg-amber-200/60 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
             onClick={() => props.onDockChange("right")}
             aria-label={t("BTN_DOCK_RIGHT")}
           >
@@ -55,7 +55,7 @@ export function AgentSessionPanel(props: AgentSessionPanelProps) {
           <Button
             size="icon-xs"
             variant="ghost"
-            className="text-slate-400 hover:bg-slate-800 hover:text-slate-200"
+            className="text-slate-600 hover:bg-amber-200/60 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
             onClick={() => props.onDockChange("inspector-bottom")}
             aria-label={t("BTN_DOCK_BOTTOM")}
           >
@@ -64,7 +64,7 @@ export function AgentSessionPanel(props: AgentSessionPanelProps) {
           <Button
             size="icon-xs"
             variant="ghost"
-            className="text-slate-400 hover:bg-slate-800 hover:text-slate-200"
+            className="text-slate-600 hover:bg-amber-200/60 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
             onClick={() => props.onDockChange("hidden")}
             aria-label={t("BTN_CLOSE_AGENT")}
           >

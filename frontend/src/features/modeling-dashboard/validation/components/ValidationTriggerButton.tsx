@@ -39,7 +39,7 @@ export function ValidationTriggerButton({
             ? "border-rose-500 bg-white text-rose-600 ring-4 ring-rose-500/20 shadow-lg shadow-rose-950/20 dark:border-rose-500/80 dark:bg-slate-900 dark:text-rose-400 dark:shadow-rose-950/40"
             : hasWarnings
               ? "border-amber-500 bg-white text-amber-600 ring-4 ring-amber-500/20 shadow-lg shadow-amber-950/20 dark:border-amber-500/80 dark:bg-slate-900 dark:text-amber-400 dark:shadow-amber-950/40"
-              : "border-sky-500 bg-white text-sky-600 ring-4 ring-sky-500/20 shadow-lg shadow-sky-950/20 dark:border-sky-500/80 dark:bg-slate-900 dark:text-sky-400 dark:shadow-sky-950/40"
+              : "border-amber-300 bg-amber-50 text-amber-600 ring-4 ring-amber-300/40 shadow-lg shadow-amber-900/10 dark:border-sky-500/80 dark:bg-slate-900 dark:text-sky-400 dark:shadow-sky-950/40"
         } ${
           isDragging
             ? "scale-110 opacity-90 shadow-2xl cursor-grabbing"

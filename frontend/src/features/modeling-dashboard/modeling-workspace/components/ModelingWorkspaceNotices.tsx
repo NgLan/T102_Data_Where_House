@@ -8,7 +8,7 @@ import { Skeleton } from "@/common/components/ui/skeleton";
 export function EmptyModelNotice({ onGenerate }: { onGenerate: () => void }) {
   const { t } = useTranslation("modeling-workspace");
   return (
-    <div className="flex items-center gap-3 border-b bg-blue-50/70 px-4 py-2 text-xs text-blue-900">
+    <div className="flex items-center gap-3 border-b border-amber-200/60 bg-amber-50/80 px-4 py-2 text-xs text-amber-950 dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-200">
       <Info className="size-3.5" />
       <span className="mr-auto">{t("MSG_NO_DATA_MODEL")}</span>
       <Button size="sm" onClick={onGenerate}>
@@ -23,7 +23,7 @@ export function GeneratingNotice() {
   const { t } = useTranslation("modeling-workspace");
   return (
     <p
-      className="flex items-center gap-2 border-b bg-blue-50/70 px-4 py-2.5 text-xs text-blue-900"
+      className="flex items-center gap-2 border-b border-amber-200/60 bg-amber-50/80 px-4 py-2.5 text-xs text-amber-950 dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-200"
       role="status"
     >
       <Loader2 className="size-3.5 animate-spin" />
@@ -35,7 +35,7 @@ export function GeneratingNotice() {
 export function OutdatedModelNotice({ onUpdate }: { onUpdate: () => void }) {
   const { t } = useTranslation("modeling-workspace");
   return (
-    <div className="flex items-center gap-3 border-b bg-amber-50 px-4 py-2 text-xs text-amber-900">
+    <div className="flex items-center gap-3 border-b border-amber-200/60 bg-amber-50/80 px-4 py-2 text-xs text-amber-950 dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-200">
       <Info className="size-3.5" />
       <span className="mr-auto">{t("MSG_DATA_MODEL_OUTDATED")}</span>
       <Button size="sm" onClick={onUpdate}>

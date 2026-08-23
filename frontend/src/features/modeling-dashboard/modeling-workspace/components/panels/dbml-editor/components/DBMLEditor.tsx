@@ -72,13 +72,13 @@ export function DBMLEditor({
   }
 
   return (
-    <section className="relative flex h-full min-h-0 w-full flex-col bg-slate-950 text-slate-200">
-      <header className="flex items-center gap-2 border-b border-slate-800 bg-slate-900/60 px-3 py-2 text-slate-100">
+    <section className="relative flex h-full min-h-0 w-full flex-col bg-amber-50/40 text-slate-800 dark:bg-slate-950 dark:text-slate-200">
+      <header className="flex items-center gap-2 border-b border-amber-200/80 bg-amber-100/50 px-3 py-2 text-slate-900 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-100">
         <Code2
-          className="size-4 text-sky-400"
+          className="size-4 text-amber-600 dark:text-sky-400"
           aria-hidden="true"
         />
-        <strong className="mr-auto text-xs font-semibold text-slate-100">
+        <strong className="mr-auto text-xs font-semibold text-slate-900 dark:text-slate-100">
           {t("TXT_DBML_EDITOR")}
         </strong>
         <Button
@@ -86,7 +86,7 @@ export function DBMLEditor({
           size="sm"
           variant="secondary"
           onClick={() => void handleCopy()}
-          className="border border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700"
+          className="border border-amber-300 bg-white text-amber-900 hover:bg-amber-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
         >
           {copied ? (
             <Check className="size-3.5" />
@@ -103,13 +103,13 @@ export function DBMLEditor({
         spellCheck={false}
         aria-label={t("TXT_DBML_EDITOR")}
         aria-invalid={Boolean(parseError)}
-        className="dark-scrollbar min-h-0 flex-1 resize-none rounded-none border-0 bg-slate-950 p-4 font-mono text-xs leading-6 text-sky-200 focus-visible:ring-0"
+        className="light-scrollbar min-h-0 flex-1 resize-none rounded-none border-0 bg-amber-50/30 p-4 font-mono text-xs leading-6 text-amber-950 focus-visible:ring-0 dark:bg-slate-950 dark:text-sky-200 dark:dark-scrollbar"
       />
       <footer
         className={`border-t px-3 py-1.5 text-[11px] font-medium ${
           parseError
-            ? "border-rose-900 bg-rose-950/60 text-rose-300"
-            : "border-slate-800 bg-slate-900/60 text-emerald-400"
+            ? "border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-900 dark:bg-rose-950/60 dark:text-rose-300"
+            : "border-amber-200/80 bg-amber-100/50 text-amber-800 dark:border-slate-800 dark:bg-slate-900/60 dark:text-emerald-400"
         }`}
       >
         {parseError ? t("MSG_DBML_INVALID") : t("MSG_DBML_SYNCED")}

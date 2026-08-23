@@ -48,7 +48,7 @@ export function ValidationPopup({
         {...dragHandlers}
         className="flex cursor-grab active:cursor-grabbing select-none touch-none items-center gap-2 border-b border-slate-200 bg-slate-50/80 px-4 py-3 dark:border-slate-800 dark:bg-slate-950/60"
       >
-        <div className="flex size-6 items-center justify-center rounded-lg bg-sky-500/10 text-sky-600 ring-1 ring-sky-500/25 dark:text-sky-400">
+        <div className="flex size-6 items-center justify-center rounded-lg bg-amber-500/15 text-amber-600 ring-1 ring-amber-500/30 dark:bg-sky-500/10 dark:text-sky-400 dark:ring-sky-500/25">
           <ShieldCheck className="size-3.5" />
         </div>
         <strong className="mr-auto text-xs font-semibold text-slate-900 dark:text-slate-100">

@@ -74,9 +74,6 @@ function AgentEvent({
   if (event.type === "TOOL_RESULT")
     return <StatusEvent text={t("TXT_TOOL_COMPLETED")} />;
 
-  const isUser = event.role === "USER";
-  const isFailed = event.status === "FAILED";
-
   const handleToggleProposal = async () => {
     if (isExpanded) {
       setIsExpanded(false);
@@ -108,8 +105,8 @@ function AgentEvent({
       <span
         className={`flex size-7 shrink-0 items-center justify-center rounded-full ring-1 ${
           isUser
-            ? "bg-slate-800 text-slate-300 ring-slate-700"
-            : "bg-sky-500/15 text-sky-400 ring-sky-500/30"
+            ? "bg-amber-200/70 text-amber-900 ring-amber-300 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700"
+            : "bg-amber-500/20 text-amber-700 ring-amber-500/35 dark:bg-sky-500/15 dark:text-sky-400 dark:ring-sky-500/30"
         }`}
       >
         {isUser ? <User className="size-3.5" /> : <Bot className="size-4" />}
@@ -119,10 +116,10 @@ function AgentEvent({
           isExpanded ? "w-full min-w-0" : "max-w-[85%]"
         } ${
           isUser
-            ? "rounded-tr-xs bg-sky-600 text-white"
+            ? "rounded-tr-xs bg-amber-500 text-white dark:bg-sky-600"
             : isFailed
-              ? "rounded-tl-xs border border-rose-800/60 bg-rose-950/40 text-rose-300"
-              : "rounded-tl-xs border border-slate-800/90 bg-slate-900/90 text-slate-200"
+              ? "rounded-tl-xs border border-rose-200 bg-rose-50 text-rose-800 dark:border-rose-800/60 dark:bg-rose-950/40 dark:text-rose-300"
+              : "rounded-tl-xs border border-amber-200/80 bg-white text-slate-800 shadow-xs dark:border-slate-800/90 dark:bg-slate-900/90 dark:text-slate-200"
         }`}
       >
         <p className="whitespace-pre-wrap break-words">
