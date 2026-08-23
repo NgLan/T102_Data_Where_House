@@ -6,6 +6,7 @@ from uuid import uuid4
 import pytest
 from src.application.data_warehouse_workflows.input import (
     AnalyticalAnalysisInput,
+    ConversationDesignInput,
     DataWarehouseDesignInput,
     RawRequirementAnalysisInput,
     RequirementContext,
@@ -20,12 +21,32 @@ from src.infrastructure.llm.agent_structured_outputs import (
     AnalyticalRequirementItem,
     AnalyticalRequirementResult,
     DbmlRevisionResult,
+    DwConversationResult,
     GeneratedRequirementItem,
     RequirementStructureResult,
 )
 from src.infrastructure.security.pii_guard import PiiGuard
 
 DBML = "Table Fact_Rides {\n  ride_key int [pk]\n}"
+
+
+def test_conversation_schema_requires_branch_payload_keys() -> None:
+    """JSON Schema gửi cho LLM phải bắt buộc cả question và dbml."""
+    required = set(DwConversationResult.model_json_schema()["required"])
+
+    assert {"kind", "question", "dbml", "summary"} <= required
+
+
+def test_conversation_proposal_accepts_complete_dbml() -> None:
+    """Proposal hợp lệ mang nguyên tài liệu DBML và không cần câu hỏi."""
+    result = DwConversationResult(
+        kind="proposal",
+        question=None,
+        dbml=DBML,
+        summary="Đã cập nhật mô hình.",
+    )
+
+    assert result.dbml == DBML
 
 
 class FakeStructuredModel:
@@ -39,7 +60,12 @@ class FakeStructuredModel:
         """Trả fixture và ghi prompt."""
         self._owner.calls.append(self._schema)
         self._owner.prompts.append(messages[-1].content)
-        return self._owner.results[self._schema]
+        result = self._owner.results[self._schema]
+        if isinstance(result, list):
+            result = result.pop(0)
+        if isinstance(result, Exception):
+            raise result
+        return result
 
 
 class FakeChatModel:
@@ -125,6 +151,29 @@ async def test_design_operations_receive_parser_schema_and_call_once() -> None:
     )
     assert model.calls == [DbmlRevisionResult, DbmlRevisionResult]
     assert all("ride_id" in prompt for prompt in model.prompts)
+
+
+@pytest.mark.asyncio
+async def test_conversation_retries_once_after_invalid_structured_output() -> None:
+    """Chat tự sửa một lần khi provider bỏ sót DBML của proposal."""
+    model = _model()
+    model.results[DwConversationResult] = [
+        ValueError("validation error: proposal requires dbml"),
+        DwConversationResult(
+            kind="proposal",
+            question=None,
+            dbml=DBML,
+            summary="Đã cập nhật mô hình.",
+        ),
+    ]
+    agent = DataWarehouseDesignAgent(model, PiiGuard(enabled=False))
+    revision = RevisionDesignInput((), (), (), DBML, "Add relationships")
+
+    result = await agent.converse(ConversationDesignInput(revision))
+
+    assert result.dbml == DBML
+    assert model.calls == [DwConversationResult, DwConversationResult]
+    assert "Output contract correction" in model.prompts[-1]
 
 
 def test_agent_package_contains_no_langgraph_or_source_agent() -> None:

@@ -3,10 +3,11 @@
 from http import HTTPStatus
 from typing import Annotated
 
-from fastapi import APIRouter, File, Response, UploadFile
+from fastapi import APIRouter, File, Query, Response, UploadFile
 from src.application.data_sources.data_source_upload_policy import MAX_FILE_SIZE
 from src.application.data_sources.input import (
     DataSourceIdInput,
+    DataSourcePreviewInput,
     ListDataSourcesInput,
     UploadDataSourcesInput,
     UploadFileInput,
@@ -60,9 +61,9 @@ async def list_data_sources(
 async def upload_data_sources(
     project_id: ProjectIdPath,
     service: DataSourceServiceDependency,
-    files: Annotated[list[UploadFile], File(description="Tối đa 20 file CSV")],
+    files: Annotated[list[UploadFile], File(description="Tối đa 20 file dữ liệu")],
 ) -> UploadDataSourcesResponse:
-    """Upload và phân tích batch file CSV nếu người dùng là OWNER."""
+    """Upload batch source được hỗ trợ nếu người dùng là OWNER."""
     inputs: list[UploadFileInput] = []
     for file in files:
         inputs.append(
@@ -85,9 +86,12 @@ async def get_data_source_preview(
     project_id: ProjectIdPath,
     source_id: SourceIdPath,
     service: DataSourceServiceDependency,
+    table_name: Annotated[str | None, Query(min_length=1, max_length=255)] = None,
 ) -> DataSourcePreviewResponse:
-    """Đọc preview CSV theo yêu cầu, không lưu bản sao trong database."""
-    output = await service.get_preview(DataSourceIdInput(project_id, source_id))
+    """Đọc preview table theo yêu cầu, không lưu bản sao trong database."""
+    output = await service.get_preview(
+        DataSourcePreviewInput(project_id, source_id, table_name)
+    )
     return DataSourcePreviewResponse.from_application(output)
 
 

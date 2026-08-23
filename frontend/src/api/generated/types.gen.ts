@@ -422,6 +422,34 @@ export type ApiResponseHealthResponse = {
 };
 
 /**
+ * ApiResponse[LivenessResponse]
+ */
+export type ApiResponseLivenessResponse = {
+    /**
+     * Status
+     *
+     * Trạng thái phản hồi (luôn là 'success' đối với 2xx)
+     */
+    status?: 'success';
+    /**
+     * Code
+     *
+     * HTTP Status Code (mặc định 200)
+     */
+    code?: number;
+    /**
+     * Message
+     *
+     * Thông điệp phản hồi cho người dùng
+     */
+    message?: string;
+    /**
+     * Dữ liệu payload chính trả về
+     */
+    data?: LivenessResponse | null;
+};
+
+/**
  * ApiResponse[ProjectResponse]
  */
 export type ApiResponseProjectResponse = {
@@ -475,6 +503,34 @@ export type ApiResponseProjectSessionResponse = {
      * Dữ liệu payload chính trả về
      */
     data?: ProjectSessionResponse | null;
+};
+
+/**
+ * ApiResponse[ReadinessResponse]
+ */
+export type ApiResponseReadinessResponse = {
+    /**
+     * Status
+     *
+     * Trạng thái phản hồi (luôn là 'success' đối với 2xx)
+     */
+    status?: 'success';
+    /**
+     * Code
+     *
+     * HTTP Status Code (mặc định 200)
+     */
+    code?: number;
+    /**
+     * Message
+     *
+     * Thông điệp phản hồi cho người dùng
+     */
+    message?: string;
+    /**
+     * Dữ liệu payload chính trả về
+     */
+    data?: ReadinessResponse | null;
 };
 
 /**
@@ -774,7 +830,7 @@ export type BodyUploadProjectDataSources = {
     /**
      * Files
      *
-     * Tối đa 20 file CSV
+     * Tối đa 20 file dữ liệu
      */
     files: Array<Blob | File>;
 };
@@ -999,7 +1055,7 @@ export type CreateProjectSessionRequest = {
 /**
  * CurrentActorResponse
  *
- * Danh tính actor MVP hiện tại.
+ * Hồ sơ user hiện tại, không chứa credential.
  */
 export type CurrentActorResponse = {
     /**
@@ -1020,6 +1076,24 @@ export type CurrentActorResponse = {
      * Email của actor
      */
     email: string;
+    /**
+     * Full Name
+     *
+     * Họ tên tùy chọn
+     */
+    full_name: string | null;
+    /**
+     * Is Active
+     *
+     * Tài khoản đang hoạt động
+     */
+    is_active: boolean;
+    /**
+     * Created At
+     *
+     * Thời điểm tạo tài khoản
+     */
+    created_at: string;
 };
 
 /**
@@ -1229,6 +1303,18 @@ export type DataSourceListResponse = {
  */
 export type DataSourcePreviewResponse = {
     /**
+     * Table Name
+     *
+     * Table đang được preview
+     */
+    table_name: string;
+    /**
+     * Available Tables
+     *
+     * Các table có trong source
+     */
+    available_tables: Array<string>;
+    /**
      * Rows
      *
      * Các dòng preview
@@ -1315,7 +1401,21 @@ export type DataSourceTableResponse = {
  *
  * Định dạng loại Nguồn dữ liệu (Data Source Type).
  */
-export type DataSourceType = 'CSV' | 'EXCEL' | 'JSON' | 'SQL' | 'TEXT';
+export type DataSourceType = 'CSV' | 'TSV' | 'EXCEL' | 'MARKDOWN' | 'JSON' | 'SQL' | 'TEXT';
+
+/**
+ * DatabaseHealthResponse
+ */
+export type DatabaseHealthResponse = {
+    /**
+     * Status
+     */
+    status: 'healthy' | 'unhealthy';
+    /**
+     * Latency Ms
+     */
+    latency_ms: number;
+};
 
 /**
  * DefaultConstraintDto
@@ -1448,6 +1548,14 @@ export type HttpValidationError = {
 };
 
 /**
+ * HealthComponentsResponse
+ */
+export type HealthComponentsResponse = {
+    database: DatabaseHealthResponse;
+    llm: LlmHealthResponse;
+};
+
+/**
  * HealthResponse
  *
  * Trạng thái hoạt động và môi trường hiện tại của Backend.
@@ -1458,13 +1566,68 @@ export type HealthResponse = {
      *
      * Trạng thái hoạt động
      */
-    status: 'ok';
+    status: 'ok' | 'degraded';
     /**
      * Env
      *
      * Môi trường chạy hiện tại
      */
     env: string;
+    /**
+     * Version
+     */
+    version: string;
+    /**
+     * Timestamp
+     */
+    timestamp: string;
+    components: HealthComponentsResponse;
+};
+
+/**
+ * LivenessResponse
+ */
+export type LivenessResponse = {
+    /**
+     * Status
+     */
+    status?: 'ok';
+    /**
+     * Timestamp
+     */
+    timestamp: string;
+};
+
+/**
+ * LlmHealthResponse
+ */
+export type LlmHealthResponse = {
+    /**
+     * Status
+     */
+    status: 'configured' | 'unconfigured';
+    /**
+     * Provider
+     */
+    provider: string;
+    /**
+     * Model
+     */
+    model: string;
+};
+
+/**
+ * LoginRequest
+ */
+export type LoginRequest = {
+    /**
+     * Identifier
+     */
+    identifier: string;
+    /**
+     * Password
+     */
+    password: string;
 };
 
 /**
@@ -1698,11 +1861,48 @@ export type ProposalTurnResponse = {
 };
 
 /**
+ * ReadinessResponse
+ */
+export type ReadinessResponse = {
+    /**
+     * Status
+     */
+    status?: 'ready';
+    /**
+     * Timestamp
+     */
+    timestamp: string;
+    database: DatabaseHealthResponse;
+};
+
+/**
  * RecommendedWorkflowAction
  *
  * Hành động workflow tiếp theo dành cho UI.
  */
 export type RecommendedWorkflowAction = 'NONE' | 'ANALYZE_CHANGES' | 'UPDATE_DATA_MODEL';
+
+/**
+ * RegisterRequest
+ */
+export type RegisterRequest = {
+    /**
+     * Username
+     */
+    username: string;
+    /**
+     * Email
+     */
+    email: string;
+    /**
+     * Password
+     */
+    password: string;
+    /**
+     * Full Name
+     */
+    full_name?: string | null;
+};
 
 /**
  * RenameProjectSessionRequest
@@ -2224,14 +2424,137 @@ export type ValidationIssueCode = 'DBML_SYNTAX_INVALID' | 'TABLE_PRIMARY_KEY_MIS
  */
 export type ValidationSeverity = 'WARNING' | 'ERROR';
 
-export type GetCurrentActorData = {
+export type LivenessCheckHealthLiveGetData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/health/live';
+};
+
+export type LivenessCheckHealthLiveGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseLivenessResponse;
+};
+
+export type LivenessCheckHealthLiveGetResponse = LivenessCheckHealthLiveGetResponses[keyof LivenessCheckHealthLiveGetResponses];
+
+export type ReadinessCheckHealthReadyGetData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/health/ready';
+};
+
+export type ReadinessCheckHealthReadyGetErrors = {
+    /**
+     * Service Unavailable
+     */
+    503: ApiErrorResponse;
+};
+
+export type ReadinessCheckHealthReadyGetError = ReadinessCheckHealthReadyGetErrors[keyof ReadinessCheckHealthReadyGetErrors];
+
+export type ReadinessCheckHealthReadyGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseReadinessResponse;
+};
+
+export type ReadinessCheckHealthReadyGetResponse = ReadinessCheckHealthReadyGetResponses[keyof ReadinessCheckHealthReadyGetResponses];
+
+export type HealthCheckHealthGetData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/health';
+};
+
+export type HealthCheckHealthGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseHealthResponse;
+};
+
+export type HealthCheckHealthGetResponse = HealthCheckHealthGetResponses[keyof HealthCheckHealthGetResponses];
+
+export type RegisterData = {
+    body: RegisterRequest;
+    path?: never;
+    query?: never;
+    url: '/api/v1/auth/register';
+};
+
+export type RegisterErrors = {
+    /**
+     * Conflict
+     */
+    409: ApiErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
+};
+
+export type RegisterError = RegisterErrors[keyof RegisterErrors];
+
+export type RegisterResponses = {
+    /**
+     * Successful Response
+     */
+    201: ApiResponseCurrentActorResponse;
+};
+
+export type RegisterResponse = RegisterResponses[keyof RegisterResponses];
+
+export type LoginData = {
+    body: LoginRequest;
+    path?: never;
+    query?: never;
+    url: '/api/v1/auth/login';
+};
+
+export type LoginErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
+};
+
+export type LoginError = LoginErrors[keyof LoginErrors];
+
+export type LoginResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseCurrentActorResponse;
+};
+
+export type LoginResponse = LoginResponses[keyof LoginResponses];
+
+export type GetCurrentUserData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/api/v1/auth/me';
 };
 
-export type GetCurrentActorErrors = {
+export type GetCurrentUserErrors = {
     /**
      * Unauthorized
      */
@@ -2242,16 +2565,45 @@ export type GetCurrentActorErrors = {
     500: ApiErrorResponse;
 };
 
-export type GetCurrentActorError = GetCurrentActorErrors[keyof GetCurrentActorErrors];
+export type GetCurrentUserError = GetCurrentUserErrors[keyof GetCurrentUserErrors];
 
-export type GetCurrentActorResponses = {
+export type GetCurrentUserResponses = {
     /**
      * Successful Response
      */
     200: ApiResponseCurrentActorResponse;
 };
 
-export type GetCurrentActorResponse = GetCurrentActorResponses[keyof GetCurrentActorResponses];
+export type GetCurrentUserResponse = GetCurrentUserResponses[keyof GetCurrentUserResponses];
+
+export type LogoutData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/auth/logout';
+};
+
+export type LogoutErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
+};
+
+export type LogoutError = LogoutErrors[keyof LogoutErrors];
+
+export type LogoutResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type LogoutResponse = LogoutResponses[keyof LogoutResponses];
 
 export type ListProjectsData = {
     body?: never;
@@ -3343,7 +3695,12 @@ export type GetProjectDataSourcePreviewData = {
          */
         source_id: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Table Name
+         */
+        table_name?: string | null;
+    };
     url: '/api/v1/projects/{project_id}/data-sources/{source_id}/preview';
 };
 
@@ -4045,28 +4402,3 @@ export type StreamProjectSessionEventsResponses = {
      */
     200: unknown;
 };
-
-export type HealthCheckData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/health';
-};
-
-export type HealthCheckErrors = {
-    /**
-     * Internal Server Error
-     */
-    500: ApiErrorResponse;
-};
-
-export type HealthCheckError = HealthCheckErrors[keyof HealthCheckErrors];
-
-export type HealthCheckResponses = {
-    /**
-     * Successful Response
-     */
-    200: ApiResponseHealthResponse;
-};
-
-export type HealthCheckResponse = HealthCheckResponses[keyof HealthCheckResponses];

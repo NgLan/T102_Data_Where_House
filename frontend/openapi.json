@@ -6,14 +6,209 @@
     "version": "1.0.0"
   },
   "paths": {
+    "/health/live": {
+      "get": {
+        "tags": [
+          "Health Check"
+        ],
+        "summary": "Liveness Check",
+        "operationId": "liveness_check_health_live_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_LivenessResponse_"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health/ready": {
+      "get": {
+        "tags": [
+          "Health Check"
+        ],
+        "summary": "Readiness Check",
+        "operationId": "readiness_check_health_ready_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_ReadinessResponse_"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "Health Check"
+        ],
+        "summary": "Health Check",
+        "operationId": "health_check_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_HealthResponse_"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/register": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Register",
+        "operationId": "register",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_CurrentActorResponse_"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Login",
+        "operationId": "login",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_CurrentActorResponse_"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/auth/me": {
       "get": {
         "tags": [
           "Authentication"
         ],
         "summary": "Get Current Actor",
-        "description": "Trả danh tính actor MVP đang được backend sử dụng.",
-        "operationId": "getCurrentActor",
+        "description": "Trả hồ sơ user đã được JWT xác thực.",
+        "operationId": "getCurrentUser",
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -45,7 +240,51 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Logout",
+        "operationId": "logout",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ]
       }
     },
     "/api/v1/projects": {
@@ -97,7 +336,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -157,7 +401,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ]
       }
     },
     "/api/v1/projects/{project_id}": {
@@ -168,6 +417,11 @@
         "summary": "Get Project",
         "description": "Lấy chi tiết một Project sau khi kiểm tra membership.",
         "operationId": "getProject",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
         "parameters": [
           {
             "name": "project_id",
@@ -252,6 +506,11 @@
         "summary": "Update Project",
         "description": "Thay thế thông tin Project do OWNER sở hữu.",
         "operationId": "updateProject",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
         "parameters": [
           {
             "name": "project_id",
@@ -346,6 +605,11 @@
         "summary": "Delete Project",
         "description": "Xóa Project do OWNER sở hữu cùng toàn bộ artifact liên quan.",
         "operationId": "deleteProject",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
         "parameters": [
           {
             "name": "project_id",
@@ -425,6 +689,11 @@
         "summary": "List Requirements",
         "description": "Liệt kê toàn bộ yêu cầu nghiệp vụ của dự án.",
         "operationId": "listRequirements",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
         "parameters": [
           {
             "name": "project_id",
@@ -511,6 +780,11 @@
         "summary": "Get Project Analysis Status",
         "description": "Đọc trạng thái outdated mà không gọi LLM.",
         "operationId": "getProjectAnalysisStatus",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
         "parameters": [
           {
             "name": "project_id",
@@ -597,6 +871,11 @@
         "summary": "Reanalyze Project",
         "description": "Chạy RequirementAgent cho những analysis đã outdated.",
         "operationId": "reanalyzeProject",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
         "parameters": [
           {
             "name": "project_id",
@@ -703,6 +982,11 @@
         "summary": "Get Current Data Model",
         "description": "Lấy DBML và revision hiện tại của dự án.",
         "operationId": "getDataModel",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
         "parameters": [
           {
             "name": "project_id",
@@ -787,6 +1071,11 @@
         "summary": "Update Current Data Model",
         "description": "Lưu trực tiếp DBML do người dùng chỉnh sửa thủ công.",
         "operationId": "updateDataModel",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
         "parameters": [
           {
             "name": "project_id",
@@ -893,6 +1182,11 @@
         "summary": "Get Data Model Validation Issues",
         "description": "Trả các lỗi và cảnh báo validation của snapshot DBML hiện tại.",
         "operationId": "getDataModelValidationIssues",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
         "parameters": [
           {
             "name": "project_id",
@@ -979,6 +1273,11 @@
         "summary": "Validate Data Model Draft",
         "description": "Kiểm tra draft hiện tại mà không gọi LLM hoặc ghi snapshot.",
         "operationId": "validateDataModelDraft",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
         "parameters": [
           {
             "name": "project_id",
@@ -1075,6 +1374,11 @@
         "summary": "Generate Data Model Ddl",
         "description": "Sinh DDL từ revision Data Model hiện hành.",
         "operationId": "generateDataModelDdl",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
         "parameters": [
           {
             "name": "project_id",
@@ -1170,6 +1474,11 @@
         "summary": "Generate Data Model",
         "description": "Chạy Save & Analyze và chỉ tạo Data Model đầu tiên.",
         "operationId": "generateDataModel",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
         "parameters": [
           {
             "name": "project_id",
@@ -1276,6 +1585,11 @@
         "summary": "Regenerate Data Model",
         "description": "Sinh lại, validate và ghi đè trực tiếp Data Model hiện hành.",
         "operationId": "regenerateDataModel",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
         "parameters": [
           {
             "name": "project_id",
@@ -1382,6 +1696,11 @@
         "summary": "Revise Data Model With Ai",
         "description": "Tạo Human Review proposal từ instruction và full project context.",
         "operationId": "createAiDataModelProposal",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
         "parameters": [
           {
             "name": "project_id",
@@ -1497,6 +1816,11 @@
         ],
         "summary": "Get Pending Change Proposal",
         "operationId": "getPendingProjectDataModelChange",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
         "parameters": [
           {
             "name": "project_id",
@@ -1583,6 +1907,11 @@
         "summary": "Xem chi tiết một đề xuất thay đổi mô hình dữ liệu",
         "description": "Trả về DBML đề xuất kèm DBML hiện hành để dựng khung so sánh khác biệt.",
         "operationId": "getProjectDataModelChange",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
         "parameters": [
           {
             "name": "project_id",
@@ -1681,6 +2010,11 @@
         "summary": "Chấp nhận đề xuất và áp dụng vào mô hình dữ liệu hiện tại",
         "description": "Áp dụng DBML đề xuất vào mô hình dữ liệu, tăng revision và trả về mô hình mới.",
         "operationId": "acceptChangeProposal",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
         "parameters": [
           {
             "name": "change_id",
@@ -1777,6 +2111,11 @@
         "summary": "Từ chối một đề xuất thay đổi mô hình dữ liệu",
         "description": "Đánh dấu đề xuất là REJECTED; nội dung và revision của mô hình giữ nguyên.",
         "operationId": "rejectChangeProposal",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
         "parameters": [
           {
             "name": "change_id",
@@ -1863,6 +2202,11 @@
         "summary": "List Data Sources",
         "description": "Liệt kê nguồn nếu người dùng là thành viên dự án.",
         "operationId": "listProjectDataSources",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
         "parameters": [
           {
             "name": "project_id",
@@ -1947,8 +2291,13 @@
           "Data Sources"
         ],
         "summary": "Upload Data Sources",
-        "description": "Upload và phân tích batch file CSV nếu người dùng là OWNER.",
+        "description": "Upload batch source được hỗ trợ nếu người dùng là OWNER.",
         "operationId": "uploadProjectDataSources",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
         "parameters": [
           {
             "name": "project_id",
@@ -2043,8 +2392,13 @@
           "Data Sources"
         ],
         "summary": "Get Data Source Preview",
-        "description": "Đọc preview CSV theo yêu cầu, không lưu bản sao trong database.",
+        "description": "Đọc preview table theo yêu cầu, không lưu bản sao trong database.",
         "operationId": "getProjectDataSourcePreview",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
         "parameters": [
           {
             "name": "project_id",
@@ -2069,6 +2423,24 @@
               "title": "Source Id"
             },
             "description": "ID nguồn dữ liệu"
+          },
+          {
+            "name": "table_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 255
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Table Name"
+            }
           }
         ],
         "responses": {
@@ -2143,6 +2515,11 @@
         "summary": "Update Data Source Column",
         "description": "Cập nhật một phần metadata của cột nếu người dùng là OWNER.",
         "operationId": "updateProjectDataSourceColumn",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
         "parameters": [
           {
             "name": "project_id",
@@ -2277,6 +2654,11 @@
         "summary": "Delete Data Source",
         "description": "Xóa nguồn và file vật lý nếu người dùng là OWNER.",
         "operationId": "deleteProjectDataSource",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
         "parameters": [
           {
             "name": "project_id",
@@ -2368,6 +2750,11 @@
         "summary": "Get Sandbox Config",
         "description": "Lấy cấu hình Sandbox DB của dự án.",
         "operationId": "getSandboxConfig",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
         "parameters": [
           {
             "name": "project_id",
@@ -2452,6 +2839,11 @@
         "summary": "Save Sandbox Config",
         "description": "Lưu hoặc cập nhật thông tin cấu hình Sandbox DB cho dự án.",
         "operationId": "saveSandboxConfig",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
         "parameters": [
           {
             "name": "project_id",
@@ -2538,6 +2930,11 @@
         "summary": "Test Sandbox Connection Endpoint",
         "description": "Kiểm tra thử kết nối đến cơ sở dữ liệu Sandbox.",
         "operationId": "testSandboxConnection",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
         "parameters": [
           {
             "name": "project_id",
@@ -2644,6 +3041,11 @@
         "summary": "Execute Sandbox Ddl Endpoint",
         "description": "Thực thi mã DDL script trên Sandbox Database đã cấu hình của dự án.",
         "operationId": "executeSandboxDdl",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
         "parameters": [
           {
             "name": "project_id",
@@ -2739,6 +3141,11 @@
         ],
         "summary": "Create Project Session",
         "operationId": "createProjectSession",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
         "parameters": [
           {
             "name": "project_id",
@@ -2832,6 +3239,11 @@
         ],
         "summary": "List Project Sessions",
         "operationId": "listProjectSessions",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
         "parameters": [
           {
             "name": "project_id",
@@ -2917,6 +3329,11 @@
         ],
         "summary": "Get Project Session",
         "operationId": "getProjectSession",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
         "parameters": [
           {
             "name": "session_id",
@@ -3000,6 +3417,11 @@
         ],
         "summary": "Rename Project Session",
         "operationId": "renameProjectSession",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
         "parameters": [
           {
             "name": "session_id",
@@ -3095,6 +3517,11 @@
         ],
         "summary": "List Project Session Events",
         "operationId": "listProjectSessionEvents",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
         "parameters": [
           {
             "name": "session_id",
@@ -3209,6 +3636,11 @@
         ],
         "summary": "Send Project Session Message",
         "operationId": "sendProjectSessionMessage",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
         "parameters": [
           {
             "name": "session_id",
@@ -3314,6 +3746,11 @@
         ],
         "summary": "Stream Project Session Events",
         "operationId": "streamProjectSessionEvents",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
         "parameters": [
           {
             "name": "session_id",
@@ -3403,38 +3840,6 @@
               }
             },
             "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/health": {
-      "get": {
-        "tags": [
-          "Health Check"
-        ],
-        "summary": "Health Check",
-        "description": "Endpoint kiểm tra trạng thái hoạt động của hệ thống.",
-        "operationId": "healthCheck",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponse_HealthResponse_"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
           }
         }
       }
@@ -4018,6 +4423,45 @@
         "type": "object",
         "title": "ApiResponse[HealthResponse]"
       },
+      "ApiResponse_LivenessResponse_": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "success",
+            "title": "Status",
+            "description": "Trạng thái phản hồi (luôn là 'success' đối với 2xx)",
+            "default": "success"
+          },
+          "code": {
+            "type": "integer",
+            "maximum": 299.0,
+            "minimum": 200.0,
+            "title": "Code",
+            "description": "HTTP Status Code (mặc định 200)",
+            "default": 200
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Thông điệp phản hồi cho người dùng",
+            "default": "Xử lý thành công"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LivenessResponse"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Dữ liệu payload chính trả về"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "ApiResponse[LivenessResponse]"
+      },
       "ApiResponse_ProjectResponse_": {
         "properties": {
           "status": {
@@ -4095,6 +4539,45 @@
         "additionalProperties": false,
         "type": "object",
         "title": "ApiResponse[ProjectSessionResponse]"
+      },
+      "ApiResponse_ReadinessResponse_": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "success",
+            "title": "Status",
+            "description": "Trạng thái phản hồi (luôn là 'success' đối với 2xx)",
+            "default": "success"
+          },
+          "code": {
+            "type": "integer",
+            "maximum": 299.0,
+            "minimum": 200.0,
+            "title": "Code",
+            "description": "HTTP Status Code (mặc định 200)",
+            "default": 200
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Thông điệp phản hồi cho người dùng",
+            "default": "Xử lý thành công"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReadinessResponse"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Dữ liệu payload chính trả về"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "ApiResponse[ReadinessResponse]"
       },
       "ApiResponse_SandboxConfigResponse_": {
         "properties": {
@@ -4515,7 +4998,7 @@
             },
             "type": "array",
             "title": "Files",
-            "description": "Tối đa 20 file CSV"
+            "description": "Tối đa 20 file dữ liệu"
           }
         },
         "type": "object",
@@ -4833,16 +5316,42 @@
             "type": "string",
             "title": "Email",
             "description": "Email của actor"
+          },
+          "full_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Full Name",
+            "description": "Họ tên tùy chọn"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active",
+            "description": "Tài khoản đang hoạt động"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "description": "Thời điểm tạo tài khoản"
           }
         },
         "type": "object",
         "required": [
           "id",
           "username",
-          "email"
+          "email",
+          "full_name",
+          "is_active",
+          "created_at"
         ],
         "title": "CurrentActorResponse",
-        "description": "Danh tính actor MVP hiện tại."
+        "description": "Hồ sơ user hiện tại, không chứa credential."
       },
       "DataModelChangeStatus": {
         "type": "string",
@@ -5123,6 +5632,19 @@
       },
       "DataSourcePreviewResponse": {
         "properties": {
+          "table_name": {
+            "type": "string",
+            "title": "Table Name",
+            "description": "Table đang được preview"
+          },
+          "available_tables": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Available Tables",
+            "description": "Các table có trong source"
+          },
           "rows": {
             "items": {
               "additionalProperties": {
@@ -5150,6 +5672,8 @@
         },
         "type": "object",
         "required": [
+          "table_name",
+          "available_tables",
           "rows",
           "total_rows"
         ],
@@ -5245,13 +5769,38 @@
         "type": "string",
         "enum": [
           "CSV",
+          "TSV",
           "EXCEL",
+          "MARKDOWN",
           "JSON",
           "SQL",
           "TEXT"
         ],
         "title": "DataSourceType",
         "description": "Định dạng loại Nguồn dữ liệu (Data Source Type)."
+      },
+      "DatabaseHealthResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "healthy",
+              "unhealthy"
+            ],
+            "title": "Status"
+          },
+          "latency_ms": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Latency Ms"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "latency_ms"
+        ],
+        "title": "DatabaseHealthResponse"
       },
       "DefaultConstraintDto": {
         "properties": {
@@ -5425,11 +5974,30 @@
         "type": "object",
         "title": "HTTPValidationError"
       },
+      "HealthComponentsResponse": {
+        "properties": {
+          "database": {
+            "$ref": "#/components/schemas/DatabaseHealthResponse"
+          },
+          "llm": {
+            "$ref": "#/components/schemas/LlmHealthResponse"
+          }
+        },
+        "type": "object",
+        "required": [
+          "database",
+          "llm"
+        ],
+        "title": "HealthComponentsResponse"
+      },
       "HealthResponse": {
         "properties": {
           "status": {
             "type": "string",
-            "const": "ok",
+            "enum": [
+              "ok",
+              "degraded"
+            ],
             "title": "Status",
             "description": "Trạng thái hoạt động"
           },
@@ -5437,16 +6005,101 @@
             "type": "string",
             "title": "Env",
             "description": "Môi trường chạy hiện tại"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          },
+          "components": {
+            "$ref": "#/components/schemas/HealthComponentsResponse"
           }
         },
         "additionalProperties": false,
         "type": "object",
         "required": [
           "status",
-          "env"
+          "env",
+          "version",
+          "timestamp",
+          "components"
         ],
         "title": "HealthResponse",
         "description": "Trạng thái hoạt động và môi trường hiện tại của Backend."
+      },
+      "LivenessResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "ok",
+            "title": "Status",
+            "default": "ok"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "timestamp"
+        ],
+        "title": "LivenessResponse"
+      },
+      "LlmHealthResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "configured",
+              "unconfigured"
+            ],
+            "title": "Status"
+          },
+          "provider": {
+            "type": "string",
+            "title": "Provider"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "provider",
+          "model"
+        ],
+        "title": "LlmHealthResponse"
+      },
+      "LoginRequest": {
+        "properties": {
+          "identifier": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 3,
+            "title": "Identifier"
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 72,
+            "minLength": 1,
+            "title": "Password"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "identifier",
+          "password"
+        ],
+        "title": "LoginRequest"
       },
       "ProjectRequirementResponse": {
         "properties": {
@@ -5779,6 +6432,30 @@
         ],
         "title": "ProposalTurnResponse"
       },
+      "ReadinessResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "ready",
+            "title": "Status",
+            "default": "ready"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          },
+          "database": {
+            "$ref": "#/components/schemas/DatabaseHealthResponse"
+          }
+        },
+        "type": "object",
+        "required": [
+          "timestamp",
+          "database"
+        ],
+        "title": "ReadinessResponse"
+      },
       "RecommendedWorkflowAction": {
         "type": "string",
         "enum": [
@@ -5788,6 +6465,49 @@
         ],
         "title": "RecommendedWorkflowAction",
         "description": "Hành động workflow tiếp theo dành cho UI."
+      },
+      "RegisterRequest": {
+        "properties": {
+          "username": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 3,
+            "pattern": "^[A-Za-z0-9_.-]+$",
+            "title": "Username"
+          },
+          "email": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 3,
+            "title": "Email"
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 72,
+            "minLength": 12,
+            "title": "Password"
+          },
+          "full_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 150
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Full Name"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "username",
+          "email",
+          "password"
+        ],
+        "title": "RegisterRequest"
       },
       "RenameProjectSessionRequest": {
         "properties": {
@@ -6642,6 +7362,13 @@
         ],
         "title": "ValidationSeverity",
         "description": "Mức độ của một vấn đề validation."
+      }
+    },
+    "securitySchemes": {
+      "APIKeyCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "p102_access_token"
       }
     }
   }

@@ -6,6 +6,7 @@ import { ThemeProvider } from "next-themes";
 import { TooltipProvider } from "@/common/components/ui/tooltip";
 import { Toaster } from "@/common/components/ui/sonner";
 import { I18nProvider } from "@/common/i18n/I18nProvider";
+import { AuthBoundary } from "@/common/components/auth/AuthBoundary";
 
 interface AppProvidersProps {
   children: ReactNode;
@@ -23,8 +24,10 @@ export function AppProviders({ children }: AppProvidersProps) {
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <I18nProvider>
         <QueryClientProvider client={queryClient}>
-          <TooltipProvider>{children}</TooltipProvider>
-          <Toaster />
+          <AuthBoundary>
+            <TooltipProvider>{children}</TooltipProvider>
+          </AuthBoundary>
+          <Toaster duration={5000} />
         </QueryClientProvider>
       </I18nProvider>
     </ThemeProvider>

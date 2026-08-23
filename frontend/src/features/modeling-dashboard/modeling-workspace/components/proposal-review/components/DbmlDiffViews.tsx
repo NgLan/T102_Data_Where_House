@@ -15,7 +15,7 @@ const LINE_MARKERS: Record<DiffLine["type"], string> = {
 /** Hiển thị diff trên một cột với số dòng cũ và mới, tự động xuống dòng khi dài. */
 export function UnifiedDbmlDiff({ diff }: { diff: DiffLine[] }) {
   return (
-    <div className="dark-scrollbar flex-1 overflow-y-auto py-2 font-mono text-[12.5px] leading-relaxed">
+    <div className="dark-scrollbar h-full min-h-0 flex-1 overflow-y-auto py-2 font-mono text-[12.5px] leading-relaxed">
       {diff.map((line, index) => (
         <div
           key={index}

@@ -23,6 +23,7 @@ from src.domain.requirement.entities import Requirement
 from src.domain.user.entities import User
 
 from tests.project_fakes import (
+    InMemoryDataModelRepository,
     InMemoryDataSourceRepository,
     InMemoryProjectMemberRepository,
     InMemoryProjectRepository,
@@ -42,6 +43,7 @@ class ProjectTestDependencies:
     members: InMemoryProjectMemberRepository
     data_sources: InMemoryDataSourceRepository
     requirements: InMemoryRequirementRepository
+    data_models: InMemoryDataModelRepository
     artifacts: RecordingArtifactStore
     unit_of_work: RecordingUnitOfWork
     access: ProjectAccessPolicy
@@ -53,6 +55,7 @@ def _service(dependencies: ProjectTestDependencies) -> ProjectService:
         members=dependencies.members,
         data_sources=dependencies.data_sources,
         requirements=dependencies.requirements,
+        data_models=dependencies.data_models,
         artifacts=dependencies.artifacts,
         unit_of_work=dependencies.unit_of_work,
         access=dependencies.access,
@@ -68,6 +71,7 @@ def build_service(actor_id: UUID = DEFAULT_USER_ID):
         members,
         InMemoryDataSourceRepository(),
         InMemoryRequirementRepository(),
+        InMemoryDataModelRepository(),
         RecordingArtifactStore(),
         RecordingUnitOfWork(),
         ProjectAccessPolicy(projects, members, actor_id),
@@ -288,6 +292,7 @@ async def test_create_rolls_back_when_member_persistence_fails() -> None:
         members,
         InMemoryDataSourceRepository(),
         InMemoryRequirementRepository(),
+        InMemoryDataModelRepository(),
         RecordingArtifactStore(),
         unit_of_work,
         ProjectAccessPolicy(projects, members, DEFAULT_USER_ID),

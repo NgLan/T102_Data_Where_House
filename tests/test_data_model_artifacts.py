@@ -1,7 +1,7 @@
 """Tests cho PostgreSQL DDL codegen và cấu hình provider."""
 
 from src.domain.sandbox.enums import SandboxDbType
-from src.infrastructure.codegen.pydbml_artifact_generator import PyDbmlDdlGenerator
+from src.infrastructure.codegen.pydbml_ddl_generator import PyDbmlDdlGenerator
 from src.infrastructure.llm.factory import OPENROUTER_BASE_URL, resolve_provider_config
 
 DBML = """Table rides {

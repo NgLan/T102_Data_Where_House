@@ -15,6 +15,7 @@ from src.application.data_warehouse_workflows.output import (
     ValidationIssue,
 )
 from src.infrastructure.agents.agent_context_renderer import render_design_input
+from src.infrastructure.agents.conversation_output_invoker import ConversationOutputInvoker
 from src.infrastructure.agents.dbml_normalizer import normalize_agent_dbml
 from src.infrastructure.agents.prompts.dw_conversation import (
     DW_CONVERSATION_SYSTEM_PROMPT,
@@ -28,7 +29,7 @@ from src.infrastructure.agents.prompts.dw_revise import (
     DW_REVISE_SYSTEM_PROMPT,
     DW_REVISE_USER_PROMPT,
 )
-from src.infrastructure.llm.agent_structured_outputs import DbmlRevisionResult, DwConversationResult
+from src.infrastructure.llm.agent_structured_outputs import DbmlRevisionResult
 from src.infrastructure.llm.lazy_chat_model import ChatModelSource, LazyChatModel
 from src.infrastructure.llm.structured_llm_invoker import StructuredLlmInvoker
 from src.infrastructure.security.pii_guard import PiiGuard
@@ -82,8 +83,9 @@ class DataWarehouseDesignAgent(IDataWarehouseDesignAgent):
             analytical_requirements=analytical,
             schema_metadata=schemas,
         )
-        invoker = StructuredLlmInvoker(self._model.get(), self._pii_guard)
-        result = await invoker.invoke(DW_CONVERSATION_SYSTEM_PROMPT, prompt, DwConversationResult)
+        result = await ConversationOutputInvoker(
+            self._model.get(), self._pii_guard
+        ).invoke(DW_CONVERSATION_SYSTEM_PROMPT, prompt)
         if result.kind == AgentTurnKind.CLARIFICATION:
             return ConversationDesignResult(
                 AgentTurnKind.CLARIFICATION,

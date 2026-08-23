@@ -5,6 +5,7 @@ from typing import Protocol
 
 from src.application.data_sources.input import (
     DataSourceIdInput,
+    DataSourcePreviewInput,
     ListDataSourcesInput,
     UpdateDataSourceColumnInput,
     UploadDataSourcesInput,
@@ -15,22 +16,6 @@ from src.application.data_sources.output import (
     PreviewOutput,
     UploadDataSourcesOutput,
 )
-
-
-class ICsvUploadValidator(Protocol):
-    """Outbound port kiểm tra CSV nhẹ trước khi lưu."""
-
-    def validate(self, file_bytes: bytes, filename: str) -> None:
-        """Báo lỗi nếu file không có header hoặc DuckDB không thể đọc."""
-        ...
-
-
-class ICsvPreviewReader(Protocol):
-    """Outbound port đọc preview mà không chạy profiler."""
-
-    def read(self, file_bytes: bytes, filename: str) -> PreviewOutput:
-        """Đọc các dòng preview giới hạn và tổng số dòng."""
-        ...
 
 
 class IDataSourceFileStore(Protocol):
@@ -77,7 +62,7 @@ class IDataSourceService(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def get_preview(self, data: DataSourceIdInput) -> PreviewOutput:
+    async def get_preview(self, data: DataSourcePreviewInput) -> PreviewOutput:
         """Đọc preview nếu actor là thành viên dự án.
 
         Args:

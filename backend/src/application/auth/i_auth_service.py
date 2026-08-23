@@ -1,27 +1,37 @@
 """Interface duy nhất của module Authentication."""
 
 from abc import ABC, abstractmethod
+from typing import Protocol
 
-from src.application.auth.input import ResolveCurrentActorInput
-from src.application.auth.output import CurrentActorOutput
+from src.application.auth.input import LoginInput, RegisterInput
+from src.application.auth.output import AuthSessionOutput, CurrentActorOutput
+from src.application.auth.token_models import IssuedToken, TokenClaims
+from src.domain.shared.types import EntityID
+
+
+class IPasswordHasher(Protocol):
+    def hash(self, password: str) -> str: ...
+
+    def verify(self, password: str, password_hash: str) -> bool: ...
+
+
+class ITokenCodec(Protocol):
+    def issue(self, user_id: EntityID) -> IssuedToken: ...
+
+    def decode(self, token: str) -> TokenClaims: ...
 
 
 class IAuthService(ABC):
-    """Hợp đồng application cho việc resolve actor hiện tại."""
+    """Hợp đồng application cho đăng ký, đăng nhập và thu hồi JWT."""
 
     @abstractmethod
-    async def resolve_current_actor(
-        self,
-        data: ResolveCurrentActorInput,
-    ) -> CurrentActorOutput:
-        """Lấy hoặc provision actor hiện tại.
+    async def register(self, data: RegisterInput) -> AuthSessionOutput: ...
 
-        Args:
-            data: Danh tính cần resolve.
-        Returns:
-            Actor được dùng tại application boundary.
-        Raises:
-            BusinessException: Khi danh tính vi phạm Domain invariant.
-            InfrastructureException: Khi persistence thất bại.
-        """
-        raise NotImplementedError
+    @abstractmethod
+    async def login(self, data: LoginInput) -> AuthSessionOutput: ...
+
+    @abstractmethod
+    async def authenticate(self, token: str) -> CurrentActorOutput: ...
+
+    @abstractmethod
+    async def logout(self, token: str) -> None: ...

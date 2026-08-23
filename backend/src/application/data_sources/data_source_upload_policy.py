@@ -9,7 +9,9 @@ from src.common.exceptions.error_codes import ErrorCode
 
 MAX_ALLOWED_FILES = 20
 MAX_FILE_SIZE = 20 * 1024 * 1024
-ALLOWED_EXTENSIONS = frozenset({".csv"})
+ALLOWED_EXTENSIONS = frozenset({
+    ".csv", ".tsv", ".xls", ".xlsx", ".md", ".markdown", ".sql",
+})
 
 
 def validate_upload(
@@ -24,7 +26,8 @@ def validate_upload(
         _raise(ErrorCode.MAX_FILES_EXCEEDED, f"Mỗi Project chỉ có tối đa {MAX_ALLOWED_FILES} file.")
     for item in data.files:
         if file_extension(item.filename) not in ALLOWED_EXTENSIONS:
-            _raise(ErrorCode.INVALID_FILE_FORMAT, "Chỉ hỗ trợ file định dạng CSV.")
+            supported = ", ".join(sorted(ALLOWED_EXTENSIONS))
+            _raise(ErrorCode.INVALID_FILE_FORMAT, f"Định dạng không được hỗ trợ. Cho phép: {supported}.")
         if len(item.content) > MAX_FILE_SIZE:
             size_mb = MAX_FILE_SIZE // (1024 * 1024)
             _raise(ErrorCode.FILE_TOO_LARGE, f"Mỗi file không được vượt quá {size_mb} MB.")

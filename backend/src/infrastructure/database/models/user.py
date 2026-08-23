@@ -2,9 +2,9 @@
 
 from typing import TYPE_CHECKING
 
-from sqlalchemy import String
+from sqlalchemy import Boolean, String, Text, false
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from src.domain.user.entities import MAX_USERNAME_LENGTH
+from src.domain.user.entities import MAX_FULL_NAME_LENGTH, MAX_USERNAME_LENGTH
 from src.domain.user.value_objects import MAX_EMAIL_LENGTH
 from src.infrastructure.database.base import Base
 
@@ -22,6 +22,11 @@ class UserModel(Base):
 
     username: Mapped[str] = mapped_column(String(MAX_USERNAME_LENGTH), nullable=False, unique=True, index=True)
     email: Mapped[str] = mapped_column(String(MAX_EMAIL_LENGTH), nullable=False, unique=True, index=True)
+    password_hash: Mapped[str | None] = mapped_column(Text, nullable=True)
+    full_name: Mapped[str | None] = mapped_column(String(MAX_FULL_NAME_LENGTH), nullable=True)
+    is_active: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default=false()
+    )
 
     # Relationships
     projects: Mapped[list["ProjectModel"]] = relationship(

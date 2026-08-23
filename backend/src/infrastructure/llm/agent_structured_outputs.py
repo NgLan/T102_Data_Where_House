@@ -50,12 +50,20 @@ class DbmlRevisionResult(BaseModel):
 class DwConversationResult(BaseModel):
     """Câu hỏi làm rõ hoặc DBML proposal từ một lượt hội thoại."""
 
-    kind: Literal["clarification", "proposal"]
-    question: str | None = None
-    dbml: str | None = None
+    kind: Literal["clarification", "proposal"] = Field(
+        description="Choose clarification or proposal."
+    )
+    question: str | None = Field(
+        description="Required key. A concise question for clarification; null for proposal."
+    )
+    dbml: str | None = Field(
+        description="Required key. Complete raw DBML for proposal; null for clarification."
+    )
     summary: str = Field(
         min_length=1,
-        description="Concise user-facing conclusion; never include private reasoning.",
+        description=(
+            "One or two concise user-facing sentences; no repetition or private reasoning."
+        ),
     )
 
     @model_validator(mode="after")

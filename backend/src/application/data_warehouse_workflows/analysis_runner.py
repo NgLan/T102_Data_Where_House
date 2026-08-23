@@ -2,6 +2,10 @@
 
 from src.application.common.project_access_policy import ProjectAccessPolicy
 from src.application.common.unit_of_work import IUnitOfWork
+from src.application.data_warehouse_workflows.analysis_helpers import (
+    ensure_revision,
+    to_requirement_context,
+)
 from src.application.data_warehouse_workflows.generated_entity_mapper import (
     map_generated_analytical,
     map_generated_requirements,
@@ -12,7 +16,6 @@ from src.application.data_warehouse_workflows.i_data_warehouse_workflow_service 
 from src.application.data_warehouse_workflows.input import (
     AnalyticalAnalysisInput,
     RawRequirementAnalysisInput,
-    RequirementContext,
 )
 from src.application.data_warehouse_workflows.output import (
     GeneratedAnalyticalRequirement,
@@ -22,14 +25,11 @@ from src.application.data_warehouse_workflows.source_analysis_runner import (
     WorkflowSourceAnalysisRunner,
 )
 from src.application.data_warehouse_workflows.workflow_data_loader import WorkflowDataReader
-from src.common.exceptions.business import BusinessException
-from src.common.exceptions.error_codes import ErrorCode
 from src.domain.analytical_requirement.i_analytical_requirement_repository import (
     IAnalyticalRequirementRepository,
 )
 from src.domain.project.entities import Project
 from src.domain.project.i_project_repository import IProjectRepository
-from src.domain.requirement.entities import Requirement
 from src.domain.requirement.i_requirement_repository import IRequirementRepository
 from src.domain.shared.types import EntityID
 
@@ -88,7 +88,7 @@ class WorkflowAnalysisRunner:
     ) -> None:
         async with self._unit_of_work:
             project = await self._access.require_owner(project_id)
-            _ensure_revision(project.requirement_revision, expected_revision)
+            ensure_revision(project.requirement_revision, expected_revision)
             if (project.requirement or "").strip():
                 entities = map_generated_requirements(project.id, generated)
                 await self._requirements.replace_by_project(project.id, entities)
@@ -101,7 +101,7 @@ class WorkflowAnalysisRunner:
         generated: tuple[GeneratedAnalyticalRequirement, ...] = ()
         if data.requirements:
             await self._unit_of_work.rollback()
-            inputs = tuple(_to_requirement_context(item) for item in data.requirements)
+            inputs = tuple(to_requirement_context(item) for item in data.requirements)
             generated = await self._requirement_agent.derive_analytical_requirements(
                 AnalyticalAnalysisInput(inputs, data.data_sources)
             )
@@ -116,8 +116,8 @@ class WorkflowAnalysisRunner:
     ) -> None:
         async with self._unit_of_work:
             project = await self._access.require_owner(project_id)
-            _ensure_revision(project.requirement_revision, expected_revisions[0])
-            _ensure_revision(project.source_revision, expected_revisions[1])
+            ensure_revision(project.requirement_revision, expected_revisions[0])
+            ensure_revision(project.source_revision, expected_revisions[1])
             data = await self._reader.load_design_input(project.id)
             valid_ids = {item.id for item in data.requirements}
             entities = map_generated_analytical(generated, valid_ids)
@@ -127,23 +127,3 @@ class WorkflowAnalysisRunner:
             project.mark_source_analysis_completed()
             await self._projects.save(project)
             await self._unit_of_work.commit()
-
-
-def _ensure_revision(current: int, expected: int) -> None:
-    """Từ chối persist nếu input đổi trong lúc Agent xử lý."""
-    if current != expected:
-        raise BusinessException(
-            ErrorCode.ANALYSIS_INPUT_CHANGED,
-            "Input đã thay đổi trong lúc Agent đang xử lý.",
-        )
-
-
-def _to_requirement_context(requirement: Requirement) -> RequirementContext:
-    """Chỉ truyền các field Requirement mà Agent cần."""
-    return RequirementContext(
-        requirement.id,
-        requirement.title,
-        requirement.description,
-        requirement.type.value,
-        requirement.priority.value,
-    )

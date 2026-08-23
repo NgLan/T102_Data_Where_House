@@ -1,16 +1,18 @@
 """Public output models của Data Source application service."""
 
-from src.application.data_sources.output.models import (
+from src.application.data_sources.output.constraint_outputs import (
     CheckConstraintOutput,
     ColumnConstraintOutput,
+    DefaultConstraintOutput,
+    ForeignKeyConstraintOutput,
+    UniqueConstraintOutput,
+)
+from src.application.data_sources.output.models import (
     DataSourceColumnOutput,
     DataSourceListOutput,
     DataSourceOutput,
     DataSourceTableOutput,
-    DefaultConstraintOutput,
-    ForeignKeyConstraintOutput,
     PreviewOutput,
-    UniqueConstraintOutput,
     UploadDataSourcesOutput,
 )
 

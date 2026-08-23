@@ -9,7 +9,7 @@ import {
   listDataSources,
   uploadDataSources,
 } from "../services/data-sources-api";
-import { validateCsvFiles } from "../utils/data-source-upload-validation";
+import { validateSourceFiles } from "../utils/data-source-upload-validation";
 
 /** Quản lý server state Data Source bằng TanStack Query. */
 export function useDataSources(projectId: string) {
@@ -52,7 +52,7 @@ export function useDataSources(projectId: string) {
     },
   });
   const uploadCsvFiles = async (files: File[]) => {
-    const errorCode = validateCsvFiles(files, sourcesQuery.data?.items ?? []);
+    const errorCode = validateSourceFiles(files, sourcesQuery.data?.items ?? []);
     if (errorCode) return notifyError(errorCode);
     await uploadMutation.mutateAsync(files);
   };

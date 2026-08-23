@@ -5,7 +5,8 @@ from uuid import uuid4
 import pytest
 from src.application.data_sources.source_analysis_models import (
     ColumnClassificationOutput,
-    ProfiledCsvSource,
+    ProfiledSource,
+    ProfiledTableSource,
     SourceFileAnalysisInput,
 )
 from src.application.data_sources.source_analysis_runner import SourceAnalysisRunner
@@ -20,8 +21,9 @@ class Profiler:
     def __init__(self, columns: tuple[ColumnProfile, ...]) -> None:
         self.columns = columns
 
-    def profile(self, content: bytes, filename: str) -> ProfiledCsvSource:
-        return ProfiledCsvSource(filename.removesuffix(".csv"), self.columns)
+    def profile(self, content: bytes, filename: str) -> ProfiledSource:
+        table = ProfiledTableSource(filename.removesuffix(".csv"), self.columns)
+        return ProfiledSource((table,))
 
 
 class Classifier:

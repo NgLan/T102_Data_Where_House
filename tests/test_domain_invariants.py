@@ -163,6 +163,7 @@ def test_accept_does_not_apply_semantic_rules_to_dbml_text() -> None:
     change = DataModelChange(
         data_model_id=model.id,
         user_id=uuid4(),
+        base_dbml=model.dbml,
         proposed_dbml=INVALID_REFERENCE_DBML,
     )
 
@@ -180,6 +181,7 @@ def test_revision_conflict_marks_proposal_without_mutating_model() -> None:
         data_model_id=model.id,
         user_id=uuid4(),
         base_revision=1,
+        base_dbml=model.dbml,
         proposed_dbml="Table users { id int [pk] name varchar }",
     )
 

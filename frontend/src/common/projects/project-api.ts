@@ -1,6 +1,6 @@
 import {
   apiClient,
-  getCurrentActor,
+  getCurrentUser,
   listProjects,
   requireApiData,
   type CurrentActorResponse,
@@ -25,8 +25,9 @@ export async function getAccessibleProjects(): Promise<ProjectSummaryResponse[]>
  * @throws ApiError khi request thất bại; Error khi envelope thiếu payload.
  */
 export async function getCurrentActorProfile(): Promise<CurrentActorResponse> {
-  const response = await getCurrentActor({
+  const response = await getCurrentUser({
     client: apiClient,
+    meta: { shouldNotify: false },
     responseStyle: "fields",
     throwOnError: true,
   });

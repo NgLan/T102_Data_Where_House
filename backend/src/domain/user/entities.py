@@ -8,6 +8,7 @@ from src.domain.shared.entity import BaseEntity
 from src.domain.user.value_objects import Email
 
 MAX_USERNAME_LENGTH = 100
+MAX_FULL_NAME_LENGTH = 150
 
 
 @dataclass(eq=False, kw_only=True)
@@ -16,6 +17,9 @@ class User(BaseEntity):
 
     username: str
     email: Email
+    password_hash: str | None = None
+    full_name: str | None = None
+    is_active: bool = True
 
     def __post_init__(self) -> None:
         """Thực thi kiểm tra và đảm bảo invariant cho User."""
@@ -30,6 +34,7 @@ class User(BaseEntity):
             )
 
         self._validate_and_normalize_username()
+        self._validate_auth_fields()
 
     def _validate_and_normalize_username(self) -> None:
         """Kiểm tra và chuẩn hóa tên người dùng."""
@@ -47,4 +52,18 @@ class User(BaseEntity):
             )
 
         self.username = normalized
+
+    def _validate_auth_fields(self) -> None:
+        """Chuẩn hóa hồ sơ auth mà không để Domain biết bcrypt/JWT."""
+        if self.password_hash is not None:
+            self.password_hash = self.password_hash.strip() or None
+        if self.full_name is not None:
+            self.full_name = self.full_name.strip() or None
+        if self.full_name and len(self.full_name) > MAX_FULL_NAME_LENGTH:
+            raise BusinessException(
+                ErrorCode.VALIDATION_ERROR,
+                f"Họ tên vượt quá {MAX_FULL_NAME_LENGTH} ký tự.",
+            )
+        if not isinstance(self.is_active, bool):
+            raise BusinessException(ErrorCode.VALIDATION_ERROR, "is_active phải là boolean.")
 

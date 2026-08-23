@@ -2,16 +2,19 @@
 
 from dataclasses import dataclass
 
-from src.domain.shared.types import EntityID
+
+@dataclass(frozen=True, slots=True)
+class RegisterInput:
+    username: str
+    email: str
+    password: str
+    full_name: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
-class ResolveCurrentActorInput:
-    """Danh tính MVP cần được resolve thành actor hiện tại."""
-
-    user_id: EntityID
-    username: str
-    email: str
+class LoginInput:
+    identifier: str
+    password: str
 
 
-__all__ = ["ResolveCurrentActorInput"]
+__all__ = ["LoginInput", "RegisterInput"]

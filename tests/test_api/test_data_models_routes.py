@@ -12,7 +12,9 @@ from src.application.data_models.input import (
     GenerateDataModelDdlInput,
     GetChangeProposalInput,
     GetDataModelInput,
+    GetPendingChangeProposalInput,
     UpdateDataModelInput,
+    ValidateDataModelInput,
 )
 from src.application.data_models.output import (
     ChangeProposalDetailOutput,
@@ -80,10 +82,22 @@ class StubDataModelService(IDataModelService):
         del data
         return ()
 
+    async def validate_draft(
+        self, data: ValidateDataModelInput
+    ) -> tuple[ValidationIssue, ...]:
+        del data
+        return ()
+
     async def get_change_proposal(
         self, data: GetChangeProposalInput
     ) -> ChangeProposalDetailOutput:
         raise NotImplementedError
+
+    async def get_pending_change_proposal(
+        self, data: GetPendingChangeProposalInput
+    ) -> ChangeProposalDetailOutput | None:
+        del data
+        return None
 
     async def accept_change_proposal(self, data: ChangeProposalIdInput) -> DataModelOutput:
         raise NotImplementedError

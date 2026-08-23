@@ -15,7 +15,6 @@ REMOVED_REFERENCES = (
     '"/api/v1/sandbox/test-connection"',
     "extracted_requirement_text",
     "semantic_type",
-    "sample_values",
     "ColumnSemanticType",
     "GenerateSandboxDdl",
     "ISandboxDdlGenerator",

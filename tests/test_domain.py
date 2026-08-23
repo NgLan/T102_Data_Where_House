@@ -411,6 +411,7 @@ def test_data_model_optimistic_locking_success() -> None:
         data_model_id=dm.id,
         user_id=uuid4(),
         base_revision=1,
+        base_dbml=dm.dbml,
         proposed_dbml="Table A { id uuid } Table B { id uuid }",
     )
 
@@ -427,6 +428,7 @@ def test_data_model_optimistic_locking_conflict() -> None:
         data_model_id=dm.id,
         user_id=uuid4(),
         base_revision=1,
+        base_dbml="Table A { id uuid }",
         proposed_dbml="Table A { id uuid } Table B { id uuid }",
     )
 

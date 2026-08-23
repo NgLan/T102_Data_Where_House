@@ -74,42 +74,40 @@ async def _invoke_model(
 
 def _translate_llm_exception(exc: Exception) -> InfrastructureException:
     """Phân tích nguyên nhân ngoại lệ của provider thành ErrorCode chi tiết."""
-    msg = str(exc)
-    exc_type = type(exc).__name__
-    if "404" in msg or "not found" in msg.casefold() or "NOT_FOUND" in msg:
-        return InfrastructureException(
-            ErrorCode.LLM_MODEL_NOT_FOUND,
-            f"Mô hình LLM không tồn tại hoặc không được hỗ trợ bởi provider: {msg}",
-        )
-    if any(k in msg.casefold() for k in ("401", "403", "unauthorized", "authentication", "api_key", "api key")) or "AuthenticationError" in exc_type:
-        return InfrastructureException(
-            ErrorCode.LLM_AUTHENTICATION_ERROR,
-            f"Xác thực API Key của LLM provider thất bại: {msg}",
-        )
-    if "quota" in msg.casefold():
-        return InfrastructureException(
-            ErrorCode.LLM_QUOTA_EXCEEDED,
-            f"Tài khoản LLM đã hết hạn ngạch (Quota exceeded): {msg}",
-        )
-    if "429" in msg or "rate limit" in msg.casefold() or "resourceexhausted" in msg.casefold() or "RateLimitError" in exc_type:
-        return InfrastructureException(
-            ErrorCode.LLM_RATE_LIMIT_ERROR,
-            f"Vượt quá giới hạn tần suất gọi LLM (Rate limit): {msg}",
-        )
-    if "timeout" in msg.casefold() or "timed out" in msg.casefold() or "connection" in msg.casefold() or "TimeoutError" in exc_type:
-        return InfrastructureException(
-            ErrorCode.LLM_TIMEOUT_ERROR,
-            f"Kết nối tới dịch vụ LLM bị quá thời gian chờ: {msg}",
-        )
-    if "validation" in msg.casefold() or "outputparser" in exc_type.casefold():
-        return InfrastructureException(
-            ErrorCode.LLM_STRUCTURED_OUTPUT_ERROR,
-            f"Không nhận được structured output hợp lệ từ mô hình ngôn ngữ: {msg}",
-        )
-    return InfrastructureException(
-        ErrorCode.LLM_ERROR,
-        f"Lỗi khi gọi mô hình ngôn ngữ: {msg}",
-    )
+    message = str(exc)
+    code = _llm_error_code(message, type(exc).__name__)
+    return InfrastructureException(code, f"{_llm_error_prefix(code)}: {message}")
+
+
+def _llm_error_code(message: str, exception_type: str) -> ErrorCode:
+    normalized = message.casefold()
+    type_name = exception_type.casefold()
+    if "404" in message or "not found" in normalized or "not_found" in normalized:
+        return ErrorCode.LLM_MODEL_NOT_FOUND
+    if any(key in normalized for key in ("401", "403", "unauthorized", "authentication", "api_key", "api key")) or "authenticationerror" in type_name:
+        return ErrorCode.LLM_AUTHENTICATION_ERROR
+    if "quota" in normalized:
+        return ErrorCode.LLM_QUOTA_EXCEEDED
+    if any(key in normalized for key in ("429", "rate limit", "resourceexhausted")) or "ratelimiterror" in type_name:
+        return ErrorCode.LLM_RATE_LIMIT_ERROR
+    if any(key in normalized for key in ("timeout", "timed out", "connection")) or "timeouterror" in type_name:
+        return ErrorCode.LLM_TIMEOUT_ERROR
+    if "validation" in normalized or "outputparser" in type_name:
+        return ErrorCode.LLM_STRUCTURED_OUTPUT_ERROR
+    return ErrorCode.LLM_ERROR
+
+
+def _llm_error_prefix(code: ErrorCode) -> str:
+    prefixes = {
+        ErrorCode.LLM_MODEL_NOT_FOUND: "Mô hình LLM không tồn tại hoặc không được provider hỗ trợ",
+        ErrorCode.LLM_AUTHENTICATION_ERROR: "Xác thực API Key của LLM provider thất bại",
+        ErrorCode.LLM_QUOTA_EXCEEDED: "Tài khoản LLM đã hết hạn ngạch",
+        ErrorCode.LLM_RATE_LIMIT_ERROR: "Vượt quá giới hạn tần suất gọi LLM",
+        ErrorCode.LLM_TIMEOUT_ERROR: "Kết nối tới dịch vụ LLM bị quá thời gian chờ",
+        ErrorCode.LLM_STRUCTURED_OUTPUT_ERROR: "Structured output của LLM không hợp lệ",
+        ErrorCode.LLM_ERROR: "Lỗi khi gọi mô hình ngôn ngữ",
+    }
+    return prefixes[code]
 
 
 def _ensure_no_residual_placeholder(result: BaseModel, pii_guard: PiiGuard) -> None:

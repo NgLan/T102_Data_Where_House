@@ -4,16 +4,24 @@ from dataclasses import dataclass
 
 from src.domain.data_source.column_profile import ColumnProfile
 from src.domain.data_source.enums import ColumnDataType
-from src.domain.data_source.value_objects import SchemaMetadata
+from src.domain.data_source.value_objects import ColumnMetadata, SchemaMetadata
 from src.domain.shared.types import EntityID
 
 
 @dataclass(frozen=True, slots=True)
-class ProfiledCsvSource:
-    """Profile CSV độc lập adapter DuckDB cụ thể."""
+class ProfiledTableSource:
+    """Profile một table độc lập định dạng file cụ thể."""
 
     table_name: str
     columns: tuple[ColumnProfile, ...]
+    declared_columns: tuple[ColumnMetadata, ...] | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class ProfiledSource:
+    """Tập table đã profile thuộc cùng một Data Source."""
+
+    tables: tuple[ProfiledTableSource, ...]
 
 
 @dataclass(frozen=True, slots=True)

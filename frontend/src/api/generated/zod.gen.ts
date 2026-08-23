@@ -82,12 +82,15 @@ export const zCreateProjectSessionRequest = z.object({
 /**
  * CurrentActorResponse
  *
- * Danh tính actor MVP hiện tại.
+ * Hồ sơ user hiện tại, không chứa credential.
  */
 export const zCurrentActorResponse = z.object({
     id: z.uuid(),
     username: z.string(),
-    email: z.string()
+    email: z.string(),
+    full_name: z.string().nullable(),
+    is_active: z.boolean(),
+    created_at: z.iso.datetime()
 });
 
 /**
@@ -214,6 +217,8 @@ export const zDataSourceAnalysisStatus = z.enum(['PENDING', 'READY']);
  * Preview đọc lười từ file nguồn.
  */
 export const zDataSourcePreviewResponse = z.object({
+    table_name: z.string(),
+    available_tables: z.array(z.string()),
     rows: z.array(z.record(z.string(), z.string().nullable())),
     total_rows: z.int().gte(0)
 });
@@ -235,11 +240,21 @@ export const zApiResponseDataSourcePreviewResponse = z.object({
  */
 export const zDataSourceType = z.enum([
     'CSV',
+    'TSV',
     'EXCEL',
+    'MARKDOWN',
     'JSON',
     'SQL',
     'TEXT'
 ]);
+
+/**
+ * DatabaseHealthResponse
+ */
+export const zDatabaseHealthResponse = z.object({
+    status: z.enum(['healthy', 'unhealthy']),
+    latency_ms: z.number().gte(0)
+});
 
 /**
  * DefaultConstraintDto
@@ -300,13 +315,51 @@ export const zForeignKeyConstraintDto = z.object({
 });
 
 /**
+ * LivenessResponse
+ */
+export const zLivenessResponse = z.object({
+    status: z.literal('ok').optional().default('ok'),
+    timestamp: z.iso.datetime()
+});
+
+/**
+ * ApiResponse[LivenessResponse]
+ */
+export const zApiResponseLivenessResponse = z.object({
+    status: z.literal('success').optional().default('success'),
+    code: z.int().gte(200).lte(299).optional().default(200),
+    message: z.string().optional().default('Xử lý thành công'),
+    data: zLivenessResponse.nullish()
+});
+
+/**
+ * LlmHealthResponse
+ */
+export const zLlmHealthResponse = z.object({
+    status: z.enum(['configured', 'unconfigured']),
+    provider: z.string(),
+    model: z.string()
+});
+
+/**
+ * HealthComponentsResponse
+ */
+export const zHealthComponentsResponse = z.object({
+    database: zDatabaseHealthResponse,
+    llm: zLlmHealthResponse
+});
+
+/**
  * HealthResponse
  *
  * Trạng thái hoạt động và môi trường hiện tại của Backend.
  */
 export const zHealthResponse = z.object({
-    status: z.literal('ok'),
-    env: z.string()
+    status: z.enum(['ok', 'degraded']),
+    env: z.string(),
+    version: z.string(),
+    timestamp: z.iso.datetime(),
+    components: zHealthComponentsResponse
 });
 
 /**
@@ -317,6 +370,14 @@ export const zApiResponseHealthResponse = z.object({
     code: z.int().gte(200).lte(299).optional().default(200),
     message: z.string().optional().default('Xử lý thành công'),
     data: zHealthResponse.nullish()
+});
+
+/**
+ * LoginRequest
+ */
+export const zLoginRequest = z.object({
+    identifier: z.string().min(3).max(255),
+    password: z.string().min(1).max(72)
 });
 
 /**
@@ -383,6 +444,25 @@ export const zApiResponseAnnotatedUnionClarificationTurnResponseProposalTurnResp
 });
 
 /**
+ * ReadinessResponse
+ */
+export const zReadinessResponse = z.object({
+    status: z.literal('ready').optional().default('ready'),
+    timestamp: z.iso.datetime(),
+    database: zDatabaseHealthResponse
+});
+
+/**
+ * ApiResponse[ReadinessResponse]
+ */
+export const zApiResponseReadinessResponse = z.object({
+    status: z.literal('success').optional().default('success'),
+    code: z.int().gte(200).lte(299).optional().default(200),
+    message: z.string().optional().default('Xử lý thành công'),
+    data: zReadinessResponse.nullish()
+});
+
+/**
  * RecommendedWorkflowAction
  *
  * Hành động workflow tiếp theo dành cho UI.
@@ -414,6 +494,16 @@ export const zApiResponseAnalysisStatusResponse = z.object({
     code: z.int().gte(200).lte(299).optional().default(200),
     message: z.string().optional().default('Xử lý thành công'),
     data: zAnalysisStatusResponse.nullish()
+});
+
+/**
+ * RegisterRequest
+ */
+export const zRegisterRequest = z.object({
+    username: z.string().min(3).max(100).regex(/^[A-Za-z0-9_.-]+$/),
+    email: z.string().min(3).max(255),
+    password: z.string().min(12).max(72),
+    full_name: z.string().max(150).nullish()
 });
 
 /**
@@ -1019,7 +1109,41 @@ export const zApiResponseListDataModelValidationIssueResponse = z.object({
 /**
  * Successful Response
  */
-export const zGetCurrentActorResponse = zApiResponseCurrentActorResponse;
+export const zLivenessCheckHealthLiveGetResponse = zApiResponseLivenessResponse;
+
+/**
+ * Successful Response
+ */
+export const zReadinessCheckHealthReadyGetResponse = zApiResponseReadinessResponse;
+
+/**
+ * Successful Response
+ */
+export const zHealthCheckHealthGetResponse = zApiResponseHealthResponse;
+
+export const zRegisterBody = zRegisterRequest;
+
+/**
+ * Successful Response
+ */
+export const zRegisterResponse = zApiResponseCurrentActorResponse;
+
+export const zLoginBody = zLoginRequest;
+
+/**
+ * Successful Response
+ */
+export const zLoginResponse = zApiResponseCurrentActorResponse;
+
+/**
+ * Successful Response
+ */
+export const zGetCurrentUserResponse = zApiResponseCurrentActorResponse;
+
+/**
+ * Successful Response
+ */
+export const zLogoutResponse = z.void();
 
 /**
  * Successful Response
@@ -1233,6 +1357,10 @@ export const zGetProjectDataSourcePreviewPath = z.object({
     source_id: z.uuid()
 });
 
+export const zGetProjectDataSourcePreviewQuery = z.object({
+    table_name: z.string().min(1).max(255).nullish()
+});
+
 /**
  * Successful Response
  */
@@ -1376,8 +1504,3 @@ export const zStreamProjectSessionEventsHeaders = z.object({
 export const zStreamProjectSessionEventsPath = z.object({
     session_id: z.uuid()
 });
-
-/**
- * Successful Response
- */
-export const zHealthCheckResponse = zApiResponseHealthResponse;

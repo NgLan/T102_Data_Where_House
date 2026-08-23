@@ -6,9 +6,6 @@ from typing import cast
 
 import pytest
 from src.application.data_models.i_data_model_service import IDataModelDdlGenerator
-from src.application.data_sources.i_data_source_service import (
-    ICsvDataSourceParser,
-)
 from src.application.data_warehouse_workflows.i_data_warehouse_workflow_service import (
     IDataModelValidationEngine,
     IDataWarehouseDesignAgent,
@@ -19,11 +16,9 @@ from src.infrastructure.agents.data_warehouse_design_agent import DataWarehouseD
 from src.infrastructure.agents.requirement_analysis_agent import RequirementAnalysisAgent
 from src.infrastructure.codegen.pydbml_ddl_generator import PyDbmlDdlGenerator
 from src.infrastructure.sandbox.sandbox_executor import PostgresSandboxExecutor
-from src.infrastructure.storage.csv_parser import CsvParser
 from src.infrastructure.validation.dbml_validation_engine import DbmlValidationEngine
 
 PORT_CONTRACTS = (
-    (CsvParser, ICsvDataSourceParser),
     (RequirementAnalysisAgent, IRequirementAnalysisAgent),
     (DataWarehouseDesignAgent, IDataWarehouseDesignAgent),
     (DbmlValidationEngine, IDataModelValidationEngine),

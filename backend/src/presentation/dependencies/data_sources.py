@@ -13,8 +13,8 @@ from src.application.data_sources.input import DataSourceColumnTargetInput
 from src.infrastructure.database.session import get_async_db_session
 from src.infrastructure.repositories.postgres_data_source_repository import PostgresDataSourceRepository
 from src.infrastructure.repositories.postgres_project_repository import PostgresProjectRepository
-from src.infrastructure.storage.duckdb_csv_file_reader import DuckDbCsvFileReader
 from src.infrastructure.storage.local_storage import LocalFileStorage
+from src.infrastructure.storage.source_file_inspector import SourceFileInspector
 from src.infrastructure.transaction.sqlalchemy_unit_of_work import SqlAlchemyUnitOfWork
 from src.presentation.dependencies.project_access import ProjectAccessDependency
 from src.presentation.dtos.data_sources.request import (
@@ -31,12 +31,10 @@ def get_data_source_service(
 ) -> IDataSourceService:
     """Khởi tạo service với actor và transaction của request hiện tại."""
     projects = PostgresProjectRepository(session)
-    csv_reader = DuckDbCsvFileReader()
     return DataSourceService(
         sources=PostgresDataSourceRepository(session),
         files=LocalFileStorage(get_settings().upload_dir),
-        csv_validator=csv_reader,
-        preview_reader=csv_reader,
+        inspector=SourceFileInspector(),
         unit_of_work=SqlAlchemyUnitOfWork(session),
         access=access,
         projects=projects,

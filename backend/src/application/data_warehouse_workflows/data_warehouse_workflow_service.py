@@ -20,6 +20,7 @@ from src.application.data_warehouse_workflows.input import (
     ConversationDesignInput,
     CreateAgentTurnInput,
     CreateAiEditProposalInput,
+    DataWarehouseDesignInput,
     GenerateDataModelInput,
     GetAnalysisStatusInput,
     ReanalyzeProjectInput,
@@ -140,13 +141,7 @@ class DataWarehouseWorkflowService(IDataWarehouseWorkflowService):
         design_input = await self._reader.load_design_input(project.id)
         model = await self._require_model(data.project_id)
         await self._unit_of_work.rollback()
-        revision_input = RevisionDesignInput(
-            design_input.requirements,
-            design_input.analytical_requirements,
-            design_input.data_sources,
-            model.dbml,
-            data.instruction,
-        )
+        revision_input = self._revision_input(design_input, model, data.instruction)
         generated = await self._design.revise(revision_input)
         change = await self._persistence.persist_proposal(model, project_snapshot, generated.dbml)
         return ChangeProposalDetailOutput.from_domain(change, model)
@@ -160,13 +155,7 @@ class DataWarehouseWorkflowService(IDataWarehouseWorkflowService):
         design_input = await self._reader.load_design_input(project.id)
         model = await self._require_model(data.project_id)
         await self._unit_of_work.rollback()
-        revision = RevisionDesignInput(
-            design_input.requirements,
-            design_input.analytical_requirements,
-            design_input.data_sources,
-            model.dbml,
-            data.instruction,
-        )
+        revision = self._revision_input(design_input, model, data.instruction)
         result = await self._design.converse(ConversationDesignInput(revision, data.history))
         if result.kind is AgentTurnKind.CLARIFICATION:
             return AgentTurnOutput(
@@ -190,6 +179,20 @@ class DataWarehouseWorkflowService(IDataWarehouseWorkflowService):
                 ErrorCode.DATA_MODEL_ANALYSIS_OUTDATED,
                 "Cần Analyze Changes trước khi cập nhật Data Model.",
             )
+
+    @staticmethod
+    def _revision_input(
+        design_input: DataWarehouseDesignInput,
+        model: DataModel,
+        instruction: str,
+    ) -> RevisionDesignInput:
+        return RevisionDesignInput(
+            design_input.requirements,
+            design_input.analytical_requirements,
+            design_input.data_sources,
+            model.dbml,
+            instruction,
+        )
 
     async def _ensure_model_absent(self, project_id: EntityID) -> None:
         """Bảo vệ endpoint initial generation khỏi overwrite."""

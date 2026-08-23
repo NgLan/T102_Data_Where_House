@@ -7,7 +7,9 @@ class DataSourceType(StrEnum):
     """Định dạng loại Nguồn dữ liệu (Data Source Type)."""
 
     CSV = "CSV"
+    TSV = "TSV"
     EXCEL = "EXCEL"
+    MARKDOWN = "MARKDOWN"
     JSON = "JSON"
     SQL = "SQL"
     TEXT = "TEXT"

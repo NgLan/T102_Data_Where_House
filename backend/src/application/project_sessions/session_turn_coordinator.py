@@ -11,6 +11,7 @@ from src.application.project_sessions.input import SendSessionMessageInput
 from src.application.project_sessions.output import SessionTurnOutput
 from src.application.project_sessions.session_access import OwnedSessionAccess
 from src.application.project_sessions.session_event_factory import (
+    UserEventInput,
     create_agent_call,
     create_user_event,
 )
@@ -103,7 +104,7 @@ class SessionTurnCoordinator:
         if stale_event:
             await self._dependencies.events.save(stale_event)
         await self._dependencies.events.save(
-            create_user_event(session.id, turn_id, content, is_answer)
+            create_user_event(UserEventInput(session.id, turn_id, content, is_answer))
         )
         await self._dependencies.events.save(call)
         return call

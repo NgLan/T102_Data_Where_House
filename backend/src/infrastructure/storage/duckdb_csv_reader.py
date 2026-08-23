@@ -41,12 +41,13 @@ class DuckDbCsvSnapshot:
 def read_csv_snapshot(
     connection: duckdb.DuckDBPyConnection,
     path: Path,
+    delimiter: str | None = None,
 ) -> DuckDbCsvSnapshot:
     """Sniff CSV, materialize table và lấy preview giới hạn."""
-    relation = connection.read_csv(
-        str(path),
-        auto_type_candidates=list(AUTO_TYPE_CANDIDATES),
-    )
+    options: dict[str, object] = {"auto_type_candidates": list(AUTO_TYPE_CANDIDATES)}
+    if delimiter is not None:
+        options["delimiter"] = delimiter
+    relation = connection.read_csv(str(path), **options)
     columns = tuple(
         DuckDbCsvColumn(name, str(type_name))
         for name, type_name in zip(relation.columns, relation.types, strict=True)

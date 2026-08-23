@@ -23,14 +23,15 @@ class SandboxConfigOutput:
     def from_domain(cls, config: SandboxConfig) -> "SandboxConfigOutput":
         """Ánh xạ config entity mà không làm lộ password."""
         return cls(
-            config.id,
-            config.project_id,
-            config.db_type,
-            config.host,
-            config.port,
-            config.database_name,
-            config.username,
-            config.schema_name,
+            id=config.id,
+            project_id=config.project_id,
+            db_type=config.db_type,
+            host=config.host,
+            port=config.port,
+            database_name=config.database_name,
+            username=config.username,
+            schema_name=config.schema_name,
+            status=config.status.value if hasattr(config.status, "value") else str(config.status),
         )
 
 

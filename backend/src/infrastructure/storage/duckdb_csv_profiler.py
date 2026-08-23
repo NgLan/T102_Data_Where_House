@@ -1,17 +1,16 @@
 """DuckDB typed/raw profiler cho logical type inference."""
 
+from dataclasses import dataclass
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Final
 
 import duckdb
-from src.application.data_sources.source_analysis_models import ProfiledCsvSource
-from src.application.data_sources.source_analysis_ports import ICsvDataProfiler
+from src.application.data_sources.source_analysis_models import ProfiledTableSource
 from src.common.exceptions.error_codes import ErrorCode
 from src.common.exceptions.infrastructure import InfrastructureException
 from src.domain.data_source.column_profile import ColumnProfile
 from src.infrastructure.storage.duckdb_csv_reader import AUTO_TYPE_CANDIDATES, quote_identifier
-from typing_extensions import override
 
 RAW_TABLE: Final = "raw_csv"
 MAX_DISTINCT_VALUES: Final = 20
@@ -20,15 +19,21 @@ DATE_FORMATS: Final = "['%Y-%m-%d', '%d/%m/%Y', '%d-%m-%Y']"
 DATETIME_FORMATS: Final = "['%Y-%m-%d %H:%M:%S', '%d/%m/%Y %H:%M:%S', '%d-%m-%Y %H:%M:%S']"
 
 
-class DuckDbCsvProfiler(ICsvDataProfiler):
+@dataclass(frozen=True, slots=True)
+class _ColumnProfileInput:
+    name: str
+    physical_type: str
+    total_rows: int
+
+
+class DuckDbCsvProfiler:
     """Profile CSV bằng DuckDB nhưng bảo toàn raw string như leading zero."""
 
-    @override
-    def profile(self, file_bytes: bytes, filename: str) -> ProfiledCsvSource:
+    def profile(self, file_bytes: bytes, filename: str) -> ProfiledTableSource:
         """Trả profile cột và dịch lỗi DuckDB/filesystem."""
         try:
             with TemporaryDirectory(prefix="p102_csv_profile_") as directory:
-                path = Path(directory) / "source.csv"
+                path = Path(directory) / f"source{Path(filename).suffix.lower()}"
                 path.write_bytes(file_bytes)
                 return _profile_path(path, filename)
         except (duckdb.Error, OSError) as exc:
@@ -38,40 +43,38 @@ class DuckDbCsvProfiler(ICsvDataProfiler):
             ) from exc
 
 
-def _profile_path(path: Path, filename: str) -> ProfiledCsvSource:
+def _profile_path(path: Path, filename: str) -> ProfiledTableSource:
     with duckdb.connect() as connection:
+        options = {"delimiter": "\t"} if path.suffix.lower() == ".tsv" else {}
         typed = connection.read_csv(
-            str(path),
-            auto_type_candidates=list(AUTO_TYPE_CANDIDATES),
+            str(path), auto_type_candidates=list(AUTO_TYPE_CANDIDATES), **options
         )
-        raw = connection.read_csv(str(path), all_varchar=True)
+        raw = connection.read_csv(str(path), all_varchar=True, **options)
         raw.create(RAW_TABLE)
         total_rows = int(connection.execute(f"SELECT count(*) FROM {RAW_TABLE}").fetchone()[0])
         columns = tuple(
-            _profile_column(connection, name, str(type_name), total_rows)
+            _profile_column(connection, _ColumnProfileInput(name, str(type_name), total_rows))
             for name, type_name in zip(typed.columns, typed.types, strict=True)
         )
-    return ProfiledCsvSource(_table_name(filename), columns)
+    return ProfiledTableSource(_table_name(filename), columns)
 
 
 def _profile_column(
     connection: duckdb.DuckDBPyConnection,
-    name: str,
-    physical_type: str,
-    total_rows: int,
+    data: _ColumnProfileInput,
 ) -> ColumnProfile:
-    identifier = quote_identifier(name)
+    identifier = quote_identifier(data.name)
     stats = connection.execute(_stats_sql(identifier)).fetchone()
     distinct_values = _distinct_values(connection, identifier)
-    non_null_count = total_rows - int(stats[0])
+    non_null_count = data.total_rows - int(stats[0])
     return ColumnProfile(
-        name=name,
-        physical_type=physical_type,
+        name=data.name,
+        physical_type=data.physical_type,
         sample_values=distinct_values[:MAX_SAMPLE_VALUES],
         distinct_values=distinct_values,
         null_count=int(stats[0]),
         distinct_count=int(stats[1]),
-        total_rows=total_rows,
+        total_rows=data.total_rows,
         average_length=float(stats[2]),
         is_fixed_length=non_null_count > 0 and int(stats[3]) == int(stats[4]),
         has_leading_zero=bool(stats[5]),

@@ -50,6 +50,14 @@ class FakeDataModelRepository(IDataModelRepository):
         return next((item for item in self.items if item.project_id == project_id), None)
 
     @override
+    async def list_by_project_ids(
+        self, project_ids: list[EntityID]
+    ) -> dict[EntityID, DataModel]:
+        """Lấy các mô hình theo tập ID dự án."""
+        requested = set(project_ids)
+        return {item.project_id: item for item in self.items if item.project_id in requested}
+
+    @override
     async def save(self, entity: DataModel) -> DataModel:
         """Lưu mới hoặc thay thế mô hình theo ID."""
         self.items = [item for item in self.items if item.id != entity.id]

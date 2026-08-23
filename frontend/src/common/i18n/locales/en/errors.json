@@ -80,5 +80,8 @@
   "LLM_QUOTA_EXCEEDED": "The AI service is temporarily paused due to rate limits. Please try again later.",
   "LLM_TIMEOUT_ERROR": "The AI service took too long to respond. Please try again.",
   "LLM_STRUCTURED_OUTPUT_ERROR": "The AI service could not complete the request at this time. Please try again.",
-  "LLM_PII_DEGRADATION_ERROR": "Unable to complete request due to data privacy checks. Please try again."
+  "LLM_PII_DEGRADATION_ERROR": "Unable to complete request due to data privacy checks. Please try again.",
+  "USERNAME_ALREADY_EXISTS": "This username is already in use.",
+  "EMAIL_ALREADY_EXISTS": "This email address is already in use.",
+  "WEAK_PASSWORD": "Use a password of 12–72 bytes containing at least one letter and one number."
 }

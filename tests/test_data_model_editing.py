@@ -270,6 +270,7 @@ def _proposal_context(outdated: bool) -> tuple[Project, DataModel, DataModelChan
         data_model_id=model.id,
         user_id=uuid4(),
         base_revision=2 if outdated else 3,
+        base_dbml=model.dbml,
         proposed_dbml="Table users {\n id uuid [pk]\n email varchar\n}",
     )
     return project, model, change

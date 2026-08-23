@@ -3,34 +3,23 @@
 from pydantic import ValidationError
 from src.common.exceptions.error_codes import ErrorCode
 from src.common.exceptions.infrastructure import InfrastructureException
-from src.domain.data_source.constraints import (
-    CheckConstraint,
-    ColumnConstraint,
-    DefaultConstraint,
-    ForeignKeyConstraint,
-    UniqueConstraint,
-)
-from src.domain.data_source.value_objects import (
-    ColumnMetadata,
-    RelationshipMetadata,
-    SchemaMetadata,
-    TableMetadata,
-)
+from src.domain.data_source import value_objects as source_values
 from src.domain.shared.types import JsonValue
+from src.infrastructure.database.mappers.data_source.constraint_codec import (
+    constraint_to_record,
+    record_to_constraint,
+)
 from src.infrastructure.database.mappers.data_source.schema_metadata_records import (
-    CheckConstraintRecord,
     ColumnRecord,
-    ConstraintRecord,
-    DefaultConstraintRecord,
-    ForeignKeyConstraintRecord,
     RelationshipRecord,
     SchemaRecord,
     TableRecord,
-    UniqueConstraintRecord,
 )
 
 
-def encode_schema_metadata(schema: SchemaMetadata | None) -> dict[str, JsonValue] | None:
+def encode_schema_metadata(
+    schema: source_values.SchemaMetadata | None,
+) -> dict[str, JsonValue] | None:
     """Chuyển SchemaMetadata thành payload JSONB."""
     if schema is None:
         return None
@@ -48,7 +37,9 @@ def encode_schema_metadata(schema: SchemaMetadata | None) -> dict[str, JsonValue
     return record.model_dump(mode="json")
 
 
-def decode_schema_metadata(payload: dict[str, JsonValue] | None) -> SchemaMetadata | None:
+def decode_schema_metadata(
+    payload: dict[str, JsonValue] | None,
+) -> source_values.SchemaMetadata | None:
     """Khôi phục SchemaMetadata và báo lỗi khi JSONB bị hỏng."""
     if payload is None:
         return None
@@ -59,15 +50,16 @@ def decode_schema_metadata(payload: dict[str, JsonValue] | None) -> SchemaMetada
             code=ErrorCode.DATABASE_ERROR,
             message="Metadata nguồn dữ liệu trong cơ sở dữ liệu không hợp lệ.",
         ) from exc
-    return SchemaMetadata(
+    return source_values.SchemaMetadata(
         tables=tuple(_record_to_table(table) for table in record.tables),
         relationships=tuple(
-            RelationshipMetadata(item.from_column, item.to_column, item.type) for item in record.relationships
+            source_values.RelationshipMetadata(item.from_column, item.to_column, item.type)
+            for item in record.relationships
         ),
     )
 
 
-def _table_to_record(table: TableMetadata) -> TableRecord:
+def _table_to_record(table: source_values.TableMetadata) -> TableRecord:
     """Chuyển metadata bảng sang JSONB record."""
     return TableRecord(
         name=table.name,
@@ -75,14 +67,14 @@ def _table_to_record(table: TableMetadata) -> TableRecord:
     )
 
 
-def _column_to_record(column: ColumnMetadata) -> ColumnRecord:
+def _column_to_record(column: source_values.ColumnMetadata) -> ColumnRecord:
     """Chuyển metadata cột sang record typed."""
     return ColumnRecord(
         name=column.name,
         data_type=column.data_type,
         primary_key=column.primary_key,
         nullable=column.nullable,
-        constraints=[_constraint_to_record(item) for item in column.constraints],
+        constraints=[constraint_to_record(item) for item in column.constraints],
         description=column.description,
         null_count=column.null_count,
         distinct_count=column.distinct_count,
@@ -92,22 +84,22 @@ def _column_to_record(column: ColumnMetadata) -> ColumnRecord:
     )
 
 
-def _record_to_table(record: TableRecord) -> TableMetadata:
+def _record_to_table(record: TableRecord) -> source_values.TableMetadata:
     """Khôi phục metadata bảng từ record."""
-    return TableMetadata(
+    return source_values.TableMetadata(
         name=record.name,
         columns=tuple(_record_to_column(column) for column in record.columns),
     )
 
 
-def _record_to_column(record: ColumnRecord) -> ColumnMetadata:
+def _record_to_column(record: ColumnRecord) -> source_values.ColumnMetadata:
     """Khôi phục metadata cột từ schema mới."""
-    return ColumnMetadata(
+    return source_values.ColumnMetadata(
         name=record.name,
         data_type=record.data_type,
         primary_key=record.primary_key,
         nullable=record.nullable,
-        constraints=tuple(_record_to_constraint(item) for item in record.constraints),
+        constraints=tuple(record_to_constraint(item) for item in record.constraints),
         description=record.description,
         null_count=record.null_count,
         distinct_count=record.distinct_count,
@@ -115,33 +107,3 @@ def _record_to_column(record: ColumnRecord) -> ColumnMetadata:
         is_unique_candidate=record.is_unique_candidate,
         is_key_candidate=record.is_key_candidate,
     )
-
-
-def _constraint_to_record(constraint: ColumnConstraint) -> ConstraintRecord:
-    """Ánh xạ Domain constraint sang JSONB record."""
-    if isinstance(constraint, ForeignKeyConstraint):
-        return ForeignKeyConstraintRecord(
-            type=constraint.type,
-            reference_table=constraint.reference_table,
-            reference_column=constraint.reference_column,
-        )
-    if isinstance(constraint, UniqueConstraint):
-        return UniqueConstraintRecord(type=constraint.type)
-    if isinstance(constraint, CheckConstraint):
-        return CheckConstraintRecord(type=constraint.type, expression=constraint.expression)
-    if isinstance(constraint, DefaultConstraint):
-        return DefaultConstraintRecord(type=constraint.type, value=constraint.value)
-    raise TypeError(f"Constraint không được hỗ trợ: {type(constraint).__name__}")
-
-
-def _record_to_constraint(record: ConstraintRecord) -> ColumnConstraint:
-    """Khôi phục Domain constraint từ JSONB record."""
-    if isinstance(record, ForeignKeyConstraintRecord):
-        return ForeignKeyConstraint(record.reference_table, record.reference_column)
-    if isinstance(record, UniqueConstraintRecord):
-        return UniqueConstraint()
-    if isinstance(record, CheckConstraintRecord):
-        return CheckConstraint(record.expression)
-    if isinstance(record, DefaultConstraintRecord):
-        return DefaultConstraint(record.value)
-    raise TypeError(f"Constraint record không được hỗ trợ: {type(record).__name__}")

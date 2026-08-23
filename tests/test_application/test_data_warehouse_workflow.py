@@ -1,5 +1,6 @@
 """Application tests cho deterministic Data Warehouse workflow."""
 
+from unittest.mock import AsyncMock, MagicMock
 from uuid import uuid4
 
 import pytest
@@ -14,6 +15,7 @@ from src.application.data_warehouse_workflows.i_data_warehouse_workflow_service 
 )
 from src.application.data_warehouse_workflows.input import (
     AnalyticalAnalysisInput,
+    ConversationDesignInput,
     CreateAiEditProposalInput,
     DataWarehouseDesignInput,
     GenerateDataModelInput,
@@ -24,6 +26,8 @@ from src.application.data_warehouse_workflows.input import (
     RevisionDesignInput,
 )
 from src.application.data_warehouse_workflows.output import (
+    AgentTurnKind,
+    ConversationDesignResult,
     GeneratedAnalyticalRequirement,
     GeneratedDbml,
     GeneratedRequirement,
@@ -96,6 +100,12 @@ class RecordingDesignAgent(IDataWarehouseDesignAgent):
         self.calls.append(data)
         return GeneratedDbml(self.results[min(len(self.calls) - 1, len(self.results) - 1)])
 
+    @override
+    async def converse(self, data: ConversationDesignInput) -> ConversationDesignResult:
+        self.calls.append(data)
+        dbml = self.results[min(len(self.calls) - 1, len(self.results) - 1)]
+        return ConversationDesignResult(AgentTurnKind.PROPOSAL, dbml=dbml)
+
 
 class FailingAnalyticalAgent(RecordingRequirementAgent):
     """Fake mô phỏng operation Analytical Requirement thất bại."""
@@ -142,6 +152,8 @@ def _build_workflow(
     access = ProjectAccessPolicy(
         projects, FakeProjectMemberRepository([]), project.user_id
     )
+    source_analysis = MagicMock()
+    source_analysis.analyze_pending = AsyncMock()
     service = DataWarehouseWorkflowService(
         projects,
         FakeRequirementRepository([]),
@@ -150,6 +162,7 @@ def _build_workflow(
         models,
         changes,
         requirement_agent,
+        source_analysis,
         design_agent,
         MarkerValidator(),
         unit_of_work,

@@ -15,6 +15,9 @@ class UserMapper:
             id=model.id,
             username=model.username,
             email=Email(value=model.email),
+            password_hash=model.password_hash,
+            full_name=model.full_name,
+            is_active=model.is_active is True,
             created_at=model.created_at,
             updated_at=model.updated_at,
         )
@@ -26,6 +29,9 @@ class UserMapper:
             id=entity.id,
             username=entity.username,
             email=entity.email.value,
+            password_hash=entity.password_hash,
+            full_name=entity.full_name,
+            is_active=entity.is_active,
             created_at=entity.created_at,
             updated_at=entity.updated_at,
         )
@@ -35,5 +41,8 @@ class UserMapper:
         """Cập nhật dữ liệu từ User Entity sang UserModel đã tồn tại."""
         model.username = entity.username
         model.email = entity.email.value
+        model.password_hash = entity.password_hash
+        model.full_name = entity.full_name
+        model.is_active = entity.is_active
         model.updated_at = entity.updated_at
         return model

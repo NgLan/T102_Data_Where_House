@@ -4,6 +4,8 @@ from types import TracebackType
 
 from src.application.common.unit_of_work import IUnitOfWork
 from src.application.projects.i_project_service import IProjectArtifactStore
+from src.domain.data_model.entities import DataModel
+from src.domain.data_model.i_data_model_repository import IDataModelRepository
 from src.domain.data_source.entities import DataSource
 from src.domain.data_source.i_data_source_repository import IDataSourceRepository
 from src.domain.project.entities import Project, ProjectMember
@@ -132,6 +134,52 @@ class InMemoryRequirementRepository(IRequirementRepository):
     async def save(self, entity: Requirement) -> Requirement:
         self.items[entity.id] = entity
         return entity
+
+    @override
+    async def delete(self, id: EntityID) -> None:
+        self.items.pop(id, None)
+
+
+class InMemoryDataModelRepository(IDataModelRepository):
+    """DataModel repository phục vụ project summary tests."""
+
+    def __init__(self) -> None:
+        self.items: dict[EntityID, DataModel] = {}
+
+    @override
+    async def get_by_id(self, id: EntityID) -> DataModel | None:
+        return self.items.get(id)
+
+    @override
+    async def get_by_project_id(self, project_id: EntityID) -> DataModel | None:
+        return next(
+            (item for item in self.items.values() if item.project_id == project_id),
+            None,
+        )
+
+    @override
+    async def list_by_project_ids(
+        self, project_ids: tuple[EntityID, ...]
+    ) -> dict[EntityID, DataModel]:
+        requested = set(project_ids)
+        return {
+            item.project_id: item
+            for item in self.items.values()
+            if item.project_id in requested
+        }
+
+    @override
+    async def save(self, entity: DataModel) -> DataModel:
+        self.items[entity.id] = entity
+        return entity
+
+    @override
+    async def update_if_revision_matches(
+        self, entity: DataModel, base_revision: int
+    ) -> DataModel | None:
+        if entity.revision != base_revision + 1:
+            return None
+        return await self.save(entity)
 
     @override
     async def delete(self, id: EntityID) -> None:

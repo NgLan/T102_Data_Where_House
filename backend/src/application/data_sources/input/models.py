@@ -23,6 +23,15 @@ class DataSourceIdInput:
 
 
 @dataclass(frozen=True, slots=True)
+class DataSourcePreviewInput:
+    """Input preview một table tùy chọn trong Data Source."""
+
+    project_id: EntityID
+    data_source_id: EntityID
+    table_name: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
 class UploadFileInput:
     """Nội dung file đã được đọc tại HTTP boundary."""
 

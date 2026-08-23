@@ -16,9 +16,8 @@ from src.common.middleware import (
 )
 from src.infrastructure.database.config import dispose_async_db_engine
 from src.infrastructure.database.init_db import init_db
+from src.presentation.api.operational import router as operational_router
 from src.presentation.api.router import router as api_router
-from src.presentation.dtos.common import ApiErrorResponse
-from src.presentation.dtos.health import HealthResponse
 from src.presentation.routing import ApiResponseRoute
 
 logger = get_logger(__name__)
@@ -91,18 +90,8 @@ def create_app() -> FastAPI:
 
     # 3. Đăng ký hệ thống xử lý ngoại lệ tập trung (Global Exception Handlers)
     register_exception_handlers(app)
+    app.include_router(operational_router)
     app.include_router(api_router)
-
-    @app.get(
-        "/health",
-        tags=["Health Check"],
-        response_model=HealthResponse,
-        operation_id="healthCheck",
-        responses={500: {"model": ApiErrorResponse}},
-    )
-    async def health_check() -> HealthResponse:
-        """Endpoint kiểm tra trạng thái hoạt động của hệ thống."""
-        return HealthResponse(status="ok", env=settings.app_env)
 
     return app
 

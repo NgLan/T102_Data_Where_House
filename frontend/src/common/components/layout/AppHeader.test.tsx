@@ -9,16 +9,32 @@ import { ThemeSwitcher } from "./ThemeSwitcher";
 import { UserMenu } from "./UserMenu";
 
 const mocks = vi.hoisted(() => ({
-  push: vi.fn(), changeLanguage: vi.fn(), setTheme: vi.fn(), language: "vi",
+  push: vi.fn(), changeLanguage: vi.fn(), setTheme: vi.fn(), logout: vi.fn(),
+  clearQueries: vi.fn(), clearDrafts: vi.fn(), language: "vi",
 }));
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: mocks.push }) }));
 vi.mock("next-themes", () => ({ useTheme: () => ({ resolvedTheme: "dark", setTheme: mocks.setTheme }) }));
 vi.mock("react-i18next", () => ({
+  initReactI18next: { type: "3rdParty", init: vi.fn() },
   useTranslation: () => ({
     t: (key: string) => key,
     i18n: { resolvedLanguage: mocks.language, changeLanguage: mocks.changeLanguage },
   }),
+}));
+vi.mock("@tanstack/react-query", () => ({
+  useQueryClient: () => ({ clear: mocks.clearQueries }),
+  useMutation: (options: { onSuccess?: () => void }) => ({
+    isPending: false,
+    mutate: () => {
+      mocks.logout();
+      options.onSuccess?.();
+    },
+  }),
+}));
+vi.mock("@/features/auth/services/auth-api", () => ({ logoutUser: mocks.logout }));
+vi.mock("@/features/auth/services/clear-user-drafts", () => ({
+  clearUserModelingDrafts: mocks.clearDrafts,
 }));
 vi.mock("@/common/projects/project-queries", () => ({
   useAccessibleProjectsQuery: () => ({
@@ -38,6 +54,9 @@ describe("header controls", () => {
     mocks.push.mockReset();
     mocks.changeLanguage.mockReset();
     mocks.setTheme.mockReset();
+    mocks.logout.mockReset();
+    mocks.clearQueries.mockReset();
+    mocks.clearDrafts.mockReset();
     mocks.language = "vi";
   });
 
@@ -57,14 +76,16 @@ describe("header controls", () => {
     expect(mocks.setTheme).toHaveBeenCalledWith("light");
   });
 
-  it("hiển thị actor MVP và logout disabled", () => {
+  it("hiển thị user và logout thật", () => {
     render(<UserMenu />);
     fireEvent.pointerDown(screen.getByRole("button", { name: /MVP Actor/ }), {
       button: 0, ctrlKey: false,
     });
     expect(screen.getAllByText("MVP Actor").length).toBeGreaterThan(0);
-    expect(screen.getByText("BTN_LOGOUT_UNAVAILABLE").closest("[data-disabled]"))
-      .toBeInTheDocument();
+    fireEvent.click(screen.getByText("BTN_LOGOUT"));
+    expect(mocks.logout).toHaveBeenCalledOnce();
+    expect(mocks.clearDrafts).toHaveBeenCalledOnce();
+    expect(mocks.clearQueries).toHaveBeenCalledOnce();
   });
 
   it("logo có cursor và quay về danh sách Project", () => {

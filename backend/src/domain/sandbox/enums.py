@@ -12,3 +12,11 @@ class SandboxDbType(StrEnum):
     MYSQL = "MYSQL"
     SQLITE = "SQLITE"
     SQLSERVER = "SQLSERVER"
+
+
+class SandboxStatus(StrEnum):
+    """Trạng thái cấu hình của Sandbox."""
+
+    CONFIGURED = "CONFIGURED"
+    CONNECTED = "CONNECTED"
+    FAILED = "FAILED"

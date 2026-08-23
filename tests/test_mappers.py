@@ -222,6 +222,7 @@ def test_data_model_change_mapper_preserves_status_and_foreign_keys() -> None:
     entity = DataModelChange(
         data_model_id=uuid4(),
         user_id=uuid4(),
+        base_dbml=SIMPLE_DBML,
         proposed_dbml=SIMPLE_DBML,
         status=DataModelChangeStatus.REJECTED,
     )

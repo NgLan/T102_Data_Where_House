@@ -188,6 +188,18 @@ class FakeDataModelRepository(_InMemoryRepository, IDataModelRepository):
         return next((item for item in self._items if item.project_id == project_id), None)
 
     @override
+    async def list_by_project_ids(
+        self, project_ids: list[EntityID]
+    ) -> dict[EntityID, DataModel]:
+        """Các mô hình dữ liệu được lập chỉ mục theo dự án."""
+        requested = set(project_ids)
+        return {
+            item.project_id: item
+            for item in self._items
+            if item.project_id in requested
+        }
+
+    @override
     async def update_if_revision_matches(
         self, entity: DataModel, base_revision: int
     ) -> DataModel | None:

@@ -22,3 +22,12 @@ export function createWorkflowHref(step: WorkflowStep, projectId?: string | null
   }
   return `/?step=${encodeURIComponent(step)}`;
 }
+
+/** Chỉ chấp nhận UUID project hợp lệ từ URL. */
+export function parseProjectId(value: string | readonly string[] | undefined): string | null {
+  const candidate = Array.isArray(value) ? value[0] : value;
+  if (!candidate) return null;
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(candidate)
+    ? candidate
+    : null;
+}

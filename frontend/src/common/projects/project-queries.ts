@@ -27,5 +27,9 @@ export function useAccessibleProjectsQuery() {
  * @returns Query result của actor hiện tại.
  */
 export function useCurrentActorQuery() {
-  return useQuery({ queryKey: CURRENT_ACTOR_QUERY_KEY, queryFn: getCurrentActorProfile });
+  return useQuery({
+    queryKey: CURRENT_ACTOR_QUERY_KEY,
+    queryFn: getCurrentActorProfile,
+    retry: false,
+  });
 }

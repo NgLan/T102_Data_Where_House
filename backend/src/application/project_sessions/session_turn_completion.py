@@ -9,6 +9,7 @@ from src.application.data_warehouse_workflows.output import (
 )
 from src.application.project_sessions.output import SessionTurnOutput
 from src.application.project_sessions.session_event_factory import (
+    AgentResultEventInput,
     create_agent_result,
     create_question,
 )
@@ -40,11 +41,9 @@ class SessionTurnCompletion:
         await self._finish(
             session,
             call.turn_id,
-            create_agent_result(
-                call,
-                AgentResultStatus.FAILED,
-                "Agent could not complete this turn.",
-            ),
+            create_agent_result(AgentResultEventInput(
+                call, AgentResultStatus.FAILED, "Agent could not complete this turn."
+            )),
         )
 
     async def complete(
@@ -56,12 +55,12 @@ class SessionTurnCompletion:
         if result.kind is AgentTurnKind.CLARIFICATION:
             return await self._complete_question(session, call, result)
         change_id = result.proposal.summary.id if result.proposal else None
-        event = create_agent_result(
+        event = create_agent_result(AgentResultEventInput(
             call,
             AgentResultStatus.SUCCESS,
             result.summary or "The proposal is ready for review.",
             str(change_id) if change_id else None,
-        )
+        ))
         await self._finish(session, call.turn_id, event)
         return SessionTurnOutput(
             session.id,

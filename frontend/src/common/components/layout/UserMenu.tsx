@@ -1,6 +1,7 @@
 "use client";
 
 import { ChevronDown, LogOut, Mail } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { Avatar, AvatarFallback } from "@/common/components/ui/avatar";
 import { Button } from "@/common/components/ui/button";
@@ -14,13 +15,23 @@ import {
 } from "@/common/components/ui/dropdown-menu";
 import { Skeleton } from "@/common/components/ui/skeleton";
 import { useCurrentActorQuery } from "@/common/projects/project-queries";
+import { clearUserModelingDrafts } from "@/features/auth/services/clear-user-drafts";
+import { logoutUser } from "@/features/auth/services/auth-api";
 
 /** Hiển thị actor MVP và menu tài khoản không giả lập logout.
  * @returns Skeleton khi tải hoặc dropdown hồ sơ actor hiện tại.
  */
 export function UserMenu() {
   const { t } = useTranslation("common");
+  const queryClient = useQueryClient();
   const actorQuery = useCurrentActorQuery();
+  const logoutMutation = useMutation({
+    mutationFn: logoutUser,
+    onSuccess: () => {
+      clearUserModelingDrafts();
+      queryClient.clear();
+    },
+  });
   if (actorQuery.isPending) return <Skeleton className="h-8 w-28" />;
   const actor = actorQuery.data;
   const username = actor?.username ?? t("TXT_USER_UNAVAILABLE");
@@ -44,9 +55,12 @@ export function UserMenu() {
           </DropdownMenuItem>
         )}
         <DropdownMenuSeparator />
-        <DropdownMenuItem disabled>
+        <DropdownMenuItem
+          disabled={logoutMutation.isPending}
+          onSelect={() => logoutMutation.mutate()}
+        >
           <LogOut />
-          {t("BTN_LOGOUT_UNAVAILABLE")}
+          {t(logoutMutation.isPending ? "MSG_LOGGING_OUT" : "BTN_LOGOUT")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

@@ -7,6 +7,7 @@ const backendBaseUrl = configuredBaseUrl.replace(/\/api\/v1\/?$/, '');
 
 client.setConfig({
   baseUrl: backendBaseUrl,
+  credentials: 'include',
   headers: {
     Accept: 'application/json',
     'X-Client-Version': '1.0.0',

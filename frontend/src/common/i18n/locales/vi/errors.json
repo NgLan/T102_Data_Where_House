@@ -80,5 +80,8 @@
   "LLM_QUOTA_EXCEEDED": "Dịch vụ AI tạm thời gián đoạn do quá giới hạn sử dụng. Vui lòng thử lại sau.",
   "LLM_TIMEOUT_ERROR": "Yêu cầu tới dịch vụ AI bị quá thời gian chờ. Vui lòng thử lại.",
   "LLM_STRUCTURED_OUTPUT_ERROR": "AI không thể xử lý hoàn tất yêu cầu lúc này. Vui lòng thử lại.",
-  "LLM_PII_DEGRADATION_ERROR": "Không thể hoàn tất do kiểm tra an toàn dữ liệu. Vui lòng thử lại."
+  "LLM_PII_DEGRADATION_ERROR": "Không thể hoàn tất do kiểm tra an toàn dữ liệu. Vui lòng thử lại.",
+  "USERNAME_ALREADY_EXISTS": "Tên đăng nhập này đã được sử dụng.",
+  "EMAIL_ALREADY_EXISTS": "Địa chỉ email này đã được sử dụng.",
+  "WEAK_PASSWORD": "Dùng mật khẩu dài 12–72 byte, có ít nhất một chữ cái và một chữ số."
 }

@@ -2,18 +2,31 @@
 
 from typing import Protocol
 
+from src.application.data_sources.output import PreviewOutput
 from src.application.data_sources.source_analysis_models import (
     ColumnClassificationInput,
     ColumnClassificationOutput,
-    ProfiledCsvSource,
+    ProfiledSource,
 )
+from src.domain.data_source.enums import DataSourceType
 
 
-class ICsvDataProfiler(Protocol):
-    """Port profile CSV bằng implementation hạ tầng."""
+class ISourceFileInspector(Protocol):
+    """Port validate, preview và profile source độc lập định dạng."""
 
-    def profile(self, file_bytes: bytes, filename: str) -> ProfiledCsvSource:
-        """Trả typed/raw profile nhưng chưa quyết định final data type."""
+    def validate(self, file_bytes: bytes, filename: str) -> None: ...
+
+    def profile(self, file_bytes: bytes, filename: str) -> ProfiledSource: ...
+
+    def preview(
+        self,
+        file_bytes: bytes,
+        filename: str,
+        table_name: str | None,
+    ) -> PreviewOutput: ...
+
+    def source_type(self, filename: str) -> DataSourceType:
+        """Ánh xạ extension đã hỗ trợ sang loại source."""
         ...
 
 

@@ -78,6 +78,8 @@ class DataSourcePreviewResponse(BaseModel):
     """Preview đọc lười từ file nguồn."""
 
     model_config = ConfigDict(from_attributes=True)
+    table_name: str = Field(description="Table đang được preview")
+    available_tables: list[str] = Field(description="Các table có trong source")
     rows: list[dict[str, str | None]] = Field(description="Các dòng preview")
     total_rows: int = Field(ge=0, description="Tổng số dòng")
 

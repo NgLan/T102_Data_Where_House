@@ -29,9 +29,9 @@ export async function listDataSources(
   return requireApiData(response.data);
 }
 
-/** Upload batch CSV qua multipart generated SDK.
+/** Upload batch source qua multipart generated SDK.
  * @param projectId ID Project nhận các tệp tải lên.
- * @param files Danh sách tệp CSV đã qua validation phía client.
+ * @param files Danh sách source đã qua validation phía client.
  * @returns Kết quả profiling Data Source.
  * @throws ApiError khi request thất bại; Error khi success envelope thiếu payload.
  */
@@ -49,7 +49,7 @@ export async function uploadDataSources(
   return requireApiData(response.data);
 }
 
-/** Đọc preview CSV theo yêu cầu.
+/** Đọc preview table theo yêu cầu.
  * @param projectId ID Project sở hữu Data Source.
  * @param sourceId ID Data Source cần xem trước.
  * @returns Metadata và các dòng preview.
@@ -58,10 +58,12 @@ export async function uploadDataSources(
 export async function getDataSourcePreview(
   projectId: string,
   sourceId: string,
+  tableName?: string,
 ): Promise<DataSourcePreviewResponse> {
   const response = await getProjectDataSourcePreview({
     client: apiClient,
     path: { project_id: projectId, source_id: sourceId },
+    query: { table_name: tableName },
     responseStyle: "fields",
     throwOnError: true,
   });

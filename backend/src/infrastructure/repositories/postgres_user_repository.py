@@ -1,6 +1,6 @@
 """PostgreSQL repository cho thực thể User."""
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.domain.shared.types import EntityID
 from src.domain.user.entities import User
@@ -28,7 +28,10 @@ class PostgresUserRepository(IUserRepository):
     @translate_database_errors
     async def get_by_username(self, username: str) -> User | None:
         """Lấy người dùng theo tên đăng nhập."""
-        result = await self._session.execute(select(UserModel).where(UserModel.username == username))
+        normalized = username.strip().casefold()
+        result = await self._session.execute(
+            select(UserModel).where(func.lower(UserModel.username) == normalized)
+        )
         model = result.scalar_one_or_none()
         return UserMapper.to_domain(model) if model else None
 
@@ -36,7 +39,10 @@ class PostgresUserRepository(IUserRepository):
     @translate_database_errors
     async def get_by_email(self, email: str) -> User | None:
         """Lấy người dùng theo email."""
-        result = await self._session.execute(select(UserModel).where(UserModel.email == email))
+        normalized = email.strip().casefold()
+        result = await self._session.execute(
+            select(UserModel).where(func.lower(UserModel.email) == normalized)
+        )
         model = result.scalar_one_or_none()
         return UserMapper.to_domain(model) if model else None
 

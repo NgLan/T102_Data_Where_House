@@ -4,6 +4,7 @@ from datetime import timedelta
 
 from src.application.data_warehouse_workflows.input import ConversationMessage
 from src.application.project_sessions.session_event_factory import (
+    AgentResultEventInput,
     create_agent_result,
 )
 from src.common.utils.datetime import utc_now
@@ -50,11 +51,9 @@ def create_stale_turn_event(
         None,
     )
     return (
-        create_agent_result(
-            call,
-            AgentResultStatus.FAILED,
-            "Agent turn timed out before completion.",
-        )
+        create_agent_result(AgentResultEventInput(
+            call, AgentResultStatus.FAILED, "Agent turn timed out before completion."
+        ))
         if call
         else None
     )

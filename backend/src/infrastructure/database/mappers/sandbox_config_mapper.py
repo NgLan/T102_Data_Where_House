@@ -1,7 +1,7 @@
 """Ánh xạ SandboxConfig và mã hóa credential tại persistence boundary."""
 
 from src.domain.sandbox.entities import SandboxConfig
-from src.domain.sandbox.enums import SandboxDbType
+from src.domain.sandbox.enums import SandboxDbType, SandboxStatus
 from src.infrastructure.database.models.sandbox_config import SandboxConfigModel
 from src.infrastructure.security.credential_cipher import CredentialCipher
 
@@ -61,6 +61,7 @@ class SandboxConfigMapper:
             username=model.username,
             password=password if password is not None else self._cipher.decrypt(model.password),
             schema_name=model.schema_name,
+            status=SandboxStatus.CONFIGURED,
             created_at=model.created_at,
             updated_at=model.updated_at,
         )

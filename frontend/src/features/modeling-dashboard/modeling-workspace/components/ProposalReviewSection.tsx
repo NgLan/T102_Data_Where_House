@@ -11,7 +11,7 @@ export function ProposalReviewSection({ review }: ProposalReviewSectionProps) {
   if (!review.proposal) return null;
   return (
     <section className="flex min-h-0 flex-1 flex-col overflow-hidden bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
-      <div className="min-h-0 flex-1 overflow-hidden">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
         <DbmlDiffViewer
           proposal={review.proposal}
           diff={review.diff}

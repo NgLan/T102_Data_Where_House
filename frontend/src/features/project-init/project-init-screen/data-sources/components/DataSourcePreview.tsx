@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/common/components/ui/button";
 import { Skeleton } from "@/common/components/ui/skeleton";
+import { NativeSelect, NativeSelectOption } from "@/common/components/ui/native-select";
 import {
   Table,
   TableBody,
@@ -16,7 +17,7 @@ import {
 import { projectInitQueryKeys } from "../../../constants/project-init-query-keys";
 import { getDataSourcePreview } from "../services/data-sources-api";
 
-/** Preview CSV đọc lười và được cache theo source. */
+/** Preview table đọc lười và được cache theo source/table. */
 export function DataSourcePreview({
   projectId,
   sourceId,
@@ -27,9 +28,10 @@ export function DataSourcePreview({
   const { t } = useTranslation("project-init");
   const { t: tCommon } = useTranslation("common");
   const [isOpen, setIsOpen] = useState(false);
+  const [selectedTable, setSelectedTable] = useState<string>();
   const query = useQuery({
-    queryKey: projectInitQueryKeys.preview(projectId, sourceId),
-    queryFn: () => getDataSourcePreview(projectId, sourceId),
+    queryKey: projectInitQueryKeys.preview(projectId, sourceId, selectedTable),
+    queryFn: () => getDataSourcePreview(projectId, sourceId, selectedTable),
     enabled: isOpen,
   });
   const rows = query.data?.rows ?? [];
@@ -63,9 +65,23 @@ export function DataSourcePreview({
             </div>
           ) : rows.length ? (
             <>
-              <p className="mb-2 text-xs text-muted-foreground">
-                {t("TXT_TOTAL_ROWS", { count: query.data?.total_rows })}
-              </p>
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <p className="text-xs text-muted-foreground">
+                  {t("TXT_TOTAL_ROWS", { count: query.data?.total_rows })}
+                </p>
+                {(query.data?.available_tables.length ?? 0) > 1 && (
+                  <NativeSelect
+                    aria-label={t("TXT_PREVIEW_TABLE_LABEL")}
+                    size="sm"
+                    value={query.data?.table_name}
+                    onChange={(event) => setSelectedTable(event.target.value)}
+                  >
+                    {query.data?.available_tables.map((name) => (
+                      <NativeSelectOption key={name} value={name}>{name}</NativeSelectOption>
+                    ))}
+                  </NativeSelect>
+                )}
+              </div>
               <Table>
                 <TableHeader>
                   <TableRow>

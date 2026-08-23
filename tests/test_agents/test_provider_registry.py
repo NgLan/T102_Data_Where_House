@@ -91,8 +91,8 @@ def test_default_model_factory_is_cached_per_process(monkeypatch: pytest.MonkeyP
     factory.get_cached_chat_model.cache_clear()
 
 
-def test_auto_provider_detects_google_when_gemini_configured(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Tự động chọn Google khi cấu hình LLM_PROVIDER=auto và model là Gemini."""
+def test_auto_provider_is_rejected_instead_of_guessing_from_model() -> None:
+    """Provider phải được cấu hình tường minh, không dùng fallback phỏng đoán."""
     from config import Settings
 
     settings = Settings(
@@ -102,5 +102,5 @@ def test_auto_provider_detects_google_when_gemini_configured(monkeypatch: pytest
         llm_provider="auto", model_name="gemini-1.5-flash", google_api_key="test-key",
         llm_temperature=0.0, log_level="INFO", langchain_tracing_v2=False, langchain_project="p", cors_origins="*",
     )
-    model = factory.build_chat_model(settings)
-    assert isinstance(model, ChatGoogleGenerativeAI)
+    with pytest.raises(InfrastructureException):
+        factory.build_chat_model(settings)

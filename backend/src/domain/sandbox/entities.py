@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 from src.common.exceptions.error_codes import ErrorCode
 from src.common.utils.string import safe_strip
-from src.domain.sandbox.enums import SandboxDbType
+from src.domain.sandbox.enums import SandboxDbType, SandboxStatus
 from src.domain.sandbox.rules import (
     normalize_sandbox_endpoint,
     normalize_schema_name,
@@ -14,7 +14,7 @@ from src.domain.shared.entity import BaseEntity
 from src.domain.shared.enum_rules import normalize_str_enum
 from src.domain.shared.types import EntityID
 
-DEFAULT_SANDBOX_HOST = "localhost"
+DEFAULT_SANDBOX_HOST = "127.0.0.1"
 DEFAULT_SANDBOX_PORT = 5432
 DEFAULT_SANDBOX_DATABASE = "sandbox_db"
 DEFAULT_SANDBOX_SCHEMA = "public"
@@ -32,6 +32,7 @@ class SandboxConfig(BaseEntity):
     username: str | None = None
     password: str | None = None
     schema_name: str | None = DEFAULT_SANDBOX_SCHEMA
+    status: SandboxStatus = SandboxStatus.CONFIGURED
 
     def __post_init__(self) -> None:
         """Bảo vệ invariant cấu hình và chuẩn hóa timestamp UTC.
@@ -44,6 +45,11 @@ class SandboxConfig(BaseEntity):
             self.db_type,
             SandboxDbType,
             ErrorCode.UNSUPPORTED_SANDBOX_DB_TYPE,
+        )
+        self.status = normalize_str_enum(
+            self.status,
+            SandboxStatus,
+            ErrorCode.VALIDATION_ERROR,
         )
         validate_sandbox_engine(self.db_type)
         self.host, self.port, self.database_name = normalize_sandbox_endpoint(

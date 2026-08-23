@@ -32,8 +32,8 @@ from src.infrastructure.repositories.postgres_data_source_repository import Post
 from src.infrastructure.repositories.postgres_project_repository import PostgresProjectRepository
 from src.infrastructure.repositories.postgres_requirement_repository import PostgresRequirementRepository
 from src.infrastructure.security.pii_guard import PiiGuard
-from src.infrastructure.storage.duckdb_csv_profiler import DuckDbCsvProfiler
 from src.infrastructure.storage.local_storage import LocalFileStorage
+from src.infrastructure.storage.source_file_inspector import SourceFileInspector
 from src.infrastructure.transaction.sqlalchemy_unit_of_work import SqlAlchemyUnitOfWork
 from src.presentation.dependencies.data_model_resources import get_pii_guard, get_validation_engine
 from src.presentation.dependencies.project_access import ProjectAccessDependency
@@ -63,7 +63,7 @@ def get_data_warehouse_workflow(
         repositories.data_sources,
         LocalFileStorage(get_settings().upload_dir),
         SourceAnalysisRunner(
-            DuckDbCsvProfiler(),
+            SourceFileInspector(),
             ColumnTypeClassifier(get_cached_chat_model, pii_guard),
         ),
         unit_of_work,

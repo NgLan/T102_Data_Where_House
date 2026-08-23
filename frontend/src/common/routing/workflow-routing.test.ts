@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createWorkflowHref, parseWorkflowStep } from './workflow-routing';
+import { createWorkflowHref, parseProjectId, parseWorkflowStep } from './workflow-routing';
 
 const PROJECT_ID = '86fd6b4e-1822-42db-a847-4d580abead3e';
 
@@ -30,5 +30,11 @@ describe('workflow routing', () => {
 
   it('encode giá trị bước để an toàn khi ghép vào URL', () => {
     expect(createWorkflowHref('project-init', PROJECT_ID)).toContain('step=project-init');
+  });
+
+  it('chỉ nhận project UUID hợp lệ', () => {
+    expect(parseProjectId(PROJECT_ID)).toBe(PROJECT_ID);
+    expect(parseProjectId('demo-project')).toBeNull();
+    expect(parseProjectId(undefined)).toBeNull();
   });
 });
