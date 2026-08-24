@@ -67,6 +67,9 @@ function AgentEvent({
     useState<ChangeProposalDetailResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  const isUser = event.role === "USER";
+  const isFailed = event.status === "FAILED";
+
   if (event.type === "AGENT_CALL")
     return <StatusEvent text={t("TXT_AGENT_STARTED")} />;
   if (event.type === "TOOL_CALL")
