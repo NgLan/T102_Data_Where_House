@@ -1,5 +1,6 @@
 -- ==========================================================================
--- AI20K Data Wherehouse - Database Schema (Dumped directly from LIVE local DB)
+-- AI20K Data Wherehouse - Clean Database Schema Initialization for Supabase
+-- Matches 100% of Backend SQLAlchemy ORM Models
 -- ==========================================================================
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
@@ -7,286 +8,264 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 BEGIN;
 
+-- 1. Drop existing tables in reverse order if re-initializing cleanly
+DROP TABLE IF EXISTS "session_events", "data_model_changes", "analytical_requirements", "sandbox_configs", "requirements", "project_sessions", "project_members", "data_sources", "data_models", "revoked_auth_tokens", "projects", "users" CASCADE;
+
+-- 2. Create tables and indexes
 -- ------------------------------------------------------------
 -- Table: users
 -- ------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS "users" (
-    username VARCHAR(100) NOT NULL,
-    email VARCHAR(255) NOT NULL,
-    id UUID NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    password_hash TEXT,
-    full_name VARCHAR(150),
-    is_active BOOLEAN DEFAULT false NOT NULL,
-    PRIMARY KEY ("id")
+CREATE TABLE users (
+	username VARCHAR(100) NOT NULL, 
+	email VARCHAR(255) NOT NULL, 
+	password_hash TEXT, 
+	full_name VARCHAR(150), 
+	is_active BOOLEAN DEFAULT false NOT NULL, 
+	id UUID NOT NULL, 
+	created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL, 
+	updated_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL, 
+	PRIMARY KEY (id)
 );
 
-CREATE UNIQUE INDEX IF NOT EXISTS ix_users_username ON public.users USING btree (username);
-CREATE UNIQUE INDEX IF NOT EXISTS ix_users_email ON public.users USING btree (email);
-CREATE UNIQUE INDEX IF NOT EXISTS uq_users_username_casefold ON public.users USING btree (lower((username)::text));
-CREATE UNIQUE INDEX IF NOT EXISTS uq_users_email_casefold ON public.users USING btree (lower((email)::text));
+CREATE UNIQUE INDEX ix_users_username ON users (username);
+CREATE UNIQUE INDEX ix_users_email ON users (email);
 
 -- ------------------------------------------------------------
 -- Table: projects
 -- ------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS "projects" (
-    name VARCHAR(255) NOT NULL,
-    description TEXT,
-    domain VARCHAR(100),
-    requirement TEXT,
-    status VARCHAR(30) NOT NULL,
-    user_id UUID NOT NULL,
-    id UUID NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    requirement_revision INTEGER DEFAULT 0 NOT NULL,
-    source_revision INTEGER DEFAULT 0 NOT NULL,
-    analyzed_requirement_revision INTEGER DEFAULT 0 NOT NULL,
-    analyzed_source_revision INTEGER DEFAULT 0 NOT NULL,
-    confirmed_requirement_revision INTEGER DEFAULT 0 NOT NULL,
-    derived_analytical_requirement_revision INTEGER DEFAULT 0 NOT NULL,
-    PRIMARY KEY ("id"),
-    CONSTRAINT projects_user_id_fkey FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE
+CREATE TABLE projects (
+	name VARCHAR(255) NOT NULL, 
+	description TEXT, 
+	domain VARCHAR(100), 
+	requirement TEXT, 
+	requirement_revision INTEGER NOT NULL, 
+	source_revision INTEGER NOT NULL, 
+	analyzed_requirement_revision INTEGER NOT NULL, 
+	analyzed_source_revision INTEGER NOT NULL, 
+	status VARCHAR(30) NOT NULL, 
+	user_id UUID NOT NULL, 
+	id UUID NOT NULL, 
+	created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL, 
+	updated_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL, 
+	PRIMARY KEY (id), 
+	FOREIGN KEY(user_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
-CREATE INDEX IF NOT EXISTS ix_projects_user_id ON public.projects USING btree (user_id);
-CREATE INDEX IF NOT EXISTS ix_projects_status ON public.projects USING btree (status);
-CREATE INDEX IF NOT EXISTS idx_projects_user_status ON public.projects USING btree (user_id, status);
+CREATE INDEX idx_projects_user_status ON projects (user_id, status);
+CREATE INDEX ix_projects_user_id ON projects (user_id);
+CREATE INDEX ix_projects_status ON projects (status);
 
 -- ------------------------------------------------------------
 -- Table: revoked_auth_tokens
 -- ------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS "revoked_auth_tokens" (
-    jti VARCHAR(64) NOT NULL,
-    user_id UUID NOT NULL,
-    expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    id UUID NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
-    PRIMARY KEY ("id"),
-    CONSTRAINT revoked_auth_tokens_user_id_fkey FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE
+CREATE TABLE revoked_auth_tokens (
+	jti VARCHAR(64) NOT NULL, 
+	user_id UUID NOT NULL, 
+	expires_at TIMESTAMP WITH TIME ZONE NOT NULL, 
+	id UUID NOT NULL, 
+	created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL, 
+	updated_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL, 
+	PRIMARY KEY (id), 
+	FOREIGN KEY(user_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
-CREATE INDEX IF NOT EXISTS ix_revoked_auth_tokens_user_id ON public.revoked_auth_tokens USING btree (user_id);
-CREATE UNIQUE INDEX IF NOT EXISTS ix_revoked_auth_tokens_jti ON public.revoked_auth_tokens USING btree (jti);
-CREATE INDEX IF NOT EXISTS idx_revoked_auth_tokens_expires_at ON public.revoked_auth_tokens USING btree (expires_at);
-CREATE INDEX IF NOT EXISTS idx_revoked_auth_tokens_user_id ON public.revoked_auth_tokens USING btree (user_id);
-
--- ------------------------------------------------------------
--- Table: project_members
--- ------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS "project_members" (
-    project_id UUID NOT NULL,
-    user_id UUID NOT NULL,
-    role VARCHAR(30) NOT NULL,
-    joined_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    id UUID NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    PRIMARY KEY ("id"),
-    CONSTRAINT project_members_project_id_fkey FOREIGN KEY ("project_id") REFERENCES "projects" ("id") ON DELETE CASCADE,
-    CONSTRAINT project_members_user_id_fkey FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE,
-    CONSTRAINT uq_project_members_project_user UNIQUE ("project_id"),
-    CONSTRAINT uq_project_members_project_user UNIQUE ("user_id")
-);
-
-CREATE UNIQUE INDEX IF NOT EXISTS uq_project_members_project_user ON public.project_members USING btree (project_id, user_id);
-CREATE INDEX IF NOT EXISTS ix_project_members_project_id ON public.project_members USING btree (project_id);
-CREATE INDEX IF NOT EXISTS idx_project_members_project_user ON public.project_members USING btree (project_id, user_id);
-CREATE INDEX IF NOT EXISTS ix_project_members_user_id ON public.project_members USING btree (user_id);
-
--- ------------------------------------------------------------
--- Table: requirements
--- ------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS "requirements" (
-    project_id UUID NOT NULL,
-    type VARCHAR(50) NOT NULL,
-    title VARCHAR(255) NOT NULL,
-    description TEXT NOT NULL,
-    priority VARCHAR(30) NOT NULL,
-    id UUID NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    PRIMARY KEY ("id"),
-    CONSTRAINT requirements_project_id_fkey FOREIGN KEY ("project_id") REFERENCES "projects" ("id") ON DELETE CASCADE
-);
-
-CREATE INDEX IF NOT EXISTS ix_requirements_project_id ON public.requirements USING btree (project_id);
-
--- ------------------------------------------------------------
--- Table: analytical_requirements
--- ------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS "analytical_requirements" (
-    requirement_id UUID NOT NULL,
-    metric VARCHAR(255),
-    dimension VARCHAR(255),
-    time_granularity VARCHAR(50),
-    aggregation_method VARCHAR(50),
-    grain TEXT,
-    id UUID NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    PRIMARY KEY ("id"),
-    CONSTRAINT analytical_requirements_requirement_id_fkey FOREIGN KEY ("requirement_id") REFERENCES "requirements" ("id") ON DELETE CASCADE
-);
-
-CREATE INDEX IF NOT EXISTS ix_analytical_requirements_requirement_id ON public.analytical_requirements USING btree (requirement_id);
-
--- ------------------------------------------------------------
--- Table: requirement_files
--- ------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS "requirement_files" (
-    project_id UUID NOT NULL,
-    name VARCHAR(255) NOT NULL,
-    file_type VARCHAR(16) NOT NULL,
-    location TEXT NOT NULL,
-    extracted_text TEXT NOT NULL,
-    id UUID NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
-    PRIMARY KEY ("id"),
-    CONSTRAINT requirement_files_project_id_fkey FOREIGN KEY ("project_id") REFERENCES "projects" ("id") ON DELETE CASCADE
-);
-
-CREATE UNIQUE INDEX IF NOT EXISTS uq_requirement_files_project_name_ci ON public.requirement_files USING btree (project_id, lower((name)::text));
-CREATE INDEX IF NOT EXISTS idx_requirement_files_project ON public.requirement_files USING btree (project_id);
-
--- ------------------------------------------------------------
--- Table: data_sources
--- ------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS "data_sources" (
-    project_id UUID NOT NULL,
-    name VARCHAR(255) NOT NULL,
-    type VARCHAR(50) NOT NULL,
-    description TEXT,
-    location TEXT NOT NULL,
-    schema_metadata JSONB,
-    id UUID NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    PRIMARY KEY ("id"),
-    CONSTRAINT data_sources_project_id_fkey FOREIGN KEY ("project_id") REFERENCES "projects" ("id") ON DELETE CASCADE
-);
-
-CREATE INDEX IF NOT EXISTS idx_data_sources_project_type ON public.data_sources USING btree (project_id, type);
-CREATE INDEX IF NOT EXISTS ix_data_sources_project_id ON public.data_sources USING btree (project_id);
-CREATE INDEX IF NOT EXISTS ix_data_sources_type ON public.data_sources USING btree (type);
+CREATE UNIQUE INDEX ix_revoked_auth_tokens_jti ON revoked_auth_tokens (jti);
+CREATE INDEX idx_revoked_auth_tokens_expires_at ON revoked_auth_tokens (expires_at);
+CREATE INDEX ix_revoked_auth_tokens_user_id ON revoked_auth_tokens (user_id);
 
 -- ------------------------------------------------------------
 -- Table: data_models
 -- ------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS "data_models" (
-    project_id UUID NOT NULL,
-    dbml TEXT NOT NULL,
-    revision INTEGER NOT NULL,
-    id UUID NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    generated_from_requirement_revision INTEGER DEFAULT 1 NOT NULL,
-    generated_from_source_revision INTEGER DEFAULT 1 NOT NULL,
-    PRIMARY KEY ("id"),
-    CONSTRAINT data_models_project_id_fkey FOREIGN KEY ("project_id") REFERENCES "projects" ("id") ON DELETE CASCADE
+CREATE TABLE data_models (
+	project_id UUID NOT NULL, 
+	dbml TEXT NOT NULL, 
+	revision INTEGER NOT NULL, 
+	generated_from_requirement_revision INTEGER NOT NULL, 
+	generated_from_source_revision INTEGER NOT NULL, 
+	id UUID NOT NULL, 
+	created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL, 
+	updated_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL, 
+	PRIMARY KEY (id), 
+	FOREIGN KEY(project_id) REFERENCES projects (id) ON DELETE CASCADE
 );
 
-CREATE UNIQUE INDEX IF NOT EXISTS ix_data_models_project_id ON public.data_models USING btree (project_id);
+CREATE UNIQUE INDEX ix_data_models_project_id ON data_models (project_id);
 
 -- ------------------------------------------------------------
--- Table: data_model_changes
+-- Table: data_sources
 -- ------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS "data_model_changes" (
-    data_model_id UUID NOT NULL,
-    base_revision INTEGER NOT NULL,
-    proposed_dbml TEXT NOT NULL,
-    status VARCHAR(30) NOT NULL,
-    user_id UUID NOT NULL,
-    id UUID NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    base_dbml TEXT NOT NULL,
-    PRIMARY KEY ("id"),
-    CONSTRAINT data_model_changes_data_model_id_fkey FOREIGN KEY ("data_model_id") REFERENCES "data_models" ("id") ON DELETE CASCADE,
-    CONSTRAINT data_model_changes_user_id_fkey FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE
+CREATE TABLE data_sources (
+	project_id UUID NOT NULL, 
+	name VARCHAR(255) NOT NULL, 
+	type VARCHAR(50) NOT NULL, 
+	description TEXT, 
+	location TEXT NOT NULL, 
+	schema_metadata JSONB, 
+	id UUID NOT NULL, 
+	created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL, 
+	updated_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL, 
+	PRIMARY KEY (id), 
+	FOREIGN KEY(project_id) REFERENCES projects (id) ON DELETE CASCADE
 );
 
-CREATE INDEX IF NOT EXISTS ix_data_model_changes_user_id ON public.data_model_changes USING btree (user_id);
-CREATE INDEX IF NOT EXISTS ix_data_model_changes_data_model_id ON public.data_model_changes USING btree (data_model_id);
-CREATE UNIQUE INDEX IF NOT EXISTS uq_data_model_changes_proposed_model_user ON public.data_model_changes USING btree (data_model_id, user_id) WHERE ((status)::text = 'PROPOSED'::text);
+CREATE INDEX ix_data_sources_project_id ON data_sources (project_id);
+CREATE INDEX ix_data_sources_type ON data_sources (type);
+CREATE INDEX idx_data_sources_project_type ON data_sources (project_id, type);
+
+-- ------------------------------------------------------------
+-- Table: project_members
+-- ------------------------------------------------------------
+CREATE TABLE project_members (
+	project_id UUID NOT NULL, 
+	user_id UUID NOT NULL, 
+	role VARCHAR(30) NOT NULL, 
+	joined_at TIMESTAMP WITH TIME ZONE NOT NULL, 
+	id UUID NOT NULL, 
+	created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL, 
+	updated_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL, 
+	PRIMARY KEY (id), 
+	CONSTRAINT uq_project_members_project_user UNIQUE (project_id, user_id), 
+	FOREIGN KEY(project_id) REFERENCES projects (id) ON DELETE CASCADE, 
+	FOREIGN KEY(user_id) REFERENCES users (id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_project_members_project_user ON project_members (project_id, user_id);
+CREATE INDEX ix_project_members_user_id ON project_members (user_id);
+CREATE INDEX ix_project_members_project_id ON project_members (project_id);
 
 -- ------------------------------------------------------------
 -- Table: project_sessions
 -- ------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS "project_sessions" (
-    project_id UUID NOT NULL,
-    user_id UUID NOT NULL,
-    title VARCHAR(255),
-    status VARCHAR(30) NOT NULL,
-    id UUID NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    active_turn_id UUID,
-    active_turn_started_at TIMESTAMP WITH TIME ZONE,
-    pending_question_id UUID,
-    conversation_summary JSONB,
-    summarized_through_event_id UUID,
-    summary_updated_at TIMESTAMP WITH TIME ZONE,
-    purpose VARCHAR(32) DEFAULT 'DATA_MODELING'::character varying NOT NULL,
-    base_requirement_revision INTEGER,
-    PRIMARY KEY ("id"),
-    CONSTRAINT project_sessions_project_id_fkey FOREIGN KEY ("project_id") REFERENCES "projects" ("id") ON DELETE CASCADE,
-    CONSTRAINT project_sessions_user_id_fkey FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE
+CREATE TABLE project_sessions (
+	project_id UUID NOT NULL, 
+	user_id UUID NOT NULL, 
+	title VARCHAR(255), 
+	status VARCHAR(30) NOT NULL, 
+	active_turn_id UUID, 
+	active_turn_started_at TIMESTAMP WITH TIME ZONE, 
+	id UUID NOT NULL, 
+	created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL, 
+	updated_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL, 
+	PRIMARY KEY (id), 
+	FOREIGN KEY(project_id) REFERENCES projects (id) ON DELETE CASCADE, 
+	FOREIGN KEY(user_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
-CREATE INDEX IF NOT EXISTS ix_project_sessions_project_id ON public.project_sessions USING btree (project_id);
-CREATE INDEX IF NOT EXISTS ix_project_sessions_status ON public.project_sessions USING btree (status);
-CREATE INDEX IF NOT EXISTS ix_project_sessions_user_id ON public.project_sessions USING btree (user_id);
-CREATE INDEX IF NOT EXISTS idx_project_sessions_project_status ON public.project_sessions USING btree (project_id, status);
-CREATE INDEX IF NOT EXISTS idx_project_sessions_pending_question ON public.project_sessions USING btree (pending_question_id) WHERE (pending_question_id IS NOT NULL);
-CREATE INDEX IF NOT EXISTS idx_project_sessions_project_purpose_status ON public.project_sessions USING btree (project_id, purpose, status);
-CREATE UNIQUE INDEX IF NOT EXISTS uq_project_active_requirement_session ON public.project_sessions USING btree (project_id) WHERE (((purpose)::text = 'REQUIREMENT_CLARIFICATION'::text) AND ((status)::text = 'ACTIVE'::text));
+CREATE INDEX ix_project_sessions_status ON project_sessions (status);
+CREATE INDEX ix_project_sessions_project_id ON project_sessions (project_id);
+CREATE INDEX idx_project_sessions_project_status ON project_sessions (project_id, status);
+CREATE INDEX ix_project_sessions_user_id ON project_sessions (user_id);
 
 -- ------------------------------------------------------------
--- Table: session_events
+-- Table: requirements
 -- ------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS "session_events" (
-    session_id UUID NOT NULL,
-    role VARCHAR(30) NOT NULL,
-    type VARCHAR(50) NOT NULL,
-    content TEXT,
-    metadata JSONB,
-    id UUID NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    turn_id UUID,
-    PRIMARY KEY ("id"),
-    CONSTRAINT session_events_session_id_fkey FOREIGN KEY ("session_id") REFERENCES "project_sessions" ("id") ON DELETE CASCADE
+CREATE TABLE requirements (
+	project_id UUID NOT NULL, 
+	type VARCHAR(50) NOT NULL, 
+	title VARCHAR(255) NOT NULL, 
+	description TEXT NOT NULL, 
+	priority VARCHAR(30) NOT NULL, 
+	id UUID NOT NULL, 
+	created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL, 
+	updated_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL, 
+	PRIMARY KEY (id), 
+	FOREIGN KEY(project_id) REFERENCES projects (id) ON DELETE CASCADE
 );
 
-CREATE INDEX IF NOT EXISTS idx_session_events_session_created ON public.session_events USING btree (session_id, created_at);
-CREATE INDEX IF NOT EXISTS ix_session_events_session_id ON public.session_events USING btree (session_id);
-CREATE INDEX IF NOT EXISTS idx_session_events_turn_id ON public.session_events USING btree (turn_id);
-CREATE INDEX IF NOT EXISTS idx_session_events_session_turn ON public.session_events USING btree (session_id, turn_id);
+CREATE INDEX ix_requirements_project_id ON requirements (project_id);
 
 -- ------------------------------------------------------------
 -- Table: sandbox_configs
 -- ------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS "sandbox_configs" (
-    project_id UUID NOT NULL,
-    db_type VARCHAR(255) NOT NULL,
-    host VARCHAR(255) NOT NULL,
-    port INTEGER NOT NULL,
-    database_name VARCHAR(255) NOT NULL,
-    username VARCHAR(255),
-    password TEXT,
-    schema_name VARCHAR(255),
-    id UUID NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
-    PRIMARY KEY ("id"),
-    CONSTRAINT sandbox_configs_project_id_fkey FOREIGN KEY ("project_id") REFERENCES "projects" ("id") ON DELETE CASCADE,
-    CONSTRAINT sandbox_configs_project_id_key UNIQUE ("project_id")
+CREATE TABLE sandbox_configs (
+	project_id UUID NOT NULL, 
+	db_type VARCHAR(255) NOT NULL, 
+	host VARCHAR(255) NOT NULL, 
+	port INTEGER NOT NULL, 
+	database_name VARCHAR(100) NOT NULL, 
+	username VARCHAR(255), 
+	password TEXT, 
+	schema_name VARCHAR(100), 
+	id UUID NOT NULL, 
+	created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL, 
+	updated_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL, 
+	PRIMARY KEY (id), 
+	CONSTRAINT ck_sandbox_configs_db_type CHECK (db_type = 'POSTGRESQL'), 
+	CONSTRAINT ck_sandbox_configs_port CHECK (port BETWEEN 1 AND 65535), 
+	CONSTRAINT ck_sandbox_configs_schema_name CHECK (schema_name IS NULL OR schema_name ~ '^[A-Za-z_][A-Za-z0-9_]*$'), 
+	UNIQUE (project_id), 
+	FOREIGN KEY(project_id) REFERENCES projects (id) ON DELETE CASCADE
 );
 
-CREATE UNIQUE INDEX IF NOT EXISTS sandbox_configs_project_id_key ON public.sandbox_configs USING btree (project_id);
+
+-- ------------------------------------------------------------
+-- Table: analytical_requirements
+-- ------------------------------------------------------------
+CREATE TABLE analytical_requirements (
+	requirement_id UUID NOT NULL, 
+	metric VARCHAR(255), 
+	dimension VARCHAR(255), 
+	time_granularity VARCHAR(50), 
+	aggregation_method VARCHAR(50), 
+	grain TEXT, 
+	id UUID NOT NULL, 
+	created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL, 
+	updated_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL, 
+	PRIMARY KEY (id), 
+	FOREIGN KEY(requirement_id) REFERENCES requirements (id) ON DELETE CASCADE
+);
+
+CREATE INDEX ix_analytical_requirements_requirement_id ON analytical_requirements (requirement_id);
+
+-- ------------------------------------------------------------
+-- Table: data_model_changes
+-- ------------------------------------------------------------
+CREATE TABLE data_model_changes (
+	data_model_id UUID NOT NULL, 
+	base_revision INTEGER NOT NULL, 
+	base_dbml TEXT NOT NULL, 
+	proposed_dbml TEXT NOT NULL, 
+	status VARCHAR(30) NOT NULL, 
+	user_id UUID NOT NULL, 
+	id UUID NOT NULL, 
+	created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL, 
+	updated_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL, 
+	PRIMARY KEY (id), 
+	FOREIGN KEY(data_model_id) REFERENCES data_models (id) ON DELETE CASCADE, 
+	FOREIGN KEY(user_id) REFERENCES users (id) ON DELETE CASCADE
+);
+
+CREATE UNIQUE INDEX uq_data_model_changes_proposed_model_user ON data_model_changes (data_model_id, user_id) WHERE status = 'PROPOSED';
+CREATE INDEX ix_data_model_changes_user_id ON data_model_changes (user_id);
+CREATE INDEX ix_data_model_changes_data_model_id ON data_model_changes (data_model_id);
+
+-- ------------------------------------------------------------
+-- Table: session_events
+-- ------------------------------------------------------------
+CREATE TABLE session_events (
+	session_id UUID NOT NULL, 
+	role VARCHAR(30) NOT NULL, 
+	type VARCHAR(50) NOT NULL, 
+	content TEXT, 
+	turn_id UUID, 
+	metadata JSONB, 
+	id UUID NOT NULL, 
+	created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL, 
+	updated_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL, 
+	PRIMARY KEY (id), 
+	FOREIGN KEY(session_id) REFERENCES project_sessions (id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_session_events_session_created ON session_events (session_id, created_at);
+CREATE INDEX idx_session_events_session_turn ON session_events (session_id, turn_id);
+CREATE INDEX ix_session_events_turn_id ON session_events (turn_id);
+CREATE INDEX ix_session_events_session_id ON session_events (session_id);
+
+-- ------------------------------------------------------------
+-- Default MVP User (Required for MVP actor auth & seed)
+-- ------------------------------------------------------------
+INSERT INTO public.users (id, username, email, full_name, is_active, created_at, updated_at)
+VALUES ('a678ac27-3077-5ef2-8919-5218b2e48791', 'annv', 'an.nguyen@dataworks.vn', 'An Nguyen', true, now(), now())
+ON CONFLICT (id) DO NOTHING;
 
 COMMIT;
