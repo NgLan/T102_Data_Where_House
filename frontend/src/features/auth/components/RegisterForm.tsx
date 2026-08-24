@@ -10,13 +10,16 @@ import { Button } from "@/common/components/ui/button";
 import { Field, FieldError, FieldLabel } from "@/common/components/ui/field";
 import { Input } from "@/common/components/ui/input";
 import { CURRENT_ACTOR_QUERY_KEY } from "@/common/projects/project-queries";
+import { toast } from "sonner";
 import { createRegisterSchema, type RegisterFormValues } from "../schemas/auth-schemas";
 import { registerUser } from "../services/auth-api";
 
+interface RegisterFormProps {
+  onRegisterSuccess?: (registeredUsername: string) => void;
+}
 
-export function RegisterForm() {
+export function RegisterForm({ onRegisterSuccess }: RegisterFormProps) {
   const { t } = useTranslation("auth");
-  const queryClient = useQueryClient();
   const schema = useMemo(() => createRegisterSchema(t), [t]);
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(schema),
@@ -24,7 +27,11 @@ export function RegisterForm() {
   });
   const mutation = useMutation({
     mutationFn: registerUser,
-    onSuccess: (user) => queryClient.setQueryData(CURRENT_ACTOR_QUERY_KEY, user),
+    onSuccess: (_, variables) => {
+      toast.success(t("MSG_REGISTER_SUCCESS"));
+      form.reset();
+      onRegisterSuccess?.(variables.username);
+    },
   });
   const apiError = mutation.error
     ? resolveApiErrorMessage(handleApiError(mutation.error, { shouldNotify: false }))

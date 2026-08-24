@@ -31,5 +31,7 @@ export function useCurrentActorQuery() {
     queryKey: CURRENT_ACTOR_QUERY_KEY,
     queryFn: getCurrentActorProfile,
     retry: false,
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 }

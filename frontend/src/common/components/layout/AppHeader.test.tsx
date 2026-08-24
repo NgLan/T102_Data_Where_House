@@ -86,6 +86,7 @@ describe("header controls", () => {
     expect(mocks.logout).toHaveBeenCalledOnce();
     expect(mocks.clearDrafts).toHaveBeenCalledOnce();
     expect(mocks.clearQueries).toHaveBeenCalledOnce();
+    expect(mocks.push).toHaveBeenCalledWith("/");
   });
 
   it("logo có cursor và quay về danh sách Project", () => {

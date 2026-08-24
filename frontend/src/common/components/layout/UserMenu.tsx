@@ -3,6 +3,7 @@
 import { ChevronDown, LogOut, Mail } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
+import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback } from "@/common/components/ui/avatar";
 import { Button } from "@/common/components/ui/button";
 import {
@@ -23,6 +24,7 @@ import { logoutUser } from "@/features/auth/services/auth-api";
  */
 export function UserMenu() {
   const { t } = useTranslation("common");
+  const router = useRouter();
   const queryClient = useQueryClient();
   const actorQuery = useCurrentActorQuery();
   const logoutMutation = useMutation({
@@ -30,6 +32,7 @@ export function UserMenu() {
     onSuccess: () => {
       clearUserModelingDrafts();
       queryClient.clear();
+      router.push("/");
     },
   });
   if (actorQuery.isPending) return <Skeleton className="h-8 w-28" />;

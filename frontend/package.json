@@ -14,6 +14,8 @@
     "@dbml/core": "8.3.1",
     "@hookform/resolvers": "^5.9.1",
     "@tanstack/react-query": "^5.101.4",
+    "@tsparticles/react": "^4.3.2",
+    "@tsparticles/slim": "^4.3.2",
     "@xyflow/react": "12.11.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

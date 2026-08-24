@@ -14,6 +14,7 @@ import proposalReviewVi from "./locales/vi/proposal-review.json";
 import sandboxDeploymentVi from "./locales/vi/sandbox-deployment.json";
 import projectManagementVi from "./locales/vi/project-management.json";
 import authVi from "./locales/vi/auth.json";
+import landingVi from "./locales/vi/landing.json";
 
 import commonEn from "./locales/en/common.json";
 import errorsEn from "./locales/en/errors.json";
@@ -28,6 +29,7 @@ import proposalReviewEn from "./locales/en/proposal-review.json";
 import sandboxDeploymentEn from "./locales/en/sandbox-deployment.json";
 import projectManagementEn from "./locales/en/project-management.json";
 import authEn from "./locales/en/auth.json";
+import landingEn from "./locales/en/landing.json";
 
 /** Namespace mặc định cho nội dung dùng chung. */
 export const defaultNS = "common";
@@ -48,6 +50,7 @@ export const resources = {
     "sandbox-deployment": sandboxDeploymentVi,
     "project-management": projectManagementVi,
     auth: authVi,
+    landing: landingVi,
   },
   en: {
     common: commonEn,
@@ -63,6 +66,7 @@ export const resources = {
     "sandbox-deployment": sandboxDeploymentEn,
     "project-management": projectManagementEn,
     auth: authEn,
+    landing: landingEn,
   },
 } as const;
 
