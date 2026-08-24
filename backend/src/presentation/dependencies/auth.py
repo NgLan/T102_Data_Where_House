@@ -4,7 +4,7 @@ from typing import Annotated
 
 from config import get_settings
 from fastapi import Depends, Security
-from fastapi.security import APIKeyCookie
+from fastapi.security import APIKeyCookie, HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.application.auth.auth_service import AuthService
 from src.application.auth.i_auth_service import IAuthService
@@ -24,6 +24,7 @@ from src.infrastructure.transaction.sqlalchemy_unit_of_work import SqlAlchemyUni
 
 AUTH_COOKIE_NAME = "p102_access_token"
 cookie_scheme = APIKeyCookie(name=AUTH_COOKIE_NAME, auto_error=False)
+bearer_scheme = HTTPBearer(auto_error=False)
 
 
 def get_auth_service(
@@ -42,15 +43,23 @@ def get_auth_service(
     )
 
 
+def resolve_auth_token(
+    cookie_token: Annotated[str | None, Security(cookie_scheme)],
+    bearer_token: Annotated[HTTPAuthorizationCredentials | None, Security(bearer_scheme)] = None,
+) -> str | None:
+    """Trích xuất token xác thực từ Cookie hoặc Authorization Bearer header."""
+    return cookie_token or (bearer_token.credentials if bearer_token else None)
+
+
 AuthServiceDependency = Annotated[IAuthService, Depends(get_auth_service)]
-AuthTokenDependency = Annotated[str | None, Security(cookie_scheme)]
+AuthTokenDependency = Annotated[str | None, Depends(resolve_auth_token)]
 
 
 async def get_current_user(
     service: AuthServiceDependency,
     token: AuthTokenDependency,
 ) -> CurrentActorOutput:
-    """Xác thực JWT HttpOnly cookie và trả actor hiện tại."""
+    """Xác thực JWT token (từ Cookie hoặc Authorization Header) và trả actor hiện tại."""
     if token is None:
         raise BusinessException(
             ErrorCode.AUTHENTICATION_REQUIRED,

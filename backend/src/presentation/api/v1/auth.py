@@ -86,20 +86,28 @@ async def logout(
         raise BusinessException(ErrorCode.AUTHENTICATION_REQUIRED, "Vui lòng đăng nhập.")
     await service.logout(token)
     response = Response(status_code=HTTPStatus.NO_CONTENT)
-    response.delete_cookie(AUTH_COOKIE_NAME, path="/api/v1")
+    is_prod = get_settings().app_env == "production"
+    response.delete_cookie(
+        AUTH_COOKIE_NAME,
+        path="/api/v1",
+        secure=is_prod,
+        httponly=True,
+        samesite="none" if is_prod else "lax",
+    )
     return response
 
 
 def _set_auth_cookie(response: Response, session: AuthSessionOutput) -> None:
     settings = get_settings()
     max_age = max(int((session.expires_at - utc_now()).total_seconds()), 0)
+    is_prod = settings.app_env == "production"
     response.set_cookie(
         key=AUTH_COOKIE_NAME,
         value=session.access_token,
         max_age=max_age,
         expires=session.expires_at,
         path="/api/v1",
-        secure=settings.app_env == "production",
+        secure=is_prod,
         httponly=True,
-        samesite="lax",
+        samesite="none" if is_prod else "lax",
     )
