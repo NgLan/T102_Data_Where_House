@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Literal
 from uuid import UUID
 
-from pydantic import Field
+from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -64,6 +64,7 @@ class Settings(BaseSettings):
     openai_base_url: str = ""
     google_api_key: str = ""
     llm_provider: str = "google"
+    llm_api_keys: tuple[SecretStr, ...] | None = None
     llm_api_key: str = ""
     llm_base_url: str = ""
     model_name: str
@@ -78,12 +79,38 @@ class Settings(BaseSettings):
     # dạng JSON/DBML: chạm trần giữa chừng là structured output vỡ và cả pipeline hỏng
     # với lỗi `LengthFinishReasonError`.
     agent_max_output_tokens: int = Field(default=8000, ge=1024)
+    conversation_context_window_tokens: int = Field(default=32768, ge=4096)
+    conversation_recent_turns: int = Field(default=6, ge=1)
+    conversation_summary_batch_size: int = Field(default=4, ge=1)
+    conversation_token_chars_per_token: float = Field(default=4.0, gt=0)
+    conversation_project_context_soft_target: float = Field(default=0.45, ge=0.0, le=1.0)
+    conversation_summary_soft_target: float = Field(default=0.10, ge=0.0, le=1.0)
+    conversation_history_soft_target: float = Field(default=0.20, ge=0.0, le=1.0)
+    conversation_summary_model_name: str = ""
+    conversation_summary_temperature: float = Field(default=0.1, ge=0.0, le=2.0)
+    conversation_summary_max_output_tokens: int = Field(default=1500, ge=256)
     # Che thông tin cá nhân trước khi gửi dữ liệu sang LLM API (FR6.2).
     # Mặc định luôn BẬT; chỉ tắt khi cần gỡ lỗi chất lượng đầu ra của Agent.
     pii_masking_enabled: bool = Field(default=True)
     pii_default_language: str = "vi"
     pii_supported_languages: str = "vi,en,ja"
     pii_score_threshold: float = Field(default=0.4, ge=0.0, le=1.0)
+
+    @field_validator("llm_api_keys")
+    @classmethod
+    def validate_llm_api_keys(
+        cls, keys: tuple[SecretStr, ...] | None
+    ) -> tuple[SecretStr, ...] | None:
+        """Chuẩn hóa key list mới và từ chối cấu hình rỗng hoặc trùng."""
+        if keys is None:
+            return None
+        normalized = tuple(SecretStr(key.get_secret_value().strip()) for key in keys)
+        values = tuple(key.get_secret_value() for key in normalized)
+        if not values or any(not value for value in values):
+            raise ValueError("LLM_API_KEYS phải chứa ít nhất một key không rỗng.")
+        if len(set(values)) != len(values):
+            raise ValueError("LLM_API_KEYS không được chứa key trùng nhau.")
+        return normalized
 
     # =========================================================================
     # 7. Observability Configuration (Logging & Tracing)

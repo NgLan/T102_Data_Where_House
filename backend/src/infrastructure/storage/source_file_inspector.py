@@ -11,12 +11,12 @@ from src.application.data_sources.source_analysis_ports import ISourceFileInspec
 from src.common.exceptions.error_codes import ErrorCode
 from src.common.exceptions.infrastructure import InfrastructureException
 from src.domain.data_source.enums import DataSourceType
-from src.infrastructure.storage.duckdb_csv_file_reader import DuckDbCsvFileReader
-from src.infrastructure.storage.duckdb_csv_profiler import DuckDbCsvProfiler
-from src.infrastructure.storage.structured_source_parser import parse_structured_source
-from src.infrastructure.storage.structured_source_preview import structured_preview
-from src.infrastructure.storage.tabular_source_models import ParsedTable
-from src.infrastructure.storage.tabular_source_profiler import profile_source
+from src.infrastructure.storage.parsers.csv.duckdb_csv_file_reader import DuckDbCsvFileReader
+from src.infrastructure.storage.parsers.csv.duckdb_csv_profiler import DuckDbCsvProfiler
+from src.infrastructure.storage.parsers.structured_source_parser import parse_structured_source
+from src.infrastructure.storage.parsers.structured_source_preview import structured_preview
+from src.infrastructure.storage.parsers.tabular_source_models import ParsedTable
+from src.infrastructure.storage.parsers.tabular_source_profiler import profile_source
 from typing_extensions import override
 
 DELIMITED_TYPES = {".csv": DataSourceType.CSV, ".tsv": DataSourceType.TSV}

@@ -8,11 +8,13 @@ from src.presentation.dependencies.projects import ProjectServiceDependency
 from src.presentation.dtos.projects.request import (
     CreateProjectRequest,
     ProjectIdPath,
+    SaveRawRequirementRequest,
     UpdateProjectRequest,
 )
 from src.presentation.dtos.projects.response import (
     ProjectResponse,
     ProjectSummaryResponse,
+    RawRequirementResponse,
 )
 from src.presentation.routing import ApiResponseRoute, error_responses
 
@@ -82,6 +84,22 @@ async def update_project(
     """Thay thế thông tin Project do OWNER sở hữu."""
     output = await service.update_project(request.to_application(project_id))
     return ProjectResponse.from_project(output)
+
+
+@router.put(
+    "/{project_id}/requirement",
+    response_model=RawRequirementResponse,
+    operation_id="saveProjectRawRequirement",
+    responses=error_responses(401, 403, 404, 409, 422, 500),
+)
+async def save_project_raw_requirement(
+    project_id: ProjectIdPath,
+    request: SaveRawRequirementRequest,
+    service: ProjectServiceDependency,
+) -> RawRequirementResponse:
+    """Lưu Raw Requirement tách biệt Project information."""
+    output = await service.save_raw_requirement(request.to_application(project_id))
+    return RawRequirementResponse.model_validate(output, from_attributes=True)
 
 
 @router.delete(

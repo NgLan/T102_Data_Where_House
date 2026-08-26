@@ -44,7 +44,7 @@ def normalize_project_requirement(requirement: str | None) -> str | None:
     """
     if requirement is None or not requirement.strip():
         return None
-    normalized = normalize_whitespace(requirement)
+    normalized = requirement.replace("\r\n", "\n").replace("\r", "\n").strip()
     if len(normalized) < MIN_PROJECT_REQUIREMENT_LENGTH:
         _raise(
             ErrorCode.INVALID_PROJECT_REQUIREMENT,

@@ -4,41 +4,26 @@ from abc import ABC, abstractmethod
 
 from src.application.data_models.output import ChangeProposalDetailOutput, DataModelOutput
 from src.application.data_warehouse_workflows.input import (
-    AnalyticalAnalysisInput,
     ConversationDesignInput,
     CreateAgentTurnInput,
     CreateAiEditProposalInput,
     DataWarehouseDesignInput,
     GenerateDataModelInput,
     GetAnalysisStatusInput,
-    RawRequirementAnalysisInput,
+    GetSourceCoverageInput,
     ReanalyzeProjectInput,
+    RecheckSourceCoverageInput,
     RegenerateDataModelInput,
+    ResolveSourceCoverageInput,
     RevisionDesignInput,
 )
 from src.application.data_warehouse_workflows.output import (
     AgentTurnOutput,
     AnalysisStatusOutput,
     ConversationDesignResult,
-    GeneratedAnalyticalRequirement,
     GeneratedDbml,
-    GeneratedRequirement,
     ValidationIssue,
 )
-
-
-class IRequirementAnalysisAgent(ABC):
-    """Outbound port cho hai operation của RequirementAgent."""
-
-    @abstractmethod
-    async def structure_raw_requirement(self, data: RawRequirementAnalysisInput) -> tuple[GeneratedRequirement, ...]:
-        """Cấu trúc hóa Raw Requirement bằng đúng một LLM invocation."""
-
-    @abstractmethod
-    async def derive_analytical_requirements(
-        self, data: AnalyticalAnalysisInput
-    ) -> tuple[GeneratedAnalyticalRequirement, ...]:
-        """Sinh AnalyticalRequirements bằng đúng một LLM invocation."""
 
 
 class IDataWarehouseDesignAgent(ABC):
@@ -72,8 +57,30 @@ class IDataWarehouseWorkflowService(ABC):
         """Đọc trạng thái đồng bộ mà không gọi Agent."""
 
     @abstractmethod
+    async def get_source_coverage(self, data: GetSourceCoverageInput) -> AnalysisStatusOutput:
+        """Reload persisted coverage state without invoking an Agent."""
+
+    @abstractmethod
+    async def resolve_source_coverage(
+        self, data: ResolveSourceCoverageInput
+    ) -> AnalysisStatusOutput:
+        """Persist one Source Confirmation item without invoking an Agent."""
+
+    @abstractmethod
+    async def recheck_source_coverage(
+        self, data: RecheckSourceCoverageInput
+    ) -> AnalysisStatusOutput:
+        """Materialize a completed batch and rerun only Source Coverage."""
+
+    @abstractmethod
     async def generate_data_model(self, data: GenerateDataModelInput) -> DataModelOutput:
         """Phân tích input và tạo Data Model đầu tiên."""
+
+    @abstractmethod
+    async def synchronize_data_model(
+        self, data: GenerateDataModelInput
+    ) -> DataModelOutput:
+        """Tạo, cập nhật hoặc reuse Data Model theo analysis hiện hành."""
 
     @abstractmethod
     async def reanalyze(self, data: ReanalyzeProjectInput) -> AnalysisStatusOutput:

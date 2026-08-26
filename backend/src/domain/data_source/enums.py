@@ -52,3 +52,16 @@ class RelationshipType(StrEnum):
     ONE_TO_MANY = "one_to_many"
     MANY_TO_ONE = "many_to_one"
     MANY_TO_MANY = "many_to_many"
+
+
+class SourceSemanticDecision(StrEnum):
+    """Quyết định do người dùng xác nhận về ý nghĩa nghiệp vụ của source."""
+
+    CONFIRMED = "CONFIRMED"
+    REJECTED = "REJECTED"
+
+
+class SourceSemanticProvenance(StrEnum):
+    """Nguồn gốc của semantic annotation, tách khỏi profiler inference."""
+
+    USER = "USER"

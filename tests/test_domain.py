@@ -279,6 +279,23 @@ def test_archived_project_rejects_content_update() -> None:
     assert exc_info.value.code == ErrorCode.INVALID_PROJECT_STATUS_TRANSITION
 
 
+def test_structured_requirement_change_marks_analytical_output_outdated() -> None:
+    """Xóa structured item không làm Raw Requirement analysis bị outdated."""
+    project = Project(
+        name="Revenue model",
+        requirement="Analyze monthly revenue by business unit",
+        user_id=uuid4(),
+        requirement_revision=3,
+        analyzed_requirement_revision=3,
+        derived_analytical_requirement_revision=3,
+    )
+    project.mark_analytical_requirements_derived(is_outdated=True)
+    assert project.is_requirement_analysis_outdated() is False
+    assert project.is_analytical_analysis_outdated() is True
+    project.mark_analytical_requirements_derived()
+    assert project.is_analytical_analysis_outdated() is False
+
+
 # ===================================================================
 # 5. Other Domain Entities Baseline Tests
 # ===================================================================

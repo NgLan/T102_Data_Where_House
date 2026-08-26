@@ -4,6 +4,7 @@ import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   notifyAppError,
+  notifyAppInfo,
   notifyAppSuccess,
   notifyAppWarning,
 } from './app-notification';
@@ -21,7 +22,7 @@ export interface NotificationOptions {
 /**
  * Cung cấp các hàm tạo thông báo đã chuẩn hóa và dịch theo locale hiện tại.
  *
- * @returns Các hàm tạo thông báo thành công, lỗi và cảnh báo.
+ * @returns Các hàm tạo thông báo thành công, lỗi, cảnh báo và thông tin.
  */
 export function useAppNotification() {
   const { t: tNotify } = useTranslation('notifications');
@@ -60,5 +61,12 @@ export function useAppNotification() {
     });
   }, [tNotify]);
 
-  return { getErrorMessage, notifySuccess, notifyError, notifyWarning };
+  const notifyInfo = useCallback((key: NotificationKey, options?: NotificationOptions) => {
+    notifyAppInfo({
+      title: tNotify('TXT_INFO_TITLE'),
+      message: tNotify(key, options?.params),
+    });
+  }, [tNotify]);
+
+  return { getErrorMessage, notifySuccess, notifyError, notifyWarning, notifyInfo };
 }

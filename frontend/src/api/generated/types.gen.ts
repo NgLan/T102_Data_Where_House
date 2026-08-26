@@ -42,9 +42,69 @@ export type AnalysisStatusResponse = {
      */
     data_model_exists: boolean;
     /**
+     * Source Revision
+     *
+     * Revision dùng cho coverage resolution
+     */
+    source_revision: number;
+    /**
      * Action UI nên hiển thị tiếp theo
      */
     recommended_action: RecommendedWorkflowAction;
+    readiness_status: InputReadinessStatus;
+    source_coverage_batch?: SourceCoverageBatchResponse | null;
+};
+
+/**
+ * AnalyzeRequirementClarificationRequest
+ *
+ * Analyze revision đã lưu, không nhận draft editor.
+ */
+export type AnalyzeRequirementClarificationRequest = {
+    /**
+     * Expected Revision
+     */
+    expected_revision: number;
+};
+
+/**
+ * AnswerClarificationRequest
+ *
+ * Chọn option có sẵn hoặc nhập câu trả lời tùy chỉnh.
+ */
+export type AnswerClarificationRequest = {
+    /**
+     * Answer Type
+     */
+    answer_type: 'option' | 'custom';
+    /**
+     * Option Index
+     */
+    option_index?: number | null;
+    /**
+     * Custom Answer
+     */
+    custom_answer?: string | null;
+};
+
+/**
+ * AnswerRequirementClarificationRequest
+ *
+ * Chọn grounded option hoặc gửi custom answer.
+ */
+export type AnswerRequirementClarificationRequest = {
+    /**
+     * Answer Type
+     */
+    answer_type: 'option' | 'custom';
+    /**
+     * Option Index
+     */
+    option_index?: number | null;
+    /**
+     * Custom Answer
+     */
+    custom_answer?: string | null;
 };
 
 /**
@@ -108,9 +168,9 @@ export type ApiResponseAnalysisStatusResponse = {
 };
 
 /**
- * ApiResponse[Annotated[Union[ClarificationTurnResponse, ProposalTurnResponse], FieldInfo(annotation=NoneType, required=True, discriminator='kind')]]
+ * ApiResponse[Annotated[Union[ClarificationTurnResponse, NoChangeTurnResponse, ProposalTurnResponse], FieldInfo(annotation=NoneType, required=True, discriminator='kind')]]
  */
-export type ApiResponseAnnotatedUnionClarificationTurnResponseProposalTurnResponseFieldInfoAnnotationNoneTypeRequiredTrueDiscriminatorKind = {
+export type ApiResponseAnnotatedUnionClarificationTurnResponseNoChangeTurnResponseProposalTurnResponseFieldInfoAnnotationNoneTypeRequiredTrueDiscriminatorKind = {
     /**
      * Status
      *
@@ -137,6 +197,8 @@ export type ApiResponseAnnotatedUnionClarificationTurnResponseProposalTurnRespon
     data?: ({
         kind: 'clarification';
     } & ClarificationTurnResponse) | ({
+        kind: 'no_change';
+    } & NoChangeTurnResponse) | ({
         kind: 'proposal';
     } & ProposalTurnResponse) | null;
 };
@@ -450,6 +512,34 @@ export type ApiResponseLivenessResponse = {
 };
 
 /**
+ * ApiResponse[ProjectInitializationResponse]
+ */
+export type ApiResponseProjectInitializationResponse = {
+    /**
+     * Status
+     *
+     * Trạng thái phản hồi (luôn là 'success' đối với 2xx)
+     */
+    status?: 'success';
+    /**
+     * Code
+     *
+     * HTTP Status Code (mặc định 200)
+     */
+    code?: number;
+    /**
+     * Message
+     *
+     * Thông điệp phản hồi cho người dùng
+     */
+    message?: string;
+    /**
+     * Dữ liệu payload chính trả về
+     */
+    data?: ProjectInitializationResponse | null;
+};
+
+/**
  * ApiResponse[ProjectResponse]
  */
 export type ApiResponseProjectResponse = {
@@ -506,6 +596,34 @@ export type ApiResponseProjectSessionResponse = {
 };
 
 /**
+ * ApiResponse[RawRequirementResponse]
+ */
+export type ApiResponseRawRequirementResponse = {
+    /**
+     * Status
+     *
+     * Trạng thái phản hồi (luôn là 'success' đối với 2xx)
+     */
+    status?: 'success';
+    /**
+     * Code
+     *
+     * HTTP Status Code (mặc định 200)
+     */
+    code?: number;
+    /**
+     * Message
+     *
+     * Thông điệp phản hồi cho người dùng
+     */
+    message?: string;
+    /**
+     * Dữ liệu payload chính trả về
+     */
+    data?: RawRequirementResponse | null;
+};
+
+/**
  * ApiResponse[ReadinessResponse]
  */
 export type ApiResponseReadinessResponse = {
@@ -531,6 +649,62 @@ export type ApiResponseReadinessResponse = {
      * Dữ liệu payload chính trả về
      */
     data?: ReadinessResponse | null;
+};
+
+/**
+ * ApiResponse[RequirementClarificationResponse]
+ */
+export type ApiResponseRequirementClarificationResponse = {
+    /**
+     * Status
+     *
+     * Trạng thái phản hồi (luôn là 'success' đối với 2xx)
+     */
+    status?: 'success';
+    /**
+     * Code
+     *
+     * HTTP Status Code (mặc định 200)
+     */
+    code?: number;
+    /**
+     * Message
+     *
+     * Thông điệp phản hồi cho người dùng
+     */
+    message?: string;
+    /**
+     * Dữ liệu payload chính trả về
+     */
+    data?: RequirementClarificationResponse | null;
+};
+
+/**
+ * ApiResponse[RequirementFileListResponse]
+ */
+export type ApiResponseRequirementFileListResponse = {
+    /**
+     * Status
+     *
+     * Trạng thái phản hồi (luôn là 'success' đối với 2xx)
+     */
+    status?: 'success';
+    /**
+     * Code
+     *
+     * HTTP Status Code (mặc định 200)
+     */
+    code?: number;
+    /**
+     * Message
+     *
+     * Thông điệp phản hồi cho người dùng
+     */
+    message?: string;
+    /**
+     * Dữ liệu payload chính trả về
+     */
+    data?: RequirementFileListResponse | null;
 };
 
 /**
@@ -618,6 +792,34 @@ export type ApiResponseUnionChangeProposalDetailResponseNoneType = {
 };
 
 /**
+ * ApiResponse[Union[ClarificationQuestionResponse, NoneType]]
+ */
+export type ApiResponseUnionClarificationQuestionResponseNoneType = {
+    /**
+     * Status
+     *
+     * Trạng thái phản hồi (luôn là 'success' đối với 2xx)
+     */
+    status?: 'success';
+    /**
+     * Code
+     *
+     * HTTP Status Code (mặc định 200)
+     */
+    code?: number;
+    /**
+     * Message
+     *
+     * Thông điệp phản hồi cho người dùng
+     */
+    message?: string;
+    /**
+     * Dữ liệu payload chính trả về
+     */
+    data?: ClarificationQuestionResponse | null;
+};
+
+/**
  * ApiResponse[Union[SandboxConfigResponse, NoneType]]
  */
 export type ApiResponseUnionSandboxConfigResponseNoneType = {
@@ -671,6 +873,34 @@ export type ApiResponseUploadDataSourcesResponse = {
      * Dữ liệu payload chính trả về
      */
     data?: UploadDataSourcesResponse | null;
+};
+
+/**
+ * ApiResponse[UploadRequirementFilesResponse]
+ */
+export type ApiResponseUploadRequirementFilesResponse = {
+    /**
+     * Status
+     *
+     * Trạng thái phản hồi (luôn là 'success' đối với 2xx)
+     */
+    status?: 'success';
+    /**
+     * Code
+     *
+     * HTTP Status Code (mặc định 200)
+     */
+    code?: number;
+    /**
+     * Message
+     *
+     * Thông điệp phản hồi cho người dùng
+     */
+    message?: string;
+    /**
+     * Dữ liệu payload chính trả về
+     */
+    data?: UploadRequirementFilesResponse | null;
 };
 
 /**
@@ -836,6 +1066,22 @@ export type BodyUploadProjectDataSources = {
 };
 
 /**
+ * Body_uploadProjectRequirementFiles
+ */
+export type BodyUploadProjectRequirementFiles = {
+    /**
+     * Files
+     *
+     * Tối đa 20 documents
+     */
+    files: Array<Blob | File>;
+    /**
+     * Expected Revision
+     */
+    expected_revision: number;
+};
+
+/**
  * ChangeProposalDetailResponse
  *
  * Chi tiết proposal kèm snapshot hiện hành.
@@ -976,6 +1222,59 @@ export type CheckConstraintDto = {
 };
 
 /**
+ * ChooseRequirementContinuationRequest
+ *
+ * Action tại continuation gate của current Requirement revision.
+ */
+export type ChooseRequirementContinuationRequest = {
+    action: RequirementContinuationAction;
+    /**
+     * Expected Revision
+     */
+    expected_revision: number;
+};
+
+/**
+ * ClarificationQuestionResponse
+ *
+ * Clarification hiện đang chờ người dùng trả lời.
+ */
+export type ClarificationQuestionResponse = {
+    /**
+     * Question Id
+     */
+    question_id: string;
+    /**
+     * Session Id
+     */
+    session_id: string;
+    /**
+     * Turn Id
+     */
+    turn_id: string;
+    /**
+     * Question
+     */
+    question: string;
+    /**
+     * Options
+     */
+    options: Array<string>;
+    /**
+     * Allow Custom Answer
+     */
+    allow_custom_answer: boolean;
+    /**
+     * Reason
+     */
+    reason: string | null;
+    /**
+     * Created At
+     */
+    created_at: string;
+};
+
+/**
  * ClarificationTurnResponse
  */
 export type ClarificationTurnResponse = {
@@ -992,9 +1291,25 @@ export type ClarificationTurnResponse = {
      */
     kind: 'clarification';
     /**
+     * Question Id
+     */
+    question_id: string;
+    /**
      * Question
      */
     question: string;
+    /**
+     * Options
+     */
+    options: Array<string>;
+    /**
+     * Allow Custom Answer
+     */
+    allow_custom_answer: boolean;
+    /**
+     * Reason
+     */
+    reason?: string | null;
     /**
      * Summary
      */
@@ -1021,12 +1336,6 @@ export type CreateProjectRequest = {
      */
     name: string;
     /**
-     * Requirement
-     *
-     * Yêu cầu nghiệp vụ thô, có thể bổ sung sau khi tạo Project
-     */
-    requirement?: string | null;
-    /**
      * Domain
      *
      * Lĩnh vực nghiệp vụ
@@ -1038,6 +1347,12 @@ export type CreateProjectRequest = {
      * Mô tả Project
      */
     description?: string | null;
+    /**
+     * Requirement
+     *
+     * Yêu cầu nghiệp vụ thô, có thể bổ sung sau khi tạo Project
+     */
+    requirement?: string | null;
 };
 
 /**
@@ -1050,6 +1365,10 @@ export type CreateProjectSessionRequest = {
      * Title
      */
     title?: string | null;
+    /**
+     * Mục đích nghiệp vụ của session
+     */
+    purpose: SessionPurpose;
 };
 
 /**
@@ -1585,6 +1904,13 @@ export type HealthResponse = {
 };
 
 /**
+ * InputReadinessStatus
+ *
+ * Gate quyết định workflow có được phép gọi DWDesignAgent hay không.
+ */
+export type InputReadinessStatus = 'REQUIREMENT_CLARIFICATION_REQUIRED' | 'SOURCE_CONFIRMATION_REQUIRED' | 'SOURCE_DATA_REQUIRED' | 'READY_FOR_DESIGN';
+
+/**
  * LivenessResponse
  */
 export type LivenessResponse = {
@@ -1629,6 +1955,63 @@ export type LoginRequest = {
      */
     password: string;
 };
+
+/**
+ * NoChangeTurnResponse
+ *
+ * Lượt Agent hoàn tất mà không tạo thay đổi Data Model.
+ */
+export type NoChangeTurnResponse = {
+    /**
+     * Session Id
+     */
+    session_id: string;
+    /**
+     * Turn Id
+     */
+    turn_id: string;
+    /**
+     * Kind
+     */
+    kind: 'no_change';
+    /**
+     * Summary
+     */
+    summary?: string | null;
+};
+
+/**
+ * ProjectInitializationResponse
+ *
+ * Trạng thái workflow cùng resource vừa sẵn sàng.
+ */
+export type ProjectInitializationResponse = {
+    /**
+     * PAUSED hoặc COMPLETED
+     */
+    status: ProjectInitializationStatus;
+    /**
+     * Session Id
+     *
+     * Session đang hỏi làm rõ
+     */
+    session_id?: string | null;
+    /**
+     * Data Model Id
+     *
+     * Data Model đã sẵn sàng
+     */
+    data_model_id?: string | null;
+    readiness_status: InputReadinessStatus;
+    source_coverage_batch?: SourceCoverageBatchResponse | null;
+};
+
+/**
+ * ProjectInitializationStatus
+ *
+ * Trạng thái dừng có chủ đích của workflow.
+ */
+export type ProjectInitializationStatus = 'PAUSED' | 'COMPLETED';
 
 /**
  * ProjectRequirementResponse
@@ -1717,6 +2100,24 @@ export type ProjectResponse = {
      */
     requirement: string | null;
     /**
+     * Requirement Revision
+     *
+     * Raw/document revision
+     */
+    requirement_revision: number;
+    /**
+     * Analyzed Requirement Revision
+     *
+     * Structured revision
+     */
+    analyzed_requirement_revision: number;
+    /**
+     * Derived Analytical Requirement Revision
+     *
+     * Revision đã derive analytical requirements
+     */
+    derived_analytical_requirement_revision: number;
+    /**
      * Requirements
      *
      * Requirement đã được chuẩn hóa và phân loại
@@ -1747,6 +2148,11 @@ export type ProjectSessionResponse = {
      */
     title: string;
     status: SessionStatus;
+    purpose: SessionPurpose;
+    /**
+     * Base Requirement Revision
+     */
+    base_requirement_revision: number | null;
     /**
      * Is Running
      */
@@ -1861,6 +2267,26 @@ export type ProposalTurnResponse = {
 };
 
 /**
+ * RawRequirementResponse
+ *
+ * Payload sau khi lưu Raw Requirement.
+ */
+export type RawRequirementResponse = {
+    /**
+     * Requirement
+     *
+     * Raw Requirement đã normalize
+     */
+    requirement: string | null;
+    /**
+     * Requirement Revision
+     *
+     * Revision hiện hành
+     */
+    requirement_revision: number;
+};
+
+/**
  * ReadinessResponse
  */
 export type ReadinessResponse = {
@@ -1873,6 +2299,20 @@ export type ReadinessResponse = {
      */
     timestamp: string;
     database: DatabaseHealthResponse;
+};
+
+/**
+ * RecheckSourceCoverageRequest
+ */
+export type RecheckSourceCoverageRequest = {
+    /**
+     * Batch Id
+     */
+    batch_id: string;
+    /**
+     * Expected Source Revision
+     */
+    expected_source_revision: number;
 };
 
 /**
@@ -1913,6 +2353,120 @@ export type RenameProjectSessionRequest = {
      */
     title: string;
 };
+
+/**
+ * RequirementClarificationResponse
+ *
+ * Canonical structured state và derived UI status của current cycle.
+ */
+export type RequirementClarificationResponse = {
+    session: ProjectSessionResponse | null;
+    status: RequirementClarificationStatus;
+    pending_question: ClarificationQuestionResponse | null;
+    /**
+     * Requirements
+     */
+    requirements: Array<RequirementResponse>;
+    /**
+     * Requirement Revision
+     */
+    requirement_revision: number;
+    /**
+     * Analyzed Requirement Revision
+     */
+    analyzed_requirement_revision: number;
+    /**
+     * Is Outdated
+     */
+    is_outdated: boolean;
+    continuation_state: RequirementContinuationState;
+};
+
+/**
+ * RequirementClarificationStatus
+ *
+ * Trạng thái hiển thị của Requirement clarification cycle.
+ */
+export type RequirementClarificationStatus = 'IDLE' | 'PROCESSING' | 'NEEDS_CLARIFICATION' | 'READY';
+
+/**
+ * RequirementContinuationAction
+ *
+ * Action công khai mà owner được chọn tại continuation gate.
+ */
+export type RequirementContinuationAction = 'CONTINUE_EDITING' | 'CONTINUE_ANALYSIS';
+
+/**
+ * RequirementContinuationState
+ *
+ * Quyết định tiếp tục workflow sau một clarification turn READY.
+ */
+export type RequirementContinuationState = 'NOT_REQUIRED' | 'AWAITING_DECISION' | 'CONTINUE_EDITING' | 'CONTINUE_ANALYSIS';
+
+/**
+ * RequirementFileListResponse
+ *
+ * Danh sách document cùng quyền chỉnh sửa.
+ */
+export type RequirementFileListResponse = {
+    /**
+     * Items
+     */
+    items: Array<RequirementFileResponse>;
+    /**
+     * Can Edit
+     */
+    can_edit: boolean;
+};
+
+/**
+ * RequirementFileResponse
+ *
+ * Metadata an toàn của một Requirement Document.
+ */
+export type RequirementFileResponse = {
+    /**
+     * Id
+     *
+     * ID document
+     */
+    id: string;
+    /**
+     * Project Id
+     *
+     * ID Project
+     */
+    project_id: string;
+    /**
+     * Name
+     *
+     * Filename
+     */
+    name: string;
+    /**
+     * Định dạng document
+     */
+    file_type: RequirementFileType;
+    /**
+     * Created At
+     *
+     * Thời điểm tạo
+     */
+    created_at: string;
+    /**
+     * Updated At
+     *
+     * Thời điểm cập nhật
+     */
+    updated_at: string;
+};
+
+/**
+ * RequirementFileType
+ *
+ * Định dạng Requirement Document hỗ trợ trong MVP.
+ */
+export type RequirementFileType = 'DOCX' | 'TXT' | 'MD';
 
 /**
  * RequirementPriority
@@ -1979,6 +2533,29 @@ export type RequirementResponse = {
  * Phân loại Yêu cầu (Requirement Type).
  */
 export type RequirementType = 'BUSINESS' | 'ANALYTICAL' | 'TECHNICAL';
+
+/**
+ * ResolveSourceCoverageRequest
+ */
+export type ResolveSourceCoverageRequest = {
+    /**
+     * Batch Id
+     */
+    batch_id: string;
+    /**
+     * Expected Source Revision
+     */
+    expected_source_revision: number;
+    /**
+     * Expected Resolution Revision
+     */
+    expected_resolution_revision: number;
+    action: SourceCoverageResolutionAction;
+    /**
+     * Candidate Id
+     */
+    candidate_id?: string | null;
+};
 
 /**
  * ReviseDataModelRequest
@@ -2091,6 +2668,42 @@ export type SandboxConfigResponse = {
 export type SandboxDbType = 'POSTGRESQL' | 'BIGQUERY' | 'SNOWFLAKE' | 'MYSQL' | 'SQLITE' | 'SQLSERVER';
 
 /**
+ * SaveRawRequirementRequest
+ *
+ * Payload lưu Raw Requirement độc lập Project information.
+ */
+export type SaveRawRequirementRequest = {
+    /**
+     * Requirement
+     *
+     * Raw Requirement Markdown
+     */
+    requirement?: string | null;
+    /**
+     * Expected Revision
+     *
+     * Requirement revision phía client
+     */
+    expected_revision: number;
+};
+
+/**
+ * SendRequirementClarificationMessageRequest
+ *
+ * Tin nhắn follow-up không phụ thuộc pending question.
+ */
+export type SendRequirementClarificationMessageRequest = {
+    /**
+     * Expected Revision
+     */
+    expected_revision: number;
+    /**
+     * Message
+     */
+    message: string;
+};
+
+/**
  * SendSessionMessageRequest
  *
  * Payload gửi message vào một session đã tồn tại.
@@ -2130,6 +2743,18 @@ export type SessionEventResponse = {
      */
     proposal_change_id: string | null;
     /**
+     * Question Options
+     */
+    question_options: Array<string>;
+    /**
+     * Allow Custom Answer
+     */
+    allow_custom_answer: boolean;
+    /**
+     * Answer To Question Id
+     */
+    answer_to_question_id: string | null;
+    /**
      * Created At
      */
     created_at: string;
@@ -2150,11 +2775,163 @@ export type SessionEventRole = 'USER' | 'AGENT' | 'TOOL';
 export type SessionEventType = 'MESSAGE' | 'QUESTION' | 'ANSWER' | 'AGENT_CALL' | 'AGENT_RESULT' | 'TOOL_CALL' | 'TOOL_RESULT';
 
 /**
+ * SessionPurpose
+ *
+ * Mục đích nghiệp vụ của Project Session.
+ */
+export type SessionPurpose = 'REQUIREMENT_CLARIFICATION' | 'DATA_MODELING';
+
+/**
  * SessionStatus
  *
  * Trạng thái phiên làm việc (Project Session Status).
  */
 export type SessionStatus = 'ACTIVE' | 'COMPLETED' | 'ARCHIVED';
+
+/**
+ * SourceCandidateKind
+ *
+ * Loại bằng chứng source có thể ánh xạ tới một business concept.
+ */
+export type SourceCandidateKind = 'COLUMN' | 'RELATIONSHIP';
+
+/**
+ * SourceConfirmationStatus
+ *
+ * Trạng thái câu trả lời của một confirmation item trong batch hiện hành.
+ */
+export type SourceConfirmationStatus = 'PENDING' | 'CONFIRMED' | 'REJECTED';
+
+/**
+ * SourceCoverageAssessmentResponse
+ */
+export type SourceCoverageAssessmentResponse = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Analytical Requirement Id
+     */
+    analytical_requirement_id: string;
+    /**
+     * Requirement Id
+     */
+    requirement_id: string;
+    /**
+     * Requirement Title
+     */
+    requirement_title: string;
+    coverage_status: SourceCoverageStatus;
+    /**
+     * Required Concept Key
+     */
+    required_concept_key: string;
+    /**
+     * Title
+     */
+    title: string;
+    /**
+     * Explanation
+     */
+    explanation: string;
+    /**
+     * Question
+     */
+    question?: string | null;
+    confirmation_status?: SourceConfirmationStatus | null;
+    /**
+     * Selected Candidate Id
+     */
+    selected_candidate_id?: string | null;
+    /**
+     * Resolution Revision
+     */
+    resolution_revision: number;
+    /**
+     * Candidates
+     */
+    candidates: Array<SourceCoverageCandidateResponse>;
+};
+
+/**
+ * SourceCoverageBatchResponse
+ */
+export type SourceCoverageBatchResponse = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Evaluated Source Revision
+     */
+    evaluated_source_revision: number;
+    /**
+     * Confirmation Total
+     */
+    confirmation_total: number;
+    /**
+     * Confirmation Resolved
+     */
+    confirmation_resolved: number;
+    /**
+     * Can Recheck
+     */
+    can_recheck: boolean;
+    /**
+     * Assessments
+     */
+    assessments: Array<SourceCoverageAssessmentResponse>;
+};
+
+/**
+ * SourceCoverageCandidateResponse
+ */
+export type SourceCoverageCandidateResponse = {
+    /**
+     * Id
+     */
+    id: string;
+    kind: SourceCandidateKind;
+    /**
+     * Source Id
+     */
+    source_id: string;
+    /**
+     * Source Name
+     */
+    source_name: string;
+    /**
+     * Table Name
+     */
+    table_name?: string | null;
+    /**
+     * Column Name
+     */
+    column_name?: string | null;
+    /**
+     * From Column
+     */
+    from_column?: string | null;
+    /**
+     * To Column
+     */
+    to_column?: string | null;
+};
+
+/**
+ * SourceCoverageResolutionAction
+ *
+ * Hành động có cấu trúc để resolve một coverage assessment.
+ */
+export type SourceCoverageResolutionAction = 'CONFIRM_CANDIDATE' | 'REJECT_ALL_CANDIDATES';
+
+/**
+ * SourceCoverageStatus
+ *
+ * Mức sẵn sàng của một khái niệm nghiệp vụ so với source hiện tại.
+ */
+export type SourceCoverageStatus = 'SUPPORTED' | 'NEEDS_SOURCE_CONFIRMATION' | 'MISSING_SOURCE';
 
 /**
  * StatementLogResponse
@@ -2329,12 +3106,6 @@ export type UpdateProjectRequest = {
      */
     name: string;
     /**
-     * Requirement
-     *
-     * Yêu cầu nghiệp vụ thô, có thể bổ sung sau khi tạo Project
-     */
-    requirement?: string | null;
-    /**
      * Domain
      *
      * Lĩnh vực nghiệp vụ
@@ -2366,6 +3137,22 @@ export type UploadDataSourcesResponse = {
      * Số file đã tải lên
      */
     total_files_uploaded: number;
+};
+
+/**
+ * UploadRequirementFilesResponse
+ *
+ * Kết quả upload/replace một batch documents.
+ */
+export type UploadRequirementFilesResponse = {
+    /**
+     * Items
+     */
+    items: Array<RequirementFileResponse>;
+    /**
+     * Requirement Revision
+     */
+    requirement_revision: number;
 };
 
 /**
@@ -2815,6 +3602,58 @@ export type UpdateProjectResponses = {
 
 export type UpdateProjectResponse = UpdateProjectResponses[keyof UpdateProjectResponses];
 
+export type SaveProjectRawRequirementData = {
+    body: SaveRawRequirementRequest;
+    path: {
+        /**
+         * Project Id
+         *
+         * ID của Project
+         */
+        project_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}/requirement';
+};
+
+export type SaveProjectRawRequirementErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ApiErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
+};
+
+export type SaveProjectRawRequirementError = SaveProjectRawRequirementErrors[keyof SaveProjectRawRequirementErrors];
+
+export type SaveProjectRawRequirementResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseRawRequirementResponse;
+};
+
+export type SaveProjectRawRequirementResponse = SaveProjectRawRequirementResponses[keyof SaveProjectRawRequirementResponses];
+
 export type ListRequirementsData = {
     body?: never;
     path: {
@@ -2862,6 +3701,499 @@ export type ListRequirementsResponses = {
 };
 
 export type ListRequirementsResponse = ListRequirementsResponses[keyof ListRequirementsResponses];
+
+export type DeleteRequirementData = {
+    body?: never;
+    path: {
+        /**
+         * Project Id
+         *
+         * ID dự án chứa yêu cầu
+         */
+        project_id: string;
+        /**
+         * Requirement Id
+         *
+         * ID Structured Requirement
+         */
+        requirement_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}/requirements/{requirement_id}';
+};
+
+export type DeleteRequirementErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
+};
+
+export type DeleteRequirementError = DeleteRequirementErrors[keyof DeleteRequirementErrors];
+
+export type DeleteRequirementResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type DeleteRequirementResponse = DeleteRequirementResponses[keyof DeleteRequirementResponses];
+
+export type ListProjectRequirementFilesData = {
+    body?: never;
+    path: {
+        /**
+         * Project Id
+         *
+         * ID Project
+         */
+        project_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}/requirement-files';
+};
+
+export type ListProjectRequirementFilesErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
+};
+
+export type ListProjectRequirementFilesError = ListProjectRequirementFilesErrors[keyof ListProjectRequirementFilesErrors];
+
+export type ListProjectRequirementFilesResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseRequirementFileListResponse;
+};
+
+export type ListProjectRequirementFilesResponse = ListProjectRequirementFilesResponses[keyof ListProjectRequirementFilesResponses];
+
+export type UploadProjectRequirementFilesData = {
+    body: BodyUploadProjectRequirementFiles;
+    path: {
+        /**
+         * Project Id
+         *
+         * ID Project
+         */
+        project_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}/requirement-files/upload';
+};
+
+export type UploadProjectRequirementFilesErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Content Too Large
+     */
+    413: ApiErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
+};
+
+export type UploadProjectRequirementFilesError = UploadProjectRequirementFilesErrors[keyof UploadProjectRequirementFilesErrors];
+
+export type UploadProjectRequirementFilesResponses = {
+    /**
+     * Successful Response
+     */
+    201: ApiResponseUploadRequirementFilesResponse;
+};
+
+export type UploadProjectRequirementFilesResponse = UploadProjectRequirementFilesResponses[keyof UploadProjectRequirementFilesResponses];
+
+export type DeleteProjectRequirementFileData = {
+    body?: never;
+    path: {
+        /**
+         * Project Id
+         *
+         * ID Project
+         */
+        project_id: string;
+        /**
+         * File Id
+         *
+         * ID Requirement Document
+         */
+        file_id: string;
+    };
+    query: {
+        /**
+         * Expected Revision
+         */
+        expected_revision: number;
+    };
+    url: '/api/v1/projects/{project_id}/requirement-files/{file_id}';
+};
+
+export type DeleteProjectRequirementFileErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
+};
+
+export type DeleteProjectRequirementFileError = DeleteProjectRequirementFileErrors[keyof DeleteProjectRequirementFileErrors];
+
+export type DeleteProjectRequirementFileResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type DeleteProjectRequirementFileResponse = DeleteProjectRequirementFileResponses[keyof DeleteProjectRequirementFileResponses];
+
+export type GetProjectRequirementClarificationData = {
+    body?: never;
+    path: {
+        /**
+         * Project Id
+         *
+         * ID dự án chứa yêu cầu
+         */
+        project_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}/requirement-clarification';
+};
+
+export type GetProjectRequirementClarificationErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
+};
+
+export type GetProjectRequirementClarificationError = GetProjectRequirementClarificationErrors[keyof GetProjectRequirementClarificationErrors];
+
+export type GetProjectRequirementClarificationResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseRequirementClarificationResponse;
+};
+
+export type GetProjectRequirementClarificationResponse = GetProjectRequirementClarificationResponses[keyof GetProjectRequirementClarificationResponses];
+
+export type AnalyzeProjectRequirementClarificationData = {
+    body: AnalyzeRequirementClarificationRequest;
+    path: {
+        /**
+         * Project Id
+         *
+         * ID dự án chứa yêu cầu
+         */
+        project_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}/requirement-clarification/analyze';
+};
+
+export type AnalyzeProjectRequirementClarificationErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ApiErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
+};
+
+export type AnalyzeProjectRequirementClarificationError = AnalyzeProjectRequirementClarificationErrors[keyof AnalyzeProjectRequirementClarificationErrors];
+
+export type AnalyzeProjectRequirementClarificationResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseRequirementClarificationResponse;
+};
+
+export type AnalyzeProjectRequirementClarificationResponse = AnalyzeProjectRequirementClarificationResponses[keyof AnalyzeProjectRequirementClarificationResponses];
+
+export type AnswerProjectRequirementClarificationData = {
+    body: AnswerRequirementClarificationRequest;
+    path: {
+        /**
+         * Project Id
+         *
+         * ID dự án chứa yêu cầu
+         */
+        project_id: string;
+        /**
+         * Session Id
+         *
+         * ID Requirement session
+         */
+        session_id: string;
+        /**
+         * Question Id
+         *
+         * ID pending question
+         */
+        question_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}/requirement-clarification/{session_id}/questions/{question_id}/answer';
+};
+
+export type AnswerProjectRequirementClarificationErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ApiErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
+};
+
+export type AnswerProjectRequirementClarificationError = AnswerProjectRequirementClarificationErrors[keyof AnswerProjectRequirementClarificationErrors];
+
+export type AnswerProjectRequirementClarificationResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseRequirementClarificationResponse;
+};
+
+export type AnswerProjectRequirementClarificationResponse = AnswerProjectRequirementClarificationResponses[keyof AnswerProjectRequirementClarificationResponses];
+
+export type SendProjectRequirementClarificationMessageData = {
+    body: SendRequirementClarificationMessageRequest;
+    path: {
+        /**
+         * Project Id
+         *
+         * ID dự án chứa yêu cầu
+         */
+        project_id: string;
+        /**
+         * Session Id
+         *
+         * ID Requirement session
+         */
+        session_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}/requirement-clarification/{session_id}/messages';
+};
+
+export type SendProjectRequirementClarificationMessageErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ApiErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
+};
+
+export type SendProjectRequirementClarificationMessageError = SendProjectRequirementClarificationMessageErrors[keyof SendProjectRequirementClarificationMessageErrors];
+
+export type SendProjectRequirementClarificationMessageResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseRequirementClarificationResponse;
+};
+
+export type SendProjectRequirementClarificationMessageResponse = SendProjectRequirementClarificationMessageResponses[keyof SendProjectRequirementClarificationMessageResponses];
+
+export type ChooseProjectRequirementContinuationData = {
+    body: ChooseRequirementContinuationRequest;
+    path: {
+        /**
+         * Project Id
+         *
+         * ID dự án chứa yêu cầu
+         */
+        project_id: string;
+        /**
+         * Session Id
+         *
+         * ID Requirement session
+         */
+        session_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}/requirement-clarification/{session_id}/continuation';
+};
+
+export type ChooseProjectRequirementContinuationErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ApiErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
+};
+
+export type ChooseProjectRequirementContinuationError = ChooseProjectRequirementContinuationErrors[keyof ChooseProjectRequirementContinuationErrors];
+
+export type ChooseProjectRequirementContinuationResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseRequirementClarificationResponse;
+};
+
+export type ChooseProjectRequirementContinuationResponse = ChooseProjectRequirementContinuationResponses[keyof ChooseProjectRequirementContinuationResponses];
 
 export type GetProjectAnalysisStatusData = {
     body?: never;
@@ -2966,6 +4298,234 @@ export type ReanalyzeProjectResponses = {
 };
 
 export type ReanalyzeProjectResponse = ReanalyzeProjectResponses[keyof ReanalyzeProjectResponses];
+
+export type GetProjectSourceCoverageData = {
+    body?: never;
+    path: {
+        /**
+         * Project Id
+         *
+         * ID dự án chứa Data Model
+         */
+        project_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}/source-coverage';
+};
+
+export type GetProjectSourceCoverageErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
+};
+
+export type GetProjectSourceCoverageError = GetProjectSourceCoverageErrors[keyof GetProjectSourceCoverageErrors];
+
+export type GetProjectSourceCoverageResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseAnalysisStatusResponse;
+};
+
+export type GetProjectSourceCoverageResponse = GetProjectSourceCoverageResponses[keyof GetProjectSourceCoverageResponses];
+
+export type ResolveProjectSourceCoverageData = {
+    body: ResolveSourceCoverageRequest;
+    path: {
+        /**
+         * Project Id
+         *
+         * ID dự án chứa Data Model
+         */
+        project_id: string;
+        /**
+         * Assessment Id
+         */
+        assessment_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}/source-coverage/{assessment_id}/resolution';
+};
+
+export type ResolveProjectSourceCoverageErrors = {
+    /**
+     * Bad Request
+     */
+    400: ApiErrorResponse;
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ApiErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
+    /**
+     * Bad Gateway
+     */
+    502: ApiErrorResponse;
+};
+
+export type ResolveProjectSourceCoverageError = ResolveProjectSourceCoverageErrors[keyof ResolveProjectSourceCoverageErrors];
+
+export type ResolveProjectSourceCoverageResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseAnalysisStatusResponse;
+};
+
+export type ResolveProjectSourceCoverageResponse = ResolveProjectSourceCoverageResponses[keyof ResolveProjectSourceCoverageResponses];
+
+export type RecheckProjectSourceCoverageData = {
+    body: RecheckSourceCoverageRequest;
+    path: {
+        /**
+         * Project Id
+         *
+         * ID dự án chứa Data Model
+         */
+        project_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}/source-coverage/recheck';
+};
+
+export type RecheckProjectSourceCoverageErrors = {
+    /**
+     * Bad Request
+     */
+    400: ApiErrorResponse;
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ApiErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
+    /**
+     * Bad Gateway
+     */
+    502: ApiErrorResponse;
+};
+
+export type RecheckProjectSourceCoverageError = RecheckProjectSourceCoverageErrors[keyof RecheckProjectSourceCoverageErrors];
+
+export type RecheckProjectSourceCoverageResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseAnalysisStatusResponse;
+};
+
+export type RecheckProjectSourceCoverageResponse = RecheckProjectSourceCoverageResponses[keyof RecheckProjectSourceCoverageResponses];
+
+export type RunProjectInitializationWorkflowData = {
+    body?: never;
+    path: {
+        /**
+         * Project Id
+         *
+         * ID dự án chứa Data Model
+         */
+        project_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}/initialize';
+};
+
+export type RunProjectInitializationWorkflowErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ApiErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
+    /**
+     * Bad Gateway
+     */
+    502: ApiErrorResponse;
+};
+
+export type RunProjectInitializationWorkflowError = RunProjectInitializationWorkflowErrors[keyof RunProjectInitializationWorkflowErrors];
+
+export type RunProjectInitializationWorkflowResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseProjectInitializationResponse;
+};
+
+export type RunProjectInitializationWorkflowResponse = RunProjectInitializationWorkflowResponses[keyof RunProjectInitializationWorkflowResponses];
 
 export type GetDataModelData = {
     body?: never;
@@ -4060,7 +5620,12 @@ export type ListProjectSessionsData = {
          */
         project_id: string;
     };
-    query?: never;
+    query: {
+        /**
+         * Session purpose
+         */
+        purpose: SessionPurpose;
+    };
     url: '/api/v1/projects/{project_id}/sessions';
 };
 
@@ -4261,6 +5826,10 @@ export type ListProjectSessionEventsData = {
          * Limit
          */
         limit?: number;
+        /**
+         * Conversation Only
+         */
+        conversation_only?: boolean;
     };
     url: '/api/v1/sessions/{session_id}/events';
 };
@@ -4346,10 +5915,120 @@ export type SendProjectSessionMessageResponses = {
     /**
      * Successful Response
      */
-    200: ApiResponseAnnotatedUnionClarificationTurnResponseProposalTurnResponseFieldInfoAnnotationNoneTypeRequiredTrueDiscriminatorKind;
+    200: ApiResponseAnnotatedUnionClarificationTurnResponseNoChangeTurnResponseProposalTurnResponseFieldInfoAnnotationNoneTypeRequiredTrueDiscriminatorKind;
 };
 
 export type SendProjectSessionMessageResponse = SendProjectSessionMessageResponses[keyof SendProjectSessionMessageResponses];
+
+export type GetPendingProjectSessionClarificationData = {
+    body?: never;
+    path: {
+        /**
+         * Session Id
+         *
+         * ID phiên Agent
+         */
+        session_id: string;
+    };
+    query?: never;
+    url: '/api/v1/sessions/{session_id}/clarification';
+};
+
+export type GetPendingProjectSessionClarificationErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ApiErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
+};
+
+export type GetPendingProjectSessionClarificationError = GetPendingProjectSessionClarificationErrors[keyof GetPendingProjectSessionClarificationErrors];
+
+export type GetPendingProjectSessionClarificationResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseUnionClarificationQuestionResponseNoneType;
+};
+
+export type GetPendingProjectSessionClarificationResponse = GetPendingProjectSessionClarificationResponses[keyof GetPendingProjectSessionClarificationResponses];
+
+export type AnswerProjectSessionClarificationData = {
+    body: AnswerClarificationRequest;
+    path: {
+        /**
+         * Session Id
+         *
+         * ID phiên Agent
+         */
+        session_id: string;
+        /**
+         * Question Id
+         *
+         * ID câu hỏi clarification
+         */
+        question_id: string;
+    };
+    query?: never;
+    url: '/api/v1/sessions/{session_id}/clarifications/{question_id}/answer';
+};
+
+export type AnswerProjectSessionClarificationErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ApiErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
+};
+
+export type AnswerProjectSessionClarificationError = AnswerProjectSessionClarificationErrors[keyof AnswerProjectSessionClarificationErrors];
+
+export type AnswerProjectSessionClarificationResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseAnnotatedUnionClarificationTurnResponseNoChangeTurnResponseProposalTurnResponseFieldInfoAnnotationNoneTypeRequiredTrueDiscriminatorKind;
+};
+
+export type AnswerProjectSessionClarificationResponse = AnswerProjectSessionClarificationResponses[keyof AnswerProjectSessionClarificationResponses];
 
 export type StreamProjectSessionEventsData = {
     body?: never;

@@ -1,6 +1,6 @@
 """Small pure helpers shared by workflow analysis orchestration."""
 
-from src.application.data_warehouse_workflows.input import RequirementContext
+from src.application.requirements.input import RequirementContext
 from src.common.exceptions.business import BusinessException
 from src.common.exceptions.error_codes import ErrorCode
 from src.domain.requirement.entities import Requirement
@@ -21,6 +21,6 @@ def to_requirement_context(requirement: Requirement) -> RequirementContext:
         requirement.id,
         requirement.title,
         requirement.description,
-        requirement.type.value,
-        requirement.priority.value,
+        requirement.type,
+        requirement.priority,
     )

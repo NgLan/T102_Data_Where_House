@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useSyncExternalStore } from "react";
 import Particles, { ParticlesProvider } from "@tsparticles/react";
 import type { Engine, ISourceOptions } from "@tsparticles/engine";
 import { loadSlim } from "@tsparticles/slim";
@@ -10,19 +10,18 @@ const initParticles = async (engine: Engine): Promise<void> => {
   await loadSlim(engine);
 };
 
+const subscribeToClient = () => () => undefined;
+
 /** Nền hiệu ứng hạt tương tác chuột sử dụng thư viện @tsparticles/react & @tsparticles/slim.
  * Tự động chuyển đổi màu tương phản rõ nét theo Dark/Light theme và kết nối tia sáng khi rê chuột.
  */
 export function ParticlesBackground() {
-  const [mounted, setMounted] = useState(false);
   const { resolvedTheme } = useTheme();
-
-  useEffect(() => {
-    // Đảm bảo client đã mount và theme đã được resolve hoàn chỉnh trước khi render canvas
-    if (typeof window !== "undefined" && process.env.NODE_ENV !== "test") {
-      setMounted(true);
-    }
-  }, []);
+  const mounted = useSyncExternalStore(
+    subscribeToClient,
+    () => process.env.NODE_ENV !== "test",
+    () => false,
+  );
 
   const isDark = resolvedTheme === "dark";
 

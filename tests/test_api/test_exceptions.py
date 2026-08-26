@@ -47,10 +47,11 @@ def create_test_app() -> FastAPI:
 
     @app.get("/test/system-llm-error")
     async def route_system_llm_error():
+        cause = RuntimeError("provider accidentally echoed sk-never-log-this")
         raise SystemException(
             code=ErrorCode.LLM_ERROR,
             message="LLM service is unavailable.",
-        )
+        ) from cause
 
     class DummyPayload(BaseModel):
         age: int
@@ -115,13 +116,16 @@ async def test_system_exception_db_error(test_client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_system_exception_llm_error(test_client: AsyncClient):
+async def test_system_exception_llm_error(
+    test_client: AsyncClient, caplog: pytest.LogCaptureFixture
+):
     response = await test_client.get("/test/system-llm-error")
     assert response.status_code == HTTPStatus.BAD_GATEWAY
     data = response.json()
     assert data["code"] == 502
     assert data["error_code"] == "LLM_ERROR"
     assert data["message"] == "Internal server error."
+    assert "sk-never-log-this" not in caplog.text
 
 
 @pytest.mark.asyncio

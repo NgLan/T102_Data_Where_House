@@ -20,3 +20,7 @@ class IProjectRepository(IBaseRepository[Project]):
         Returns:
             Danh sách dự án có thể truy cập.
         """
+
+    async def get_by_id_for_update(self, entity_id: EntityID) -> Project | None:
+        """Lấy Project và khóa row cho mutation revision."""
+        return await self.get_by_id(entity_id)

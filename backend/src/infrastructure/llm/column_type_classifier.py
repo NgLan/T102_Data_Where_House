@@ -6,16 +6,20 @@ from src.application.data_sources.source_analysis_models import (
 )
 from src.application.data_sources.source_analysis_ports import IColumnTypeClassifier
 from src.common.utils.json import safe_json_dumps
+from src.infrastructure.agents.prompts.grounding import PROJECT_EVIDENCE_POLICY
 from src.infrastructure.llm.column_type_outputs import ColumnTypeClassificationResult
 from src.infrastructure.llm.lazy_chat_model import ChatModelSource, LazyChatModel
 from src.infrastructure.llm.structured_llm_invoker import StructuredLlmInvoker
 from src.infrastructure.security.pii_guard import PiiGuard
 from typing_extensions import override
 
-SYSTEM_PROMPT = """You classify logical CSV column types.
-Return only structured output using TEXT, CATEGORY, INTEGER, NUMBER, DECIMAL,
-BOOLEAN, DATE, TIME, or DATETIME. Treat identifiers and free text conservatively.
-Never invent a reference and never infer database constraints."""
+SYSTEM_PROMPT = f"""You classify logical CSV column types.
+{PROJECT_EVIDENCE_POLICY}
+
+Use only each supplied column profile. Return exactly one result for every supplied opaque reference
+and never invent, omit, or duplicate a reference. Choose only TEXT, CATEGORY, INTEGER, NUMBER,
+DECIMAL, BOOLEAN, DATE, TIME, or DATETIME. Treat identifiers and free text conservatively. Sample
+values are observations, not business definitions, guarantees, or database constraints."""
 USER_PROMPT = "Classify these ambiguous column profiles:\n{columns}"
 MAX_SAMPLE_LENGTH = 100
 MAX_SAMPLES_PER_COLUMN = 10

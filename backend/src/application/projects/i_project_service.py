@@ -5,9 +5,14 @@ from abc import ABC, abstractmethod
 from src.application.projects.input import (
     CreateProjectInput,
     ProjectIdInput,
+    SaveRawRequirementInput,
     UpdateProjectInput,
 )
-from src.application.projects.output import ProjectOutput, ProjectSummaryOutput
+from src.application.projects.output import (
+    ProjectOutput,
+    ProjectSummaryOutput,
+    RawRequirementOutput,
+)
 from src.domain.shared.types import EntityID
 
 
@@ -75,6 +80,13 @@ class IProjectService(ABC):
             BusinessException: Khi Project không hợp lệ hoặc actor không phải OWNER.
             InfrastructureException: Khi persistence thất bại.
         """
+        raise NotImplementedError
+
+    @abstractmethod
+    async def save_raw_requirement(
+        self, data: SaveRawRequirementInput
+    ) -> RawRequirementOutput:
+        """Lưu Raw Requirement khi expected revision còn hiện hành."""
         raise NotImplementedError
 
     @abstractmethod

@@ -51,5 +51,12 @@
   "TXT_DOMAIN_MANUFACTURING": "Manufacturing",
   "TXT_DOMAIN_TELECOMMUNICATIONS": "Telecommunications",
   "TXT_DOMAIN_TRAVEL_HOSPITALITY": "Travel and hospitality",
-  "TXT_DOMAIN_CUSTOM": "Custom domain"
+  "TXT_DOMAIN_CUSTOM": "Custom domain",
+  "TXT_WORKFLOW_NAVIGATION": "Project workflow",
+  "TXT_WORKFLOW_STEP_PROJECT_INIT": "Initialize",
+  "TXT_WORKFLOW_STEP_MODELING": "Design",
+  "TXT_WORKFLOW_STEP_SANDBOX": "Results / Export",
+  "TXT_DATA_MODEL_UNAVAILABLE_TITLE": "No Data Model yet",
+  "TXT_DATA_MODEL_UNAVAILABLE_DESCRIPTION": "Return to Step 1 and run Save and Analyze.",
+  "BTN_BACK_TO_PROJECT_INIT": "Back to Step 1"
 }

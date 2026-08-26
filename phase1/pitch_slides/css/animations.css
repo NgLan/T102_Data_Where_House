@@ -1,0 +1,105 @@
+/* ============================================================
+   DATA WHERE HOUSE? — Smooth Keyframe Animations & Transitions
+   ============================================================ */
+
+/* Slide Entrance */
+.slide.active {
+  animation: slideFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes slideFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.98) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Staggered Element Entrance */
+.slide.active .anim-in {
+  animation: elemPopUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.slide.active .anim-delay-1 { animation-delay: 0.08s; }
+.slide.active .anim-delay-2 { animation-delay: 0.16s; }
+.slide.active .anim-delay-3 { animation-delay: 0.24s; }
+.slide.active .anim-delay-4 { animation-delay: 0.32s; }
+.slide.active .anim-delay-5 { animation-delay: 0.40s; }
+
+@keyframes elemPopUp {
+  0% {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Comic Subtle Float / Pulse */
+.pulse-badge {
+  animation: subtlePulse 2.4s ease-in-out infinite alternate;
+}
+
+@keyframes subtlePulse {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(1.05);
+  }
+}
+
+/* Subtle Hand Wiggle */
+.wiggle {
+  display: inline-block;
+  animation: comicWiggle 3.5s ease-in-out infinite;
+}
+
+@keyframes comicWiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-2deg); }
+  75% { transform: rotate(2deg); }
+}
+
+/* Arrow Flow Animation */
+.flow-arrow-anim {
+  animation: arrowBounce 1.5s ease-in-out infinite;
+}
+
+@keyframes arrowBounce {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(5px); }
+}
+
+/* Sparkle Rotation */
+.sparkle-spin {
+  animation: spinSparkle 4s linear infinite;
+}
+
+@keyframes spinSparkle {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Highlight border glow */
+.glow-red {
+  box-shadow: 0 0 0 3px var(--red-glow);
+}
+
+/* Accessibility: reduce motion if requested */
+@media (prefers-reduced-motion: reduce) {
+  .slide.active,
+  .slide.active .anim-in,
+  .pulse-badge,
+  .wiggle,
+  .flow-arrow-anim,
+  .sparkle-spin {
+    animation: none !important;
+    transform: none !important;
+  }
+}

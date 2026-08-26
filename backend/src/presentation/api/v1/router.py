@@ -8,6 +8,10 @@ from src.presentation.api.v1.data_models import router as data_models_router
 from src.presentation.api.v1.data_sources import router as data_sources_router
 from src.presentation.api.v1.project_analysis import router as project_analysis_router
 from src.presentation.api.v1.projects import router as projects_router
+from src.presentation.api.v1.requirement_clarification import (
+    router as requirement_clarification_router,
+)
+from src.presentation.api.v1.requirement_files import router as requirement_files_router
 from src.presentation.api.v1.requirements import router as requirements_router
 from src.presentation.api.v1.sandbox import router as sandbox_router
 from src.presentation.api.v1.sessions import router as sessions_router
@@ -16,6 +20,8 @@ router = APIRouter(prefix="/api/v1")
 router.include_router(auth_router)
 router.include_router(projects_router)
 router.include_router(requirements_router)
+router.include_router(requirement_files_router)
+router.include_router(requirement_clarification_router)
 router.include_router(project_analysis_router)
 router.include_router(data_models_router)
 router.include_router(data_model_generation_router)

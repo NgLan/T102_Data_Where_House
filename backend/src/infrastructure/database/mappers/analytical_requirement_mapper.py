@@ -2,6 +2,10 @@
 
 from src.domain.analytical_requirement.entities import AnalyticalRequirement
 from src.domain.analytical_requirement.enums import AggregationMethod
+from src.infrastructure.database.mappers.source_coverage_codec import (
+    decode_source_coverage,
+    encode_source_coverage,
+)
 from src.infrastructure.database.models.analytical_requirement import AnalyticalRequirementModel
 
 
@@ -22,6 +26,7 @@ class AnalyticalRequirementMapper:
             time_granularity=model.time_granularity,
             aggregation_method=aggregation_method,
             grain=model.grain,
+            source_coverage=decode_source_coverage(model.source_coverage),
             created_at=model.created_at,
             updated_at=model.updated_at,
         )
@@ -39,6 +44,7 @@ class AnalyticalRequirementMapper:
             time_granularity=entity.time_granularity,
             aggregation_method=aggregation_method,
             grain=entity.grain,
+            source_coverage=encode_source_coverage(entity.source_coverage),
             created_at=entity.created_at,
             updated_at=entity.updated_at,
         )
@@ -56,5 +62,6 @@ class AnalyticalRequirementMapper:
         model.time_granularity = entity.time_granularity
         model.aggregation_method = aggregation_method
         model.grain = entity.grain
+        model.source_coverage = encode_source_coverage(entity.source_coverage)
         model.updated_at = entity.updated_at
         return model

@@ -5,12 +5,19 @@ from collections.abc import AsyncGenerator
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Header, Query, Request
+from fastapi import APIRouter, Header, Path, Query, Request
 from fastapi.responses import StreamingResponse
-from src.application.project_sessions.input import GetSessionInput, ListSessionEventsInput, ListSessionsInput
+from src.application.project_sessions.input import (
+    GetPendingClarificationInput,
+    GetSessionInput,
+    ListSessionEventsInput,
+    ListSessionsInput,
+)
+from src.domain.project_session.enums import SessionPurpose
 from src.presentation.dependencies.project_sessions import ProjectSessionServiceDependency
 from src.presentation.dtos.data_models.request import ProjectIdPath
 from src.presentation.dtos.sessions.request import (
+    AnswerClarificationRequest,
     CreateProjectSessionRequest,
     ProjectSessionIdPath,
     RenameProjectSessionRequest,
@@ -18,6 +25,7 @@ from src.presentation.dtos.sessions.request import (
 )
 from src.presentation.dtos.sessions.response import (
     AgentTurnResponse,
+    ClarificationQuestionResponse,
     ProjectSessionResponse,
     SessionEventResponse,
     create_agent_turn_response,
@@ -33,7 +41,9 @@ router = APIRouter(tags=["Project Sessions"], route_class=ApiResponseRoute)
     operation_id="createProjectSession",
     responses=error_responses(401, 403, 404, 422, 500),
 )
-async def create_project_session(project_id: ProjectIdPath, request: CreateProjectSessionRequest, service: ProjectSessionServiceDependency) -> ProjectSessionResponse:
+async def create_project_session(
+    project_id: ProjectIdPath, request: CreateProjectSessionRequest, service: ProjectSessionServiceDependency
+) -> ProjectSessionResponse:
     output = await service.create_session(request.to_application(project_id))
     return ProjectSessionResponse.from_application(output)
 
@@ -44,8 +54,12 @@ async def create_project_session(project_id: ProjectIdPath, request: CreateProje
     operation_id="listProjectSessions",
     responses=error_responses(401, 403, 404, 500),
 )
-async def list_project_sessions(project_id: ProjectIdPath, service: ProjectSessionServiceDependency) -> list[ProjectSessionResponse]:
-    outputs = await service.list_sessions(ListSessionsInput(project_id))
+async def list_project_sessions(
+    project_id: ProjectIdPath,
+    service: ProjectSessionServiceDependency,
+    purpose: Annotated[SessionPurpose, Query(description="Session purpose")],
+) -> list[ProjectSessionResponse]:
+    outputs = await service.list_sessions(ListSessionsInput(project_id, purpose))
     return [ProjectSessionResponse.from_application(item) for item in outputs]
 
 
@@ -55,7 +69,9 @@ async def list_project_sessions(project_id: ProjectIdPath, service: ProjectSessi
     operation_id="getProjectSession",
     responses=error_responses(401, 403, 404, 500),
 )
-async def get_project_session(session_id: ProjectSessionIdPath, service: ProjectSessionServiceDependency) -> ProjectSessionResponse:
+async def get_project_session(
+    session_id: ProjectSessionIdPath, service: ProjectSessionServiceDependency
+) -> ProjectSessionResponse:
     output = await service.get_session(GetSessionInput(session_id))
     return ProjectSessionResponse.from_application(output)
 
@@ -86,8 +102,11 @@ async def list_project_session_events(
     service: ProjectSessionServiceDependency,
     after_id: Annotated[UUID | None, Query()] = None,
     limit: Annotated[int, Query(ge=1, le=200)] = 50,
+    conversation_only: Annotated[bool, Query()] = False,
 ) -> list[SessionEventResponse]:
-    outputs = await service.list_events(ListSessionEventsInput(session_id, after_id, limit))
+    outputs = await service.list_events(
+        ListSessionEventsInput(session_id, after_id, limit, conversation_only)
+    )
     return [SessionEventResponse.from_application(item) for item in outputs]
 
 
@@ -97,8 +116,40 @@ async def list_project_session_events(
     operation_id="sendProjectSessionMessage",
     responses=error_responses(401, 403, 404, 409, 422, 500),
 )
-async def send_project_session_message(session_id: ProjectSessionIdPath, request: SendSessionMessageRequest, service: ProjectSessionServiceDependency) -> AgentTurnResponse:
+async def send_project_session_message(
+    session_id: ProjectSessionIdPath, request: SendSessionMessageRequest, service: ProjectSessionServiceDependency
+) -> AgentTurnResponse:
     output = await service.send_message(request.to_application(session_id))
+    return create_agent_turn_response(output)
+
+
+@router.get(
+    "/sessions/{session_id}/clarification",
+    response_model=ClarificationQuestionResponse | None,
+    operation_id="getPendingProjectSessionClarification",
+    responses=error_responses(401, 403, 404, 409, 500),
+)
+async def get_pending_project_session_clarification(
+    session_id: ProjectSessionIdPath,
+    service: ProjectSessionServiceDependency,
+) -> ClarificationQuestionResponse | None:
+    output = await service.get_pending_clarification(GetPendingClarificationInput(session_id))
+    return ClarificationQuestionResponse.from_application(output) if output else None
+
+
+@router.post(
+    "/sessions/{session_id}/clarifications/{question_id}/answer",
+    response_model=AgentTurnResponse,
+    operation_id="answerProjectSessionClarification",
+    responses=error_responses(401, 403, 404, 409, 422, 500),
+)
+async def answer_project_session_clarification(
+    session_id: ProjectSessionIdPath,
+    question_id: Annotated[UUID, Path(description="ID câu hỏi clarification")],
+    request: AnswerClarificationRequest,
+    service: ProjectSessionServiceDependency,
+) -> AgentTurnResponse:
+    output = await service.answer_clarification(request.to_application(session_id, question_id))
     return create_agent_turn_response(output)
 
 
@@ -115,10 +166,14 @@ async def stream_project_session_events(
 ) -> StreamingResponse:
     await service.get_session(GetSessionInput(session_id))
     stream = _event_stream(service, session_id, last_event_id, request)
-    return StreamingResponse(stream, media_type="text/event-stream", headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+    return StreamingResponse(
+        stream, media_type="text/event-stream", headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"}
+    )
 
 
-async def _event_stream(service: ProjectSessionServiceDependency, session_id: UUID, cursor: UUID | None, request: Request) -> AsyncGenerator[str, None]:
+async def _event_stream(
+    service: ProjectSessionServiceDependency, session_id: UUID, cursor: UUID | None, request: Request
+) -> AsyncGenerator[str, None]:
     idle_ticks = 0
     while not await request.is_disconnected():
         events = await service.list_events(ListSessionEventsInput(session_id, cursor, 100))

@@ -1,0 +1,143 @@
+/* ============================================================
+   DATA WHERE HOUSE? — Base Layout & 16:9 Presentation Stage
+   ============================================================ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  background: #1E1B18;
+  font-family: var(--f-body);
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  user-select: none;
+}
+
+/* 16:9 Scaled Presentation Stage */
+#stage {
+  width: var(--slide-width);
+  height: var(--slide-height);
+  position: relative;
+  transform-origin: center center;
+  flex-shrink: 0;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45);
+}
+
+/* Individual Slide Shell */
+.slide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--paper);
+  background-image: 
+    linear-gradient(var(--grid) 1.5px, transparent 1.5px),
+    linear-gradient(90deg, var(--grid) 1.5px, transparent 1.5px);
+  background-size: 32px 32px;
+  border: var(--border-ink);
+  padding: 48px 56px;
+  display: none;
+  overflow: hidden;
+}
+
+.slide.active {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Slide Header Area */
+.slide-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 24px;
+  flex-shrink: 0;
+}
+
+.header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Slide Main Content Area */
+.slide-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  min-height: 0;
+}
+
+/* Slide Footer & Watermarks */
+.slide-footer {
+  position: absolute;
+  bottom: 20px;
+  left: 56px;
+  right: 56px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  pointer-events: none;
+  font-family: var(--f-display);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: var(--ink-45);
+}
+
+.slide-number b {
+  color: var(--red);
+  font-size: 13px;
+}
+
+.brand-watermark {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-transform: uppercase;
+  color: var(--ink-45);
+}
+
+.brand-watermark img {
+  height: 18px;
+  width: auto;
+  object-fit: contain;
+}
+
+/* Subtle Progress Bar (Bottom Line) */
+#progress-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 4px;
+  background: var(--red);
+  width: 0%;
+  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 100;
+}
+
+/* Video Recording Mode (Hide cursors on idle) */
+body.recording-mode {
+  cursor: none;
+}

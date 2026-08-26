@@ -2,6 +2,10 @@
 
 from src.common.exceptions.business import BusinessException
 from src.common.exceptions.error_codes import ErrorCode
+from src.domain.project_session.clarification import (
+    ClarificationAnswerMetadata,
+    ClarificationQuestionMetadata,
+)
 from src.domain.project_session.enums import SessionEventRole, SessionEventType
 from src.domain.project_session.value_objects import (
     AgentCallMetadata,
@@ -27,6 +31,8 @@ _ALLOWED_ROLES: dict[SessionEventType, frozenset[SessionEventRole]] = {
 }
 _METADATA_TYPES: dict[SessionEventType, type[SessionEventMetadata]] = {
     SessionEventType.MESSAGE: MessageMetadata,
+    SessionEventType.QUESTION: ClarificationQuestionMetadata,
+    SessionEventType.ANSWER: ClarificationAnswerMetadata,
     SessionEventType.AGENT_CALL: AgentCallMetadata,
     SessionEventType.AGENT_RESULT: AgentResultMetadata,
     SessionEventType.TOOL_CALL: ToolCallMetadata,
@@ -89,9 +95,8 @@ def validate_session_metadata(
         _raise_validation("Loại sự kiện này không chấp nhận metadata.")
     if expected is not None and metadata is not None and not isinstance(metadata, expected):
         _raise_validation("Metadata không phù hợp với loại sự kiện phiên.")
-    if event_type not in {SessionEventType.MESSAGE, SessionEventType.QUESTION, SessionEventType.ANSWER}:
-        if metadata is None:
-            _raise_validation("Sự kiện Agent hoặc Tool phải có metadata.")
+    if event_type is not SessionEventType.MESSAGE and metadata is None:
+        _raise_validation("Sự kiện Agent, Tool hoặc clarification phải có metadata.")
 
 
 def _raise_validation(message: str) -> None:

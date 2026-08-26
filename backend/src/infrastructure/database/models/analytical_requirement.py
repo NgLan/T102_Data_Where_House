@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 from uuid import UUID
 
 from sqlalchemy import ForeignKey, String, Text
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from src.infrastructure.database.base import Base
 from src.infrastructure.database.constants import (
@@ -30,6 +31,9 @@ class AnalyticalRequirementModel(Base):
     time_granularity: Mapped[str | None] = mapped_column(String(MAX_GRANULARITY_LENGTH), nullable=True)
     aggregation_method: Mapped[str | None] = mapped_column(String(MAX_AGGREGATION_LENGTH), nullable=True)
     grain: Mapped[str | None] = mapped_column(Text, nullable=True)
+    source_coverage: Mapped[list[dict[str, object]]] = mapped_column(
+        JSONB, nullable=False, default=list
+    )
 
     # Relationships
     requirement: Mapped["RequirementModel"] = relationship(

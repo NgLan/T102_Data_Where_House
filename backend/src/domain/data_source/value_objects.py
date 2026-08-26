@@ -9,8 +9,13 @@ from src.domain.data_source.constraints import (
     normalize_column_constraints,
 )
 from src.domain.data_source.enums import ColumnDataType, RelationshipType
+from src.domain.data_source.semantic_metadata import (
+    SourceSemanticAnnotation,
+    merge_semantic_annotation,
+    remove_semantic_annotation,
+)
 from src.domain.shared.enum_rules import normalize_str_enum
-from src.domain.shared.types import JsonScalar
+from src.domain.shared.types import EntityID, JsonScalar
 from src.domain.shared.value_object import BaseValueObject
 
 
@@ -29,6 +34,7 @@ class ColumnMetadata(BaseValueObject):
     distinct_values: tuple[JsonScalar, ...] = field(default_factory=tuple)
     is_unique_candidate: bool = False
     is_key_candidate: bool = False
+    semantic_annotations: tuple[SourceSemanticAnnotation, ...] = field(default_factory=tuple)
 
     def __post_init__(self) -> None:
         """Chuẩn hóa kiểu và đóng băng các collection metadata."""
@@ -40,6 +46,7 @@ class ColumnMetadata(BaseValueObject):
             normalize_column_constraints(self.constraints),
         )
         object.__setattr__(self, "distinct_values", tuple(self.distinct_values))
+        object.__setattr__(self, "semantic_annotations", tuple(self.semantic_annotations))
 
 
 @dataclass(frozen=True)
@@ -48,6 +55,7 @@ class TableMetadata(BaseValueObject):
 
     name: str
     columns: tuple[ColumnMetadata, ...] = field(default_factory=tuple)
+    row_count: int = 0
 
     def __post_init__(self) -> None:
         """Đóng băng danh sách cột được truyền từ parser hoặc mapper."""
@@ -61,6 +69,7 @@ class RelationshipMetadata(BaseValueObject):
     from_column: str
     to_column: str
     type: RelationshipType = RelationshipType.MANY_TO_ONE
+    semantic_annotations: tuple[SourceSemanticAnnotation, ...] = field(default_factory=tuple)
 
     def __post_init__(self) -> None:
         """Đảm bảo trường type được parse thành RelationshipType enum nếu khởi tạo từ string."""
@@ -69,6 +78,7 @@ class RelationshipMetadata(BaseValueObject):
             "type",
             normalize_str_enum(self.type, RelationshipType, ErrorCode.VALIDATION_ERROR),
         )
+        object.__setattr__(self, "semantic_annotations", tuple(self.semantic_annotations))
 
 
 @dataclass(frozen=True)
@@ -101,10 +111,72 @@ class SchemaMetadata(BaseValueObject):
                     column = _replace_column(column, update)
                     found = True
                 columns.append(column)
-            tables.append(TableMetadata(name=table.name, columns=tuple(columns)))
+            tables.append(
+                TableMetadata(
+                    name=table.name,
+                    columns=tuple(columns),
+                    row_count=table.row_count,
+                )
+            )
         if not found:
             return None
         return SchemaMetadata(tables=tuple(tables), relationships=self.relationships)
+
+    def annotate_column(
+        self,
+        table_name: str,
+        column_name: str,
+        annotation: SourceSemanticAnnotation,
+    ) -> "SchemaMetadata | None":
+        """Ghi semantic decision lên đúng column và giữ nguyên profile metadata."""
+        update = _annotate_column(self.tables, table_name, column_name, annotation)
+        if update is None:
+            return None
+        return SchemaMetadata(update, self.relationships)
+
+    def annotate_relationship(
+        self,
+        from_column: str,
+        to_column: str,
+        annotation: SourceSemanticAnnotation,
+    ) -> "SchemaMetadata | None":
+        """Ghi semantic decision lên đúng relationship hiện hữu."""
+        relationships = _annotate_relationship(
+            self.relationships, from_column, to_column, annotation
+        )
+        if relationships is None:
+            return None
+        return SchemaMetadata(self.tables, relationships)
+
+    def remove_user_annotation(
+        self, requirement_id: EntityID, concept_key: str
+    ) -> "SchemaMetadata":
+        """Xóa scoped USER annotation nhưng giữ nguyên profile metadata."""
+        tables = tuple(
+            replace(
+                table,
+                columns=tuple(
+                    replace(
+                        column,
+                        semantic_annotations=remove_semantic_annotation(
+                            column.semantic_annotations, requirement_id, concept_key
+                        ),
+                    )
+                    for column in table.columns
+                ),
+            )
+            for table in self.tables
+        )
+        relationships = tuple(
+            replace(
+                item,
+                semantic_annotations=remove_semantic_annotation(
+                    item.semantic_annotations, requirement_id, concept_key
+                ),
+            )
+            for item in self.relationships
+        )
+        return SchemaMetadata(tables, relationships)
 
 
 def _replace_column(
@@ -118,3 +190,40 @@ def _replace_column(
         distinct_values=(update.distinct_values if update.distinct_values is not None else column.distinct_values),
         constraints=(update.constraints if update.constraints is not None else column.constraints),
     )
+
+
+def _annotate_column(
+    tables: tuple[TableMetadata, ...],
+    table_name: str,
+    column_name: str,
+    annotation: SourceSemanticAnnotation,
+) -> tuple[TableMetadata, ...] | None:
+    updated: list[TableMetadata] = []
+    found = False
+    for table in tables:
+        columns = []
+        for column in table.columns:
+            if table.name == table_name and column.name == column_name:
+                values = merge_semantic_annotation(column.semantic_annotations, annotation)
+                column = replace(column, semantic_annotations=values)
+                found = True
+            columns.append(column)
+        updated.append(replace(table, columns=tuple(columns)))
+    return tuple(updated) if found else None
+
+
+def _annotate_relationship(
+    relationships: tuple[RelationshipMetadata, ...],
+    from_column: str,
+    to_column: str,
+    annotation: SourceSemanticAnnotation,
+) -> tuple[RelationshipMetadata, ...] | None:
+    updated = []
+    found = False
+    for relationship in relationships:
+        if relationship.from_column == from_column and relationship.to_column == to_column:
+            values = merge_semantic_annotation(relationship.semantic_annotations, annotation)
+            relationship = replace(relationship, semantic_annotations=values)
+            found = True
+        updated.append(relationship)
+    return tuple(updated) if found else None

@@ -22,6 +22,7 @@ vi.mock('../agent-sessions/hooks/use-agent-sessions', () => ({
     sessions: [],
     selectedSessionId: null,
     events: [],
+    pendingClarification: null,
     draft: '',
     isSending: false,
     errorCode: null,
@@ -30,6 +31,7 @@ vi.mock('../agent-sessions/hooks/use-agent-sessions', () => ({
     setDraft: vi.fn(),
     createSession: vi.fn(),
     send: vi.fn(),
+    answerClarification: vi.fn(),
   }),
 }));
 vi.mock('./hooks/use-modeling-workspace', () => ({ useModelingWorkspace: () => ({

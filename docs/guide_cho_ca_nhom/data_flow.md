@@ -56,7 +56,7 @@ Intent classifier cho Agent Chat là capability tương lai; các action hiện 
 
 ### RequirementAgent
 
-RequirementAgent chịu trách nhiệm toàn bộ quá trình phân tích Requirement và có hai nhiệm vụ chính.
+RequirementAgent chịu trách nhiệm toàn bộ quá trình phân tích Requirement và có ba operation độc lập.
 
 #### 1. Phân tích Raw Requirement
 
@@ -102,12 +102,10 @@ Các Requirement sau khi được phân tích được lưu vào bảng `require
 
 #### 2. Phân tích Analytical Requirement
 
-Sau khi có:
+Sau khi Requirement đã rõ semantic:
 
 ```text
 Requirements
-+
-SchemaMetadata
 ```
 
 RequirementAgent tiếp tục phân tích để tạo:
@@ -131,9 +129,7 @@ Requirement:
 "Phân tích doanh thu theo khoa theo tháng"
 
 +
-SchemaMetadata
-
-        ↓ RequirementAgent
+        ↓ RequirementAgent.derive_analytical_requirements
 
 Metric:
 Revenue
@@ -153,7 +149,19 @@ Revenue transaction
 
 Kết quả được lưu vào bảng `analytical_requirements`.
 
-Hai bước trên thuộc cùng trách nhiệm phân tích Requirement nên sử dụng cùng `RequirementAgent`, nhưng có thể được triển khai thành các node/operation riêng trong workflow.
+Analytical derivation không nhận `SchemaMetadata`, không trả source gap và không được đổi hoặc làm yếu Requirement để khớp source.
+
+#### 3. Đánh giá Source Coverage
+
+`RequirementAgent.evaluate_source_coverage` nhận Requirements, AnalyticalRequirements và SchemaMetadata hiện hành. Mỗi required business concept có đúng một trạng thái:
+
+- `SUPPORTED`: có evidence đã xác nhận cho mapping sử dụng được;
+- `NEEDS_SOURCE_CONFIRMATION`: có column/relationship candidate thật nhưng business identity chưa được USER xác nhận;
+- `MISSING_SOURCE`: không có candidate/evidence đáng tin cậy và không được chứa tên cột giả định.
+
+Candidate luôn mang ID và exact source reference; mapper từ chối reference không tồn tại. Uniqueness, distinct count, key candidate hoặc name similarity chỉ là profiling/candidacy, không tự chứng minh business identity.
+
+Ba bước thuộc cùng `RequirementAgent`, mỗi operation vẫn dùng đúng một structured LLM invocation; không tạo Agent hoặc session purpose mới.
 
 ---
 
@@ -256,7 +264,10 @@ min / max
 distinct values cần thiết cho CATEGORY
 uniqueness
 data statistics
+USER semantic annotations (`CONFIRMED` / `REJECTED`) tách biệt khỏi profiler
 ```
+
+Upload thay thế một source làm mất annotations của source đó. Thay đổi source khác không xóa confirmation còn hợp lệ. Table metadata persist `row_count`; coverage prompt nhận nullability, constraints, distinct counts, uniqueness/key candidates, relationships và USER annotations.
 
 Ví dụ:
 
@@ -445,14 +456,12 @@ TECHNICAL
 
 ---
 
-### Bước 2.2 — Requirements + SchemaMetadata → AnalyticalRequirements
+### Bước 2.2 — Requirements → AnalyticalRequirements
 
 Sau khi có:
 
 ```text
 Requirements
-+
-SchemaMetadata
 ```
 
 Application workflow tiếp tục gọi `RequirementAgent` với operation phân tích Analytical Requirement.
@@ -462,7 +471,7 @@ Requirements
 +
 SchemaMetadata
       ↓
-RequirementAgent
+RequirementAgent.derive_analytical_requirements
       ↓
 AnalyticalRequirements
       ↓
@@ -754,11 +763,13 @@ RequirementAgent
       ↓
 Requirements mới
       ↓
-Requirements + SchemaMetadata
-      ↓
-RequirementAgent
+RequirementAgent.derive_analytical_requirements
       ↓
 AnalyticalRequirements mới
+      ↓
+RequirementAgent.evaluate_source_coverage + SchemaMetadata
+      ↓
+Readiness Gate
 ```
 
 Sau khi Requirement hoặc Analytical Requirement thay đổi, Data Model hiện tại có thể không còn đồng bộ với input mới.
@@ -841,6 +852,14 @@ nên khi SchemaMetadata thay đổi:
 ```text
 AnalyticalRequirements
 ```
+
+### Bước 2.3 — Source Coverage và Readiness Gate
+
+Source Coverage chạy sau derivation và khi Requirement, Analytical Requirement, source hoặc USER semantic annotation đổi. Kết quả được persist trong JSONB của `analytical_requirements`; blocking result vẫn là một assessment current.
+
+Readiness có đúng bốn trạng thái: `REQUIREMENT_CLARIFICATION_REQUIRED`, `SOURCE_CONFIRMATION_REQUIRED`, `SOURCE_DATA_REQUIRED`, `READY_FOR_DESIGN`. Chỉ `READY_FOR_DESIGN` được đi tiếp tới DWDesignAgent.
+
+UI reload stable batch qua `GET /source-coverage`. OWNER resolve từng item bằng `POST /source-coverage/{assessment_id}/resolution` với batch ID, source revision và item resolution revision; thao tác này chỉ persist câu trả lời. Khi mọi item đã xử lý, `POST /source-coverage/recheck` materialize scoped USER annotations, tăng source revision đúng một lần cho cả batch và chỉ đánh giá lại coverage.
 
 có thể không còn đồng bộ.
 
@@ -1034,8 +1053,9 @@ Data Model revision + 1
 | CSV Parser / Profiler  | `data_sources.schema_metadata` | Schema, Data Type, Statistics, Metadata         |
 | PostgreSQL             | RequirementAgent               | Raw Requirement                                 |
 | RequirementAgent       | `requirements`                 | BUSINESS / ANALYTICAL / TECHNICAL Requirements  |
-| PostgreSQL             | RequirementAgent               | Requirements + SchemaMetadata                   |
+| PostgreSQL             | RequirementAgent               | Requirements cho derivation                     |
 | RequirementAgent       | `analytical_requirements`      | Metric / Dimension / Grain / Aggregation / Time |
+| SchemaMetadata + AnalyticalRequirements | RequirementAgent | Source Coverage assessments           |
 | Requirements           | DWDesignAgent                  | Input nghiệp vụ                                 |
 | AnalyticalRequirements | DWDesignAgent                  | Input phân tích                                 |
 | SchemaMetadata         | DWDesignAgent                  | Cấu trúc và profiling dữ liệu nguồn             |
@@ -1063,8 +1083,9 @@ Application workflow
 └── quản lý retry
 
 RequirementAgent
-├── Raw Requirement → Requirements
-└── Requirements + SchemaMetadata → AnalyticalRequirements
+├── Raw Requirement / conversation → Requirements
+├── Requirements → AnalyticalRequirements
+└── AnalyticalRequirements + SchemaMetadata → Source Coverage
 
 DWDesignAgent
 ├── Generate Data Model
@@ -1104,13 +1125,15 @@ Sandbox
 
 Workflow dùng integer revision, không dùng fingerprint hoặc timestamp để xác định thay đổi.
 
-Project lưu bốn revision:
+Project lưu các revision workflow:
 
 ```text
 requirement_revision
 source_revision
 analyzed_requirement_revision
+derived_analytical_requirement_revision
 analyzed_source_revision
+covered_analytical_requirement_revision
 ```
 
 - Save Raw Requirement có thay đổi làm `requirement_revision += 1`.
@@ -1127,6 +1150,8 @@ requirement_analysis_outdated = (
 
 source_analysis_outdated = (
     source_revision != analyzed_source_revision
+    or covered_analytical_requirement_revision
+       != derived_analytical_requirement_revision
 )
 ```
 
@@ -1136,12 +1161,17 @@ source_analysis_outdated = (
 if requirement_analysis_outdated:
     analyze_requirements()
 
-if requirement_analysis_outdated or source_analysis_outdated:
-    analyze_analytical_requirements()
+if analytical_requirement_outdated:
+    derive_analytical_requirements_without_source()
+
+if source_coverage_outdated:
+    evaluate_and_persist_source_coverage()
+
+if readiness_status == READY_FOR_DESIGN:
+    call_dw_design_agent()
 ```
 
-Chỉ sau khi các operation cần thiết thành công, hệ thống mới cập nhật analyzed revisions.
-Nếu Agent thất bại, analyzed revisions không thay đổi.
+Analytical Requirements chỉ outdated khi Requirement đổi. Coverage outdated khi Requirement/Analytical Requirement hoặc source revision đổi. `MISSING_SOURCE` hay `NEEDS_SOURCE_CONFIRMATION` được persist và đánh dấu đã đánh giá; “current but blocked” khác “outdated”. Nhiều confirmation item cùng `batch_id` có trạng thái độc lập `PENDING`, `CONFIRMED`, `REJECTED`; lưu một item không làm stale hoặc thay ID các item còn lại.
 
 Data Model lưu `generated_from_requirement_revision` và `generated_from_source_revision`. Data Model là OUTDATED khi một generated revision không khớp analyzed revision tương ứng. Giá trị `is_outdated` trong API chỉ là derived output.
 

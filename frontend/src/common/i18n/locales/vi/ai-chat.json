@@ -23,5 +23,10 @@
   "TXT_AGENT_COMPLETED": "Agent đã hoàn tất",
   "TXT_PROPOSAL_READY": "Proposal đã sẵn sàng để xem xét",
   "BTN_RENAME_SESSION": "Đổi tên phiên",
-  "BTN_SAVE_SESSION_NAME": "Lưu"
+  "BTN_SAVE_SESSION_NAME": "Lưu",
+  "TXT_CLARIFICATION_OTHER": "Khác",
+  "CLARIFICATION_CUSTOM_PLACEHOLDER": "Nhập câu trả lời của bạn...",
+  "MSG_CLARIFICATION_ANSWER_REQUIRED": "Vui lòng chọn một phương án hoặc nhập câu trả lời.",
+  "BTN_SUBMIT_CLARIFICATION": "Gửi câu trả lời",
+  "TXT_ANSWER_CLARIFICATION_FIRST": "Hãy trả lời câu hỏi làm rõ ở trên trước"
 }

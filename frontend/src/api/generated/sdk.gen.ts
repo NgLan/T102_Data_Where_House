@@ -2,7 +2,7 @@
 
 import { type Client, type ClientMeta, formDataBodySerializer, type Options as Options2, type RequestResult, type TDataShape } from './client';
 import { client } from './client.gen';
-import type { AcceptChangeProposalData, AcceptChangeProposalErrors, AcceptChangeProposalResponses, CreateAiDataModelProposalData, CreateAiDataModelProposalErrors, CreateAiDataModelProposalResponses, CreateProjectData, CreateProjectErrors, CreateProjectResponses, CreateProjectSessionData, CreateProjectSessionErrors, CreateProjectSessionResponses, DeleteProjectData, DeleteProjectDataSourceData, DeleteProjectDataSourceErrors, DeleteProjectDataSourceResponses, DeleteProjectErrors, DeleteProjectResponses, ExecuteSandboxDdlData, ExecuteSandboxDdlErrors, ExecuteSandboxDdlResponses, GenerateDataModelData, GenerateDataModelDdlData, GenerateDataModelDdlErrors, GenerateDataModelDdlResponses, GenerateDataModelErrors, GenerateDataModelResponses, GetCurrentUserData, GetCurrentUserErrors, GetCurrentUserResponses, GetDataModelData, GetDataModelErrors, GetDataModelResponses, GetDataModelValidationIssuesData, GetDataModelValidationIssuesErrors, GetDataModelValidationIssuesResponses, GetPendingProjectDataModelChangeData, GetPendingProjectDataModelChangeErrors, GetPendingProjectDataModelChangeResponses, GetProjectAnalysisStatusData, GetProjectAnalysisStatusErrors, GetProjectAnalysisStatusResponses, GetProjectData, GetProjectDataModelChangeData, GetProjectDataModelChangeErrors, GetProjectDataModelChangeResponses, GetProjectDataSourcePreviewData, GetProjectDataSourcePreviewErrors, GetProjectDataSourcePreviewResponses, GetProjectErrors, GetProjectResponses, GetProjectSessionData, GetProjectSessionErrors, GetProjectSessionResponses, GetSandboxConfigData, GetSandboxConfigErrors, GetSandboxConfigResponses, HealthCheckHealthGetData, HealthCheckHealthGetResponses, ListProjectDataSourcesData, ListProjectDataSourcesErrors, ListProjectDataSourcesResponses, ListProjectsData, ListProjectsErrors, ListProjectSessionEventsData, ListProjectSessionEventsErrors, ListProjectSessionEventsResponses, ListProjectSessionsData, ListProjectSessionsErrors, ListProjectSessionsResponses, ListProjectsResponses, ListRequirementsData, ListRequirementsErrors, ListRequirementsResponses, LivenessCheckHealthLiveGetData, LivenessCheckHealthLiveGetResponses, LoginData, LoginErrors, LoginResponses, LogoutData, LogoutErrors, LogoutResponses, ReadinessCheckHealthReadyGetData, ReadinessCheckHealthReadyGetErrors, ReadinessCheckHealthReadyGetResponses, ReanalyzeProjectData, ReanalyzeProjectErrors, ReanalyzeProjectResponses, RegenerateDataModelData, RegenerateDataModelErrors, RegenerateDataModelResponses, RegisterData, RegisterErrors, RegisterResponses, RejectChangeProposalData, RejectChangeProposalErrors, RejectChangeProposalResponses, RenameProjectSessionData, RenameProjectSessionErrors, RenameProjectSessionResponses, SaveSandboxConfigData, SaveSandboxConfigErrors, SaveSandboxConfigResponses, SendProjectSessionMessageData, SendProjectSessionMessageErrors, SendProjectSessionMessageResponses, StreamProjectSessionEventsData, StreamProjectSessionEventsErrors, StreamProjectSessionEventsResponses, TestSandboxConnectionData, TestSandboxConnectionErrors, TestSandboxConnectionResponses, UpdateDataModelData, UpdateDataModelErrors, UpdateDataModelResponses, UpdateProjectData, UpdateProjectDataSourceColumnData, UpdateProjectDataSourceColumnErrors, UpdateProjectDataSourceColumnResponses, UpdateProjectErrors, UpdateProjectResponses, UploadProjectDataSourcesData, UploadProjectDataSourcesErrors, UploadProjectDataSourcesResponses, ValidateDataModelDraftData, ValidateDataModelDraftErrors, ValidateDataModelDraftResponses } from './types.gen';
+import type { AcceptChangeProposalData, AcceptChangeProposalErrors, AcceptChangeProposalResponses, AnalyzeProjectRequirementClarificationData, AnalyzeProjectRequirementClarificationErrors, AnalyzeProjectRequirementClarificationResponses, AnswerProjectRequirementClarificationData, AnswerProjectRequirementClarificationErrors, AnswerProjectRequirementClarificationResponses, AnswerProjectSessionClarificationData, AnswerProjectSessionClarificationErrors, AnswerProjectSessionClarificationResponses, ChooseProjectRequirementContinuationData, ChooseProjectRequirementContinuationErrors, ChooseProjectRequirementContinuationResponses, CreateAiDataModelProposalData, CreateAiDataModelProposalErrors, CreateAiDataModelProposalResponses, CreateProjectData, CreateProjectErrors, CreateProjectResponses, CreateProjectSessionData, CreateProjectSessionErrors, CreateProjectSessionResponses, DeleteProjectData, DeleteProjectDataSourceData, DeleteProjectDataSourceErrors, DeleteProjectDataSourceResponses, DeleteProjectErrors, DeleteProjectRequirementFileData, DeleteProjectRequirementFileErrors, DeleteProjectRequirementFileResponses, DeleteProjectResponses, DeleteRequirementData, DeleteRequirementErrors, DeleteRequirementResponses, ExecuteSandboxDdlData, ExecuteSandboxDdlErrors, ExecuteSandboxDdlResponses, GenerateDataModelData, GenerateDataModelDdlData, GenerateDataModelDdlErrors, GenerateDataModelDdlResponses, GenerateDataModelErrors, GenerateDataModelResponses, GetCurrentUserData, GetCurrentUserErrors, GetCurrentUserResponses, GetDataModelData, GetDataModelErrors, GetDataModelResponses, GetDataModelValidationIssuesData, GetDataModelValidationIssuesErrors, GetDataModelValidationIssuesResponses, GetPendingProjectDataModelChangeData, GetPendingProjectDataModelChangeErrors, GetPendingProjectDataModelChangeResponses, GetPendingProjectSessionClarificationData, GetPendingProjectSessionClarificationErrors, GetPendingProjectSessionClarificationResponses, GetProjectAnalysisStatusData, GetProjectAnalysisStatusErrors, GetProjectAnalysisStatusResponses, GetProjectData, GetProjectDataModelChangeData, GetProjectDataModelChangeErrors, GetProjectDataModelChangeResponses, GetProjectDataSourcePreviewData, GetProjectDataSourcePreviewErrors, GetProjectDataSourcePreviewResponses, GetProjectErrors, GetProjectRequirementClarificationData, GetProjectRequirementClarificationErrors, GetProjectRequirementClarificationResponses, GetProjectResponses, GetProjectSessionData, GetProjectSessionErrors, GetProjectSessionResponses, GetProjectSourceCoverageData, GetProjectSourceCoverageErrors, GetProjectSourceCoverageResponses, GetSandboxConfigData, GetSandboxConfigErrors, GetSandboxConfigResponses, HealthCheckHealthGetData, HealthCheckHealthGetResponses, ListProjectDataSourcesData, ListProjectDataSourcesErrors, ListProjectDataSourcesResponses, ListProjectRequirementFilesData, ListProjectRequirementFilesErrors, ListProjectRequirementFilesResponses, ListProjectsData, ListProjectsErrors, ListProjectSessionEventsData, ListProjectSessionEventsErrors, ListProjectSessionEventsResponses, ListProjectSessionsData, ListProjectSessionsErrors, ListProjectSessionsResponses, ListProjectsResponses, ListRequirementsData, ListRequirementsErrors, ListRequirementsResponses, LivenessCheckHealthLiveGetData, LivenessCheckHealthLiveGetResponses, LoginData, LoginErrors, LoginResponses, LogoutData, LogoutErrors, LogoutResponses, ReadinessCheckHealthReadyGetData, ReadinessCheckHealthReadyGetErrors, ReadinessCheckHealthReadyGetResponses, ReanalyzeProjectData, ReanalyzeProjectErrors, ReanalyzeProjectResponses, RecheckProjectSourceCoverageData, RecheckProjectSourceCoverageErrors, RecheckProjectSourceCoverageResponses, RegenerateDataModelData, RegenerateDataModelErrors, RegenerateDataModelResponses, RegisterData, RegisterErrors, RegisterResponses, RejectChangeProposalData, RejectChangeProposalErrors, RejectChangeProposalResponses, RenameProjectSessionData, RenameProjectSessionErrors, RenameProjectSessionResponses, ResolveProjectSourceCoverageData, ResolveProjectSourceCoverageErrors, ResolveProjectSourceCoverageResponses, RunProjectInitializationWorkflowData, RunProjectInitializationWorkflowErrors, RunProjectInitializationWorkflowResponses, SaveProjectRawRequirementData, SaveProjectRawRequirementErrors, SaveProjectRawRequirementResponses, SaveSandboxConfigData, SaveSandboxConfigErrors, SaveSandboxConfigResponses, SendProjectRequirementClarificationMessageData, SendProjectRequirementClarificationMessageErrors, SendProjectRequirementClarificationMessageResponses, SendProjectSessionMessageData, SendProjectSessionMessageErrors, SendProjectSessionMessageResponses, StreamProjectSessionEventsData, StreamProjectSessionEventsErrors, StreamProjectSessionEventsResponses, TestSandboxConnectionData, TestSandboxConnectionErrors, TestSandboxConnectionResponses, UpdateDataModelData, UpdateDataModelErrors, UpdateDataModelResponses, UpdateProjectData, UpdateProjectDataSourceColumnData, UpdateProjectDataSourceColumnErrors, UpdateProjectDataSourceColumnResponses, UpdateProjectErrors, UpdateProjectResponses, UploadProjectDataSourcesData, UploadProjectDataSourcesErrors, UploadProjectDataSourcesResponses, UploadProjectRequirementFilesData, UploadProjectRequirementFilesErrors, UploadProjectRequirementFilesResponses, ValidateDataModelDraftData, ValidateDataModelDraftErrors, ValidateDataModelDraftResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -67,7 +67,7 @@ export const getCurrentUser = <ThrowOnError extends boolean = false>(options?: O
             in: 'cookie',
             name: 'p102_access_token',
             type: 'apiKey'
-        }],
+        }, { scheme: 'bearer', type: 'http' }],
     url: '/api/v1/auth/me',
     ...options
 });
@@ -80,7 +80,7 @@ export const logout = <ThrowOnError extends boolean = false>(options?: Options<L
             in: 'cookie',
             name: 'p102_access_token',
             type: 'apiKey'
-        }],
+        }, { scheme: 'bearer', type: 'http' }],
     url: '/api/v1/auth/logout',
     ...options
 });
@@ -95,7 +95,7 @@ export const listProjects = <ThrowOnError extends boolean = false>(options?: Opt
             in: 'cookie',
             name: 'p102_access_token',
             type: 'apiKey'
-        }],
+        }, { scheme: 'bearer', type: 'http' }],
     url: '/api/v1/projects',
     ...options
 });
@@ -110,7 +110,7 @@ export const createProject = <ThrowOnError extends boolean = false>(options: Opt
             in: 'cookie',
             name: 'p102_access_token',
             type: 'apiKey'
-        }],
+        }, { scheme: 'bearer', type: 'http' }],
     url: '/api/v1/projects',
     ...options,
     headers: {
@@ -129,7 +129,7 @@ export const deleteProject = <ThrowOnError extends boolean = false>(options: Opt
             in: 'cookie',
             name: 'p102_access_token',
             type: 'apiKey'
-        }],
+        }, { scheme: 'bearer', type: 'http' }],
     url: '/api/v1/projects/{project_id}',
     ...options
 });
@@ -144,7 +144,7 @@ export const getProject = <ThrowOnError extends boolean = false>(options: Option
             in: 'cookie',
             name: 'p102_access_token',
             type: 'apiKey'
-        }],
+        }, { scheme: 'bearer', type: 'http' }],
     url: '/api/v1/projects/{project_id}',
     ...options
 });
@@ -159,8 +159,27 @@ export const updateProject = <ThrowOnError extends boolean = false>(options: Opt
             in: 'cookie',
             name: 'p102_access_token',
             type: 'apiKey'
-        }],
+        }, { scheme: 'bearer', type: 'http' }],
     url: '/api/v1/projects/{project_id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Save Project Raw Requirement
+ *
+ * Lưu Raw Requirement tách biệt Project information.
+ */
+export const saveProjectRawRequirement = <ThrowOnError extends boolean = false>(options: Options<SaveProjectRawRequirementData, ThrowOnError>): RequestResult<SaveProjectRawRequirementResponses, SaveProjectRawRequirementErrors, ThrowOnError> => (options.client ?? client).put<SaveProjectRawRequirementResponses, SaveProjectRawRequirementErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'p102_access_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/projects/{project_id}/requirement',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -178,9 +197,159 @@ export const listRequirements = <ThrowOnError extends boolean = false>(options: 
             in: 'cookie',
             name: 'p102_access_token',
             type: 'apiKey'
-        }],
+        }, { scheme: 'bearer', type: 'http' }],
     url: '/api/v1/projects/{project_id}/requirements',
     ...options
+});
+
+/**
+ * Delete Requirement
+ *
+ * Xóa một Structured Requirement sai khỏi kết quả hiện hành.
+ */
+export const deleteRequirement = <ThrowOnError extends boolean = false>(options: Options<DeleteRequirementData, ThrowOnError>): RequestResult<DeleteRequirementResponses, DeleteRequirementErrors, ThrowOnError> => (options.client ?? client).delete<DeleteRequirementResponses, DeleteRequirementErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'p102_access_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/projects/{project_id}/requirements/{requirement_id}',
+    ...options
+});
+
+/**
+ * List Requirement Files
+ *
+ * Liệt kê metadata documents cho Project member.
+ */
+export const listProjectRequirementFiles = <ThrowOnError extends boolean = false>(options: Options<ListProjectRequirementFilesData, ThrowOnError>): RequestResult<ListProjectRequirementFilesResponses, ListProjectRequirementFilesErrors, ThrowOnError> => (options.client ?? client).get<ListProjectRequirementFilesResponses, ListProjectRequirementFilesErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'p102_access_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/projects/{project_id}/requirement-files',
+    ...options
+});
+
+/**
+ * Upload Requirement Files
+ *
+ * Parse và upload/replace một batch documents cho Project owner.
+ */
+export const uploadProjectRequirementFiles = <ThrowOnError extends boolean = false>(options: Options<UploadProjectRequirementFilesData, ThrowOnError>): RequestResult<UploadProjectRequirementFilesResponses, UploadProjectRequirementFilesErrors, ThrowOnError> => (options.client ?? client).post<UploadProjectRequirementFilesResponses, UploadProjectRequirementFilesErrors, ThrowOnError>({
+    ...formDataBodySerializer,
+    security: [{
+            in: 'cookie',
+            name: 'p102_access_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/projects/{project_id}/requirement-files/upload',
+    ...options,
+    headers: {
+        'Content-Type': null,
+        ...options.headers
+    }
+});
+
+/**
+ * Delete Requirement File
+ *
+ * Xóa document và tăng shared Requirement revision.
+ */
+export const deleteProjectRequirementFile = <ThrowOnError extends boolean = false>(options: Options<DeleteProjectRequirementFileData, ThrowOnError>): RequestResult<DeleteProjectRequirementFileResponses, DeleteProjectRequirementFileErrors, ThrowOnError> => (options.client ?? client).delete<DeleteProjectRequirementFileResponses, DeleteProjectRequirementFileErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'p102_access_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/projects/{project_id}/requirement-files/{file_id}',
+    ...options
+});
+
+/**
+ * Get Requirement Clarification
+ */
+export const getProjectRequirementClarification = <ThrowOnError extends boolean = false>(options: Options<GetProjectRequirementClarificationData, ThrowOnError>): RequestResult<GetProjectRequirementClarificationResponses, GetProjectRequirementClarificationErrors, ThrowOnError> => (options.client ?? client).get<GetProjectRequirementClarificationResponses, GetProjectRequirementClarificationErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'p102_access_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/projects/{project_id}/requirement-clarification',
+    ...options
+});
+
+/**
+ * Analyze Requirement Clarification
+ */
+export const analyzeProjectRequirementClarification = <ThrowOnError extends boolean = false>(options: Options<AnalyzeProjectRequirementClarificationData, ThrowOnError>): RequestResult<AnalyzeProjectRequirementClarificationResponses, AnalyzeProjectRequirementClarificationErrors, ThrowOnError> => (options.client ?? client).post<AnalyzeProjectRequirementClarificationResponses, AnalyzeProjectRequirementClarificationErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'p102_access_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/projects/{project_id}/requirement-clarification/analyze',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Answer Requirement Clarification
+ */
+export const answerProjectRequirementClarification = <ThrowOnError extends boolean = false>(options: Options<AnswerProjectRequirementClarificationData, ThrowOnError>): RequestResult<AnswerProjectRequirementClarificationResponses, AnswerProjectRequirementClarificationErrors, ThrowOnError> => (options.client ?? client).post<AnswerProjectRequirementClarificationResponses, AnswerProjectRequirementClarificationErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'p102_access_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/projects/{project_id}/requirement-clarification/{session_id}/questions/{question_id}/answer',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Send Requirement Clarification Message
+ *
+ * Gửi follow-up message và cập nhật Structured Requirements ngay trong turn.
+ */
+export const sendProjectRequirementClarificationMessage = <ThrowOnError extends boolean = false>(options: Options<SendProjectRequirementClarificationMessageData, ThrowOnError>): RequestResult<SendProjectRequirementClarificationMessageResponses, SendProjectRequirementClarificationMessageErrors, ThrowOnError> => (options.client ?? client).post<SendProjectRequirementClarificationMessageResponses, SendProjectRequirementClarificationMessageErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'p102_access_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/projects/{project_id}/requirement-clarification/{session_id}/messages',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Choose Requirement Continuation
+ *
+ * Persist lựa chọn continuation trước khi Project Init được resume.
+ */
+export const chooseProjectRequirementContinuation = <ThrowOnError extends boolean = false>(options: Options<ChooseProjectRequirementContinuationData, ThrowOnError>): RequestResult<ChooseProjectRequirementContinuationResponses, ChooseProjectRequirementContinuationErrors, ThrowOnError> => (options.client ?? client).post<ChooseProjectRequirementContinuationResponses, ChooseProjectRequirementContinuationErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'p102_access_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/projects/{project_id}/requirement-clarification/{session_id}/continuation',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
 });
 
 /**
@@ -193,7 +362,7 @@ export const getProjectAnalysisStatus = <ThrowOnError extends boolean = false>(o
             in: 'cookie',
             name: 'p102_access_token',
             type: 'apiKey'
-        }],
+        }, { scheme: 'bearer', type: 'http' }],
     url: '/api/v1/projects/{project_id}/analysis-status',
     ...options
 });
@@ -208,8 +377,76 @@ export const reanalyzeProject = <ThrowOnError extends boolean = false>(options: 
             in: 'cookie',
             name: 'p102_access_token',
             type: 'apiKey'
-        }],
+        }, { scheme: 'bearer', type: 'http' }],
     url: '/api/v1/projects/{project_id}/reanalyze',
+    ...options
+});
+
+/**
+ * Get Source Coverage
+ *
+ * Reload persisted Source Coverage and readiness state.
+ */
+export const getProjectSourceCoverage = <ThrowOnError extends boolean = false>(options: Options<GetProjectSourceCoverageData, ThrowOnError>): RequestResult<GetProjectSourceCoverageResponses, GetProjectSourceCoverageErrors, ThrowOnError> => (options.client ?? client).get<GetProjectSourceCoverageResponses, GetProjectSourceCoverageErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'p102_access_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/projects/{project_id}/source-coverage',
+    ...options
+});
+
+/**
+ * Resolve Source Coverage
+ *
+ * Persist one owner-only Source Confirmation item without invoking an Agent.
+ */
+export const resolveProjectSourceCoverage = <ThrowOnError extends boolean = false>(options: Options<ResolveProjectSourceCoverageData, ThrowOnError>): RequestResult<ResolveProjectSourceCoverageResponses, ResolveProjectSourceCoverageErrors, ThrowOnError> => (options.client ?? client).post<ResolveProjectSourceCoverageResponses, ResolveProjectSourceCoverageErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'p102_access_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/projects/{project_id}/source-coverage/{assessment_id}/resolution',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Recheck Source Coverage
+ *
+ * Materialize a completed batch and invoke only Source Coverage once.
+ */
+export const recheckProjectSourceCoverage = <ThrowOnError extends boolean = false>(options: Options<RecheckProjectSourceCoverageData, ThrowOnError>): RequestResult<RecheckProjectSourceCoverageResponses, RecheckProjectSourceCoverageErrors, ThrowOnError> => (options.client ?? client).post<RecheckProjectSourceCoverageResponses, RecheckProjectSourceCoverageErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'p102_access_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/projects/{project_id}/source-coverage/recheck',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Initialize Project
+ *
+ * Chạy Requirement → Source analysis → DBML và pause khi cần clarification.
+ */
+export const runProjectInitializationWorkflow = <ThrowOnError extends boolean = false>(options: Options<RunProjectInitializationWorkflowData, ThrowOnError>): RequestResult<RunProjectInitializationWorkflowResponses, RunProjectInitializationWorkflowErrors, ThrowOnError> => (options.client ?? client).post<RunProjectInitializationWorkflowResponses, RunProjectInitializationWorkflowErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'p102_access_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/projects/{project_id}/initialize',
     ...options
 });
 
@@ -223,7 +460,7 @@ export const getDataModel = <ThrowOnError extends boolean = false>(options: Opti
             in: 'cookie',
             name: 'p102_access_token',
             type: 'apiKey'
-        }],
+        }, { scheme: 'bearer', type: 'http' }],
     url: '/api/v1/projects/{project_id}/data-model',
     ...options
 });
@@ -238,7 +475,7 @@ export const updateDataModel = <ThrowOnError extends boolean = false>(options: O
             in: 'cookie',
             name: 'p102_access_token',
             type: 'apiKey'
-        }],
+        }, { scheme: 'bearer', type: 'http' }],
     url: '/api/v1/projects/{project_id}/data-model',
     ...options,
     headers: {
@@ -257,7 +494,7 @@ export const getDataModelValidationIssues = <ThrowOnError extends boolean = fals
             in: 'cookie',
             name: 'p102_access_token',
             type: 'apiKey'
-        }],
+        }, { scheme: 'bearer', type: 'http' }],
     url: '/api/v1/projects/{project_id}/data-model/validation-issues',
     ...options
 });
@@ -272,7 +509,7 @@ export const validateDataModelDraft = <ThrowOnError extends boolean = false>(opt
             in: 'cookie',
             name: 'p102_access_token',
             type: 'apiKey'
-        }],
+        }, { scheme: 'bearer', type: 'http' }],
     url: '/api/v1/projects/{project_id}/data-model/validate',
     ...options,
     headers: {
@@ -291,7 +528,7 @@ export const generateDataModelDdl = <ThrowOnError extends boolean = false>(optio
             in: 'cookie',
             name: 'p102_access_token',
             type: 'apiKey'
-        }],
+        }, { scheme: 'bearer', type: 'http' }],
     url: '/api/v1/projects/{project_id}/data-model/ddl',
     ...options
 });
@@ -306,7 +543,7 @@ export const generateDataModel = <ThrowOnError extends boolean = false>(options:
             in: 'cookie',
             name: 'p102_access_token',
             type: 'apiKey'
-        }],
+        }, { scheme: 'bearer', type: 'http' }],
     url: '/api/v1/projects/{project_id}/data-model/generate',
     ...options
 });
@@ -321,7 +558,7 @@ export const regenerateDataModel = <ThrowOnError extends boolean = false>(option
             in: 'cookie',
             name: 'p102_access_token',
             type: 'apiKey'
-        }],
+        }, { scheme: 'bearer', type: 'http' }],
     url: '/api/v1/projects/{project_id}/data-model/regenerate',
     ...options
 });
@@ -336,7 +573,7 @@ export const createAiDataModelProposal = <ThrowOnError extends boolean = false>(
             in: 'cookie',
             name: 'p102_access_token',
             type: 'apiKey'
-        }],
+        }, { scheme: 'bearer', type: 'http' }],
     url: '/api/v1/projects/{project_id}/data-model/proposals/ai-edit',
     ...options,
     headers: {
@@ -353,7 +590,7 @@ export const getPendingProjectDataModelChange = <ThrowOnError extends boolean = 
             in: 'cookie',
             name: 'p102_access_token',
             type: 'apiKey'
-        }],
+        }, { scheme: 'bearer', type: 'http' }],
     url: '/api/v1/projects/{project_id}/data-model-changes/pending',
     ...options
 });
@@ -368,7 +605,7 @@ export const getProjectDataModelChange = <ThrowOnError extends boolean = false>(
             in: 'cookie',
             name: 'p102_access_token',
             type: 'apiKey'
-        }],
+        }, { scheme: 'bearer', type: 'http' }],
     url: '/api/v1/projects/{project_id}/data-model-changes/{change_id}',
     ...options
 });
@@ -383,7 +620,7 @@ export const acceptChangeProposal = <ThrowOnError extends boolean = false>(optio
             in: 'cookie',
             name: 'p102_access_token',
             type: 'apiKey'
-        }],
+        }, { scheme: 'bearer', type: 'http' }],
     url: '/api/v1/data-model-changes/{change_id}/accept',
     ...options
 });
@@ -398,7 +635,7 @@ export const rejectChangeProposal = <ThrowOnError extends boolean = false>(optio
             in: 'cookie',
             name: 'p102_access_token',
             type: 'apiKey'
-        }],
+        }, { scheme: 'bearer', type: 'http' }],
     url: '/api/v1/data-model-changes/{change_id}/reject',
     ...options
 });
@@ -413,7 +650,7 @@ export const listProjectDataSources = <ThrowOnError extends boolean = false>(opt
             in: 'cookie',
             name: 'p102_access_token',
             type: 'apiKey'
-        }],
+        }, { scheme: 'bearer', type: 'http' }],
     url: '/api/v1/projects/{project_id}/data-sources',
     ...options
 });
@@ -429,7 +666,7 @@ export const uploadProjectDataSources = <ThrowOnError extends boolean = false>(o
             in: 'cookie',
             name: 'p102_access_token',
             type: 'apiKey'
-        }],
+        }, { scheme: 'bearer', type: 'http' }],
     url: '/api/v1/projects/{project_id}/data-sources/upload',
     ...options,
     headers: {
@@ -448,7 +685,7 @@ export const getProjectDataSourcePreview = <ThrowOnError extends boolean = false
             in: 'cookie',
             name: 'p102_access_token',
             type: 'apiKey'
-        }],
+        }, { scheme: 'bearer', type: 'http' }],
     url: '/api/v1/projects/{project_id}/data-sources/{source_id}/preview',
     ...options
 });
@@ -463,7 +700,7 @@ export const updateProjectDataSourceColumn = <ThrowOnError extends boolean = fal
             in: 'cookie',
             name: 'p102_access_token',
             type: 'apiKey'
-        }],
+        }, { scheme: 'bearer', type: 'http' }],
     url: '/api/v1/projects/{project_id}/data-sources/{source_id}/tables/{table_name}/columns/{column_name}',
     ...options,
     headers: {
@@ -482,7 +719,7 @@ export const deleteProjectDataSource = <ThrowOnError extends boolean = false>(op
             in: 'cookie',
             name: 'p102_access_token',
             type: 'apiKey'
-        }],
+        }, { scheme: 'bearer', type: 'http' }],
     url: '/api/v1/projects/{project_id}/data-sources/{source_id}',
     ...options
 });
@@ -497,7 +734,7 @@ export const getSandboxConfig = <ThrowOnError extends boolean = false>(options: 
             in: 'cookie',
             name: 'p102_access_token',
             type: 'apiKey'
-        }],
+        }, { scheme: 'bearer', type: 'http' }],
     url: '/api/v1/projects/{project_id}/sandbox/config',
     ...options
 });
@@ -512,7 +749,7 @@ export const saveSandboxConfig = <ThrowOnError extends boolean = false>(options:
             in: 'cookie',
             name: 'p102_access_token',
             type: 'apiKey'
-        }],
+        }, { scheme: 'bearer', type: 'http' }],
     url: '/api/v1/projects/{project_id}/sandbox/config',
     ...options,
     headers: {
@@ -531,7 +768,7 @@ export const testSandboxConnection = <ThrowOnError extends boolean = false>(opti
             in: 'cookie',
             name: 'p102_access_token',
             type: 'apiKey'
-        }],
+        }, { scheme: 'bearer', type: 'http' }],
     url: '/api/v1/projects/{project_id}/sandbox/test-connection',
     ...options,
     headers: {
@@ -550,7 +787,7 @@ export const executeSandboxDdl = <ThrowOnError extends boolean = false>(options:
             in: 'cookie',
             name: 'p102_access_token',
             type: 'apiKey'
-        }],
+        }, { scheme: 'bearer', type: 'http' }],
     url: '/api/v1/projects/{project_id}/sandbox/execute-ddl',
     ...options,
     headers: {
@@ -567,7 +804,7 @@ export const listProjectSessions = <ThrowOnError extends boolean = false>(option
             in: 'cookie',
             name: 'p102_access_token',
             type: 'apiKey'
-        }],
+        }, { scheme: 'bearer', type: 'http' }],
     url: '/api/v1/projects/{project_id}/sessions',
     ...options
 });
@@ -580,7 +817,7 @@ export const createProjectSession = <ThrowOnError extends boolean = false>(optio
             in: 'cookie',
             name: 'p102_access_token',
             type: 'apiKey'
-        }],
+        }, { scheme: 'bearer', type: 'http' }],
     url: '/api/v1/projects/{project_id}/sessions',
     ...options,
     headers: {
@@ -597,7 +834,7 @@ export const getProjectSession = <ThrowOnError extends boolean = false>(options:
             in: 'cookie',
             name: 'p102_access_token',
             type: 'apiKey'
-        }],
+        }, { scheme: 'bearer', type: 'http' }],
     url: '/api/v1/sessions/{session_id}',
     ...options
 });
@@ -610,7 +847,7 @@ export const renameProjectSession = <ThrowOnError extends boolean = false>(optio
             in: 'cookie',
             name: 'p102_access_token',
             type: 'apiKey'
-        }],
+        }, { scheme: 'bearer', type: 'http' }],
     url: '/api/v1/sessions/{session_id}',
     ...options,
     headers: {
@@ -627,7 +864,7 @@ export const listProjectSessionEvents = <ThrowOnError extends boolean = false>(o
             in: 'cookie',
             name: 'p102_access_token',
             type: 'apiKey'
-        }],
+        }, { scheme: 'bearer', type: 'http' }],
     url: '/api/v1/sessions/{session_id}/events',
     ...options
 });
@@ -640,8 +877,38 @@ export const sendProjectSessionMessage = <ThrowOnError extends boolean = false>(
             in: 'cookie',
             name: 'p102_access_token',
             type: 'apiKey'
-        }],
+        }, { scheme: 'bearer', type: 'http' }],
     url: '/api/v1/sessions/{session_id}/messages',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Get Pending Project Session Clarification
+ */
+export const getPendingProjectSessionClarification = <ThrowOnError extends boolean = false>(options: Options<GetPendingProjectSessionClarificationData, ThrowOnError>): RequestResult<GetPendingProjectSessionClarificationResponses, GetPendingProjectSessionClarificationErrors, ThrowOnError> => (options.client ?? client).get<GetPendingProjectSessionClarificationResponses, GetPendingProjectSessionClarificationErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'p102_access_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/sessions/{session_id}/clarification',
+    ...options
+});
+
+/**
+ * Answer Project Session Clarification
+ */
+export const answerProjectSessionClarification = <ThrowOnError extends boolean = false>(options: Options<AnswerProjectSessionClarificationData, ThrowOnError>): RequestResult<AnswerProjectSessionClarificationResponses, AnswerProjectSessionClarificationErrors, ThrowOnError> => (options.client ?? client).post<AnswerProjectSessionClarificationResponses, AnswerProjectSessionClarificationErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'p102_access_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/sessions/{session_id}/clarifications/{question_id}/answer',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -657,7 +924,7 @@ export const streamProjectSessionEvents = <ThrowOnError extends boolean = false>
             in: 'cookie',
             name: 'p102_access_token',
             type: 'apiKey'
-        }],
+        }, { scheme: 'bearer', type: 'http' }],
     url: '/api/v1/sessions/{session_id}/events/stream',
     ...options
 });

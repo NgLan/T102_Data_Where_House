@@ -1,7 +1,12 @@
 """Pydantic record cho payload JSONB của SessionEvent."""
 
-from pydantic import BaseModel, ConfigDict
-from src.domain.project_session.enums import AgentResultStatus, AgentType, ToolResultStatus
+from pydantic import BaseModel, ConfigDict, Field
+from src.domain.project_session.enums import (
+    AgentResultStatus,
+    AgentType,
+    ClarificationAnswerKind,
+    ToolResultStatus,
+)
 
 
 class MetadataRecord(BaseModel):
@@ -14,6 +19,26 @@ class MessageRecord(MetadataRecord):
     """Record metadata của message."""
 
     model: str | None = None
+    agent_result_id: str | None = None
+    proposal_change_id: str | None = None
+
+
+class ClarificationQuestionRecord(MetadataRecord):
+    """Record metadata của câu hỏi clarification."""
+
+    options: list[str] = Field(min_length=1, max_length=4)
+    allow_custom_answer: bool
+    reason: str | None = None
+    original_intent: str | None = None
+    missing_information: str | None = None
+
+
+class ClarificationAnswerRecord(MetadataRecord):
+    """Record liên kết answer với question nguồn."""
+
+    question_id: str
+    kind: ClarificationAnswerKind
+    option_index: int | None = None
 
 
 class AgentCallRecord(MetadataRecord):

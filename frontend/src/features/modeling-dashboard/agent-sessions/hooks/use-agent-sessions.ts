@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import {
+  type ClarificationQuestionResponse,
   handleApiError,
   type ChangeProposalDetailResponse,
   type ProjectSessionResponse,
@@ -12,10 +13,11 @@ import { openAgentEventStream } from "../services/agent-event-stream";
 import {
   requestAgentSessionCreation,
   requestAgentSessions,
+  requestPendingClarification,
   requestSessionEvents,
-  requestSessionMessage,
   requestSessionRename,
 } from "../services/agent-session-api";
+import { useAgentTurnActions } from "./use-agent-turn-actions";
 
 interface AgentSessionsOptions {
   projectId: string;
@@ -31,8 +33,8 @@ export function useAgentSessions(options: AgentSessionsOptions) {
     null,
   );
   const [events, setEvents] = useState<SessionEventResponse[]>([]);
-  const [draft, setDraft] = useState("");
-  const [isSending, setIsSending] = useState(false);
+  const [pendingClarification, setPendingClarification] =
+    useState<ClarificationQuestionResponse | null>(null);
   const [errorCode, setErrorCode] = useState<string | null>(null);
   const [selectedProposal, setSelectedProposal] =
     useState<ChangeProposalDetailResponse | null>(null);
@@ -57,8 +59,12 @@ export function useAgentSessions(options: AgentSessionsOptions) {
   useEffect(() => {
     if (!selectedSessionId) return;
     let stream: ReturnType<typeof openAgentEventStream> | null = null;
-    void requestSessionEvents(selectedSessionId).then((history) => {
+    void Promise.all([
+      requestSessionEvents(selectedSessionId),
+      requestPendingClarification(selectedSessionId),
+    ]).then(([history, clarification]) => {
       setEvents(history);
+      setPendingClarification(clarification);
       stream = openAgentEventStream({
         sessionId: selectedSessionId,
         lastEventId: history.at(-1)?.id,
@@ -70,6 +76,7 @@ export function useAgentSessions(options: AgentSessionsOptions) {
 
   const selectSession = useCallback((sessionId: string) => {
     setEvents([]);
+    setPendingClarification(null);
     setSelectedSessionId(sessionId);
   }, []);
 
@@ -78,28 +85,22 @@ export function useAgentSessions(options: AgentSessionsOptions) {
     setSessions((current) => [created, ...current]);
     selectSession(created.id);
   }, [options.projectId, selectSession]);
-  const send = useCallback(async () => {
-    const content = draft.trim();
-    if (!selectedSessionId || !content || isSending) return;
-    setIsSending(true);
-    try {
-      if (!(await options.ensureLatestModel())) return;
-      setDraft("");
-      const turn = await requestSessionMessage(selectedSessionId, content);
-      const history = await requestSessionEvents(selectedSessionId);
-      setEvents(history);
-      if (turn.kind === "proposal") {
-        options.onProposal(
-          await fetchProposalDetail(options.projectId, turn.proposal_change_id),
-        );
-      }
-      setErrorCode(null);
-    } catch (error: unknown) {
-      setErrorCode(handleApiError(error, { shouldNotify: false }).errorCode);
-    } finally {
-      setIsSending(false);
-    }
-  }, [draft, isSending, options, selectedSessionId]);
+  const refreshSession = useCallback(async (sessionId: string) => {
+    const [history, clarification] = await Promise.all([
+      requestSessionEvents(sessionId),
+      requestPendingClarification(sessionId),
+    ]);
+    setEvents(history);
+    setPendingClarification(clarification);
+  }, []);
+  const actions = useAgentTurnActions({
+    projectId: options.projectId,
+    selectedSessionId,
+    pendingClarification,
+    ensureLatestModel: options.ensureLatestModel,
+    onProposal: options.onProposal,
+    refreshSession,
+  });
   const openProposal = useCallback(async (changeId: string) => {
     options.onInspectProposal();
     setSelectedProposal(await fetchProposalDetail(options.projectId, changeId));
@@ -114,14 +115,16 @@ export function useAgentSessions(options: AgentSessionsOptions) {
     sessions,
     selectedSessionId,
     events,
-    draft,
-    isSending,
-    errorCode,
-    canSend: Boolean(selectedSessionId && draft.trim() && !isSending),
+    pendingClarification,
+    draft: actions.draft,
+    isSending: actions.isSending,
+    errorCode: actions.errorCode ?? errorCode,
+    canSend: actions.canSend,
     selectSession,
-    setDraft,
+    setDraft: actions.setDraft,
     createSession,
-    send,
+    send: actions.send,
+    answerClarification: actions.answerClarification,
     selectedProposal,
     openProposal,
     renameSession,

@@ -1,13 +1,25 @@
 "use client";
 
 import { queryOptions, useQuery } from "@tanstack/react-query";
-import { getAccessibleProjects, getCurrentActorProfile } from "./project-api";
+import {
+  getAccessibleProjects,
+  getCurrentActorProfile,
+  getProjectAnalysisStatusData,
+} from "./project-api";
 
 /** Query key ổn định cho danh sách Project dùng chung. */
 export const PROJECTS_QUERY_KEY = ["projects"] as const;
 
 /** Query key ổn định cho actor MVP hiện tại. */
 export const CURRENT_ACTOR_QUERY_KEY = ["current-actor"] as const;
+
+/** Query key cho trạng thái phân tích project.
+ * @param projectId ID của project.
+ * @returns Tuple query key chuẩn hóa.
+ */
+export function projectStatusQueryKey(projectId?: string) {
+  return ["project-init", "status", projectId] as const;
+}
 
 /** Tạo query options dùng chung cho danh sách Project.
  * @returns Query options có key và query function ổn định.
@@ -33,5 +45,18 @@ export function useCurrentActorQuery() {
     retry: false,
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
+  });
+}
+
+/** Đọc trạng thái phân tích project từ shared TanStack Query cache.
+ * @param projectId ID của project.
+ * @returns Query result của trạng thái phân tích.
+ */
+export function useProjectStatusQuery(projectId?: string) {
+  return useQuery({
+    queryKey: projectStatusQueryKey(projectId),
+    queryFn: () => (projectId ? getProjectAnalysisStatusData(projectId) : null),
+    enabled: Boolean(projectId),
+    staleTime: 30 * 1000,
   });
 }

@@ -2,14 +2,13 @@
 
 import { useMemo } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useForm, type UseFormRegisterReturn } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { handleApiError, resolveApiErrorMessage } from "@/api";
 import { Button } from "@/common/components/ui/button";
 import { Field, FieldError, FieldLabel } from "@/common/components/ui/field";
 import { Input } from "@/common/components/ui/input";
-import { CURRENT_ACTOR_QUERY_KEY } from "@/common/projects/project-queries";
 import { toast } from "sonner";
 import { createRegisterSchema, type RegisterFormValues } from "../schemas/auth-schemas";
 import { registerUser } from "../services/auth-api";

@@ -9,8 +9,8 @@ from src.application.data_models.i_data_model_service import IDataModelDdlGenera
 from src.application.data_warehouse_workflows.i_data_warehouse_workflow_service import (
     IDataModelValidationEngine,
     IDataWarehouseDesignAgent,
-    IRequirementAnalysisAgent,
 )
+from src.application.requirements.i_requirement_service import IRequirementAnalysisAgent
 from src.application.sandbox.i_sandbox_service import ISandboxExecutor
 from src.infrastructure.agents.data_warehouse_design_agent import DataWarehouseDesignAgent
 from src.infrastructure.agents.requirement_analysis_agent import RequirementAnalysisAgent

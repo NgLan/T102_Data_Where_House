@@ -1,9 +1,12 @@
 """PostgreSQL repository cho thực thể SessionEvent."""
 
-from sqlalchemy import select, tuple_
+from sqlalchemy import and_, or_, select, tuple_
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.domain.project_session.entities import SessionEvent
-from src.domain.project_session.i_session_event_repository import ISessionEventRepository
+from src.domain.project_session.i_session_event_repository import (
+    ConversationEventQuery,
+    ISessionEventRepository,
+)
 from src.domain.shared.types import EntityID
 from src.infrastructure.database.error_translation import translate_database_errors
 from src.infrastructure.database.mappers.session_event.session_event_mapper import SessionEventMapper
@@ -39,14 +42,31 @@ class PostgresSessionEventRepository(ISessionEventRepository):
             if cursor is None or cursor.session_id != session_id:
                 return []
             statement = statement.where(
-                tuple_(SessionEventModel.created_at, SessionEventModel.id)
-                > tuple_(cursor.created_at, cursor.id)
+                tuple_(SessionEventModel.created_at, SessionEventModel.id) > tuple_(cursor.created_at, cursor.id)
             )
-        statement = statement.order_by(
-            SessionEventModel.created_at.asc(), SessionEventModel.id.asc()
-        ).limit(limit)
+        statement = statement.order_by(SessionEventModel.created_at.asc(), SessionEventModel.id.asc()).limit(limit)
         result = await self._session.execute(statement)
         return [SessionEventMapper.to_domain(model) for model in result.scalars().all()]
+
+    @override
+    @translate_database_errors
+    async def list_conversation_events(self, query: ConversationEventQuery) -> list[SessionEvent]:
+        """Query only User/Agent conversational event pairs after a checkpoint."""
+        model = SessionEventModel
+        statement = select(model).where(
+            model.session_id == query.session_id,
+            or_(
+                and_(model.role == "USER", model.type.in_(("MESSAGE", "ANSWER"))),
+                and_(model.role == "AGENT", model.type.in_(("MESSAGE", "QUESTION"))),
+            ),
+        )
+        if query.after_id is not None:
+            cursor = await self._crud.get_by_id(query.after_id)
+            if cursor is None or cursor.session_id != query.session_id:
+                return []
+            statement = statement.where(tuple_(model.created_at, model.id) > tuple_(cursor.created_at, cursor.id))
+        result = await self._session.execute(statement.order_by(model.created_at.asc(), model.id.asc()))
+        return [SessionEventMapper.to_domain(item) for item in result.scalars().all()]
 
     @override
     async def save(self, entity: SessionEvent) -> SessionEvent:

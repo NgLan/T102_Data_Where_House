@@ -1,12 +1,14 @@
 import type {
   CreateProjectRequest,
   ProjectResponse,
+  RawRequirementResponse,
   UpdateProjectRequest,
 } from "@/api";
 import {
   apiClient,
   getProject as getProjectRequest,
   requireApiData,
+  saveProjectRawRequirement,
   updateProject as updateProjectRequest,
 } from "@/api";
 
@@ -35,15 +37,34 @@ export async function getProjectDetails(
  */
 export async function updateProjectDetails(
   projectId: string,
-  form: Pick<CreateProjectRequest, "name" | "domain" | "requirement">,
+  form: Pick<CreateProjectRequest, "name" | "domain" | "description">,
 ): Promise<ProjectResponse> {
   const body: UpdateProjectRequest = {
     name: form.name,
     domain: form.domain ?? null,
-    requirement: form.requirement ?? null,
+    description: form.description ?? null,
   };
   const response = await updateProjectRequest({
     body,
+    client: apiClient,
+    path: { project_id: projectId },
+    responseStyle: "fields",
+    throwOnError: true,
+  });
+  return requireApiData(response.data);
+}
+
+/** Lưu riêng Raw Requirement bằng expected revision. */
+export async function saveRawRequirement(
+  projectId: string,
+  requirement: string,
+  expectedRevision: number,
+): Promise<RawRequirementResponse> {
+  const response = await saveProjectRawRequirement({
+    body: {
+      requirement: requirement.trim() || null,
+      expected_revision: expectedRevision,
+    },
     client: apiClient,
     path: { project_id: projectId },
     responseStyle: "fields",

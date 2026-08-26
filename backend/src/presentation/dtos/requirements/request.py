@@ -6,3 +6,4 @@ from uuid import UUID
 from fastapi import Path
 
 ProjectIdPath = Annotated[UUID, Path(description="ID dự án chứa yêu cầu")]
+RequirementIdPath = Annotated[UUID, Path(description="ID Structured Requirement")]

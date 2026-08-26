@@ -5,6 +5,7 @@ from dataclasses import dataclass
 
 from langchain_core.language_models import BaseChatModel
 from langchain_openai import ChatOpenAI
+from pydantic import SecretStr
 from src.common.exceptions.error_codes import ErrorCode
 from src.common.exceptions.infrastructure import InfrastructureException
 
@@ -15,7 +16,7 @@ class ChatModelConfiguration:
 
     provider: str
     model_name: str
-    api_key: str
+    api_key: SecretStr
     base_url: str
     temperature: float
     max_tokens: int
@@ -59,7 +60,7 @@ def _build_openai(configuration: ChatModelConfiguration) -> BaseChatModel:
     """Dựng OpenAI hoặc endpoint tương thích OpenAI."""
     options: dict[str, object] = {
         "model": configuration.model_name,
-        "api_key": configuration.api_key or "local",
+        "api_key": configuration.api_key.get_secret_value(),
         "temperature": configuration.temperature,
         "max_tokens": configuration.max_tokens,
         "timeout": configuration.timeout_seconds,
@@ -81,7 +82,7 @@ def _build_google(configuration: ChatModelConfiguration) -> BaseChatModel:
         ) from exc
     return ChatGoogleGenerativeAI(
         model=configuration.model_name,
-        google_api_key=configuration.api_key,
+        google_api_key=configuration.api_key.get_secret_value(),
         temperature=configuration.temperature,
         max_output_tokens=configuration.max_tokens,
         timeout=configuration.timeout_seconds,

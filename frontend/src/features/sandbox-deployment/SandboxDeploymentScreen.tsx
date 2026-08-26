@@ -1,6 +1,7 @@
 "use client";
 
 import { MainLayout } from "@/common/components/layout/MainLayout";
+import { DataModelStepGate } from "@/common/components/workflow/DataModelStepGate";
 import { SandboxDeploymentContent } from "./sandbox-deployment-screen/components/SandboxDeploymentContent";
 import { SandboxDeploymentHeader } from "./sandbox-deployment-screen/components/SandboxDeploymentHeader";
 import { useDdlEditor } from "./sandbox-deployment-screen/ddl-editor/hooks/use-ddl-editor";
@@ -13,6 +14,16 @@ interface SandboxDeploymentScreenProps {
 
 /** Điều phối ba capability của màn hình Sandbox Deployment. */
 export function SandboxDeploymentScreen({ projectId }: SandboxDeploymentScreenProps) {
+  return (
+    <MainLayout selectedProjectId={projectId}>
+      <DataModelStepGate projectId={projectId} currentStep="sandbox">
+        <ReadySandboxDeployment projectId={projectId} />
+      </DataModelStepGate>
+    </MainLayout>
+  );
+}
+
+function ReadySandboxDeployment({ projectId }: SandboxDeploymentScreenProps) {
   const config = useSandboxConfig(projectId);
   const editor = useDdlEditor(projectId, config.form.watch("databaseName"));
   const execution = useSandboxExecution({
@@ -22,11 +33,9 @@ export function SandboxDeploymentScreen({ projectId }: SandboxDeploymentScreenPr
     savedConfig: config.savedConfig,
   });
   return (
-    <MainLayout selectedProjectId={projectId}>
       <div className="flex w-full flex-1 flex-col space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-        <SandboxDeploymentHeader projectId={projectId} />
+        <SandboxDeploymentHeader />
         <SandboxDeploymentContent config={config} editor={editor} execution={execution} />
       </div>
-    </MainLayout>
   );
 }

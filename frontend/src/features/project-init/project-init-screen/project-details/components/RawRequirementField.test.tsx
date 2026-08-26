@@ -8,10 +8,17 @@ import { RawRequirementField } from "./RawRequirementField";
 
 vi.mock("react-i18next", () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 
-function Harness() {
-  const form = useForm<ProjectDetailsValues>({ defaultValues: { name: "Demo", domain: "", requirement:
+function Harness({ onSave = vi.fn() }: { onSave?: () => void }) {
+  const form = useForm<ProjectDetailsValues>({ defaultValues: { name: "Demo", domain: "", description: "", requirement:
     "# Heading\n\n- item\n\n| A | B |\n|---|---|\n| 1 | 2 |\n\n<script>alert('x')</script>" } });
-  return <RawRequirementField control={form.control} disabled={false} />;
+  return (
+    <RawRequirementField
+      control={form.control}
+      disabled={false}
+      isDirty={false}
+      onSaveDraft={onSave}
+    />
+  );
 }
 
 describe("RawRequirementField", () => {
@@ -22,5 +29,17 @@ describe("RawRequirementField", () => {
     expect(screen.getByRole("listitem")).toHaveTextContent("item");
     expect(screen.getByRole("table")).toBeInTheDocument();
     expect(container.querySelector("script")).toBeNull();
+  });
+
+  it("keeps typing local and saves only on Ctrl+S", async () => {
+    const onSave = vi.fn();
+    render(<Harness onSave={onSave} />);
+    const editor = screen.getByRole("textbox");
+
+    await userEvent.type(editor, " local draft");
+    expect(onSave).not.toHaveBeenCalled();
+
+    await userEvent.type(editor, "{Control>}s{/Control}");
+    expect(onSave).toHaveBeenCalledOnce();
   });
 });

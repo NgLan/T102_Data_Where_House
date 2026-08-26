@@ -1,5 +1,5 @@
 import type { ApiErrorResponse, ErrorDetail } from "../generated/types.gen";
-import { ApiError } from "./api-error";
+import { ApiError, type ApiErrorDetail } from "./api-error";
 import { classifyApiError, defaultErrorCode } from "./classify-api-error";
 
 interface NormalizeApiErrorContext {
@@ -7,7 +7,7 @@ interface NormalizeApiErrorContext {
 }
 
 type ErrorPayload = Partial<Omit<ApiErrorResponse, "details">> & {
-  details?: readonly ErrorDetail[];
+  details?: readonly ApiErrorDetail[];
 };
 
 /** Chuẩn hóa lỗi Backend, Fetch và lỗi không xác định về cùng một model. */
@@ -44,18 +44,24 @@ function readErrorPayload(value: unknown): ErrorPayload {
     message: typeof value.message === "string" ? value.message : undefined,
     error_code:
       typeof value.error_code === "string" ? value.error_code : undefined,
-    details: readFieldErrors(value.details),
+    details: readErrorDetails(value.details),
   };
 }
 
 /** Lọc details sai schema thay vì để dữ liệu không an toàn lọt vào UI. */
-function readFieldErrors(value: unknown): readonly ErrorDetail[] | undefined {
+function readErrorDetails(value: unknown): readonly ApiErrorDetail[] | undefined {
   if (!Array.isArray(value)) return undefined;
-  return value.flatMap((item): ErrorDetail[] => {
+  return value.flatMap((item): ApiErrorDetail[] => {
     if (!isRecord(item)) return [];
-    if (typeof item.field !== "string" || typeof item.message !== "string") return [];
-    return [{ field: item.field, message: item.message }];
+    const fieldError = readFieldError(item);
+    if (fieldError) return [fieldError];
+    return [];
   });
+}
+
+function readFieldError(item: Record<string, unknown>): ErrorDetail | null {
+  if (typeof item.field !== "string" || typeof item.message !== "string") return null;
+  return { field: item.field, message: item.message };
 }
 
 /** Giữ technical message cho logging/caller nhưng không hiển thị trực tiếp. */

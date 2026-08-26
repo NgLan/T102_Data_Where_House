@@ -1,37 +1,13 @@
 """Ánh xạ typed Agent output sang Domain entity đã kiểm tra."""
 
-from src.application.data_warehouse_workflows.output import (
+from src.application.requirements.output import (
     GeneratedAnalyticalRequirement,
-    GeneratedRequirement,
 )
 from src.common.exceptions.business import BusinessException
 from src.common.exceptions.error_codes import ErrorCode
 from src.domain.analytical_requirement.entities import AnalyticalRequirement
 from src.domain.analytical_requirement.enums import AggregationMethod
-from src.domain.requirement.entities import Requirement
-from src.domain.requirement.enums import RequirementPriority, RequirementType
 from src.domain.shared.types import EntityID
-
-
-def map_generated_requirements(
-    project_id: EntityID, items: tuple[GeneratedRequirement, ...]
-) -> tuple[Requirement, ...]:
-    """Tạo Requirements mới từ structured output."""
-    try:
-        return tuple(
-            Requirement(
-                project_id=project_id,
-                title=item.title,
-                description=item.description,
-                type=RequirementType(item.requirement_type.upper()),
-                priority=RequirementPriority(item.priority.upper()),
-            )
-            for item in items
-        )
-    except ValueError as exc:
-        raise BusinessException(
-            ErrorCode.INVALID_REQUIREMENT, "RequirementAgent trả enum không hợp lệ."
-        ) from exc
 
 
 def map_generated_analytical(
@@ -59,6 +35,10 @@ def _to_analytical(item: GeneratedAnalyticalRequirement) -> AnalyticalRequiremen
         metric=item.metric,
         dimension=item.dimension,
         time_granularity=item.time_granularity,
-        aggregation_method=AggregationMethod(item.aggregation_method.upper()),
+        aggregation_method=(
+            AggregationMethod(item.aggregation_method.upper())
+            if item.aggregation_method
+            else None
+        ),
         grain=item.grain,
     )

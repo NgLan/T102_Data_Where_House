@@ -1,9 +1,16 @@
 """Record Pydantic dùng riêng cho JSONB SchemaMetadata."""
 
 from typing import Annotated, Literal, TypeAlias
+from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
-from src.domain.data_source.enums import ColumnConstraintType, ColumnDataType, RelationshipType
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field
+from src.domain.data_source.enums import (
+    ColumnConstraintType,
+    ColumnDataType,
+    RelationshipType,
+    SourceSemanticDecision,
+    SourceSemanticProvenance,
+)
 from src.domain.shared.types import JsonScalar
 
 
@@ -47,6 +54,18 @@ ConstraintRecord: TypeAlias = Annotated[
 ]
 
 
+class SemanticAnnotationRecord(BaseModel):
+    """Record tách user confirmation khỏi deterministic profiler metadata."""
+
+    model_config = ConfigDict(extra="forbid", populate_by_name=True)
+    requirement_id: UUID | None = None
+    required_concept_key: str = Field(
+        validation_alias=AliasChoices("required_concept_key", "business_concept")
+    )
+    decision: SourceSemanticDecision
+    provenance: SourceSemanticProvenance
+
+
 class ColumnRecord(BaseModel):
     """Record metadata cột theo contract hiện hành."""
 
@@ -62,6 +81,7 @@ class ColumnRecord(BaseModel):
     distinct_values: list[JsonScalar] = Field(default_factory=list)
     is_unique_candidate: bool = False
     is_key_candidate: bool = False
+    semantic_annotations: list[SemanticAnnotationRecord] = Field(default_factory=list)
 
 
 class TableRecord(BaseModel):
@@ -70,6 +90,7 @@ class TableRecord(BaseModel):
     model_config = ConfigDict(extra="forbid")
     name: str
     columns: list[ColumnRecord] = Field(default_factory=list)
+    row_count: int = Field(default=0, ge=0)
 
 
 class RelationshipRecord(BaseModel):
@@ -79,6 +100,7 @@ class RelationshipRecord(BaseModel):
     from_column: str
     to_column: str
     type: RelationshipType
+    semantic_annotations: list[SemanticAnnotationRecord] = Field(default_factory=list)
 
 
 class SchemaRecord(BaseModel):

@@ -1,11 +1,10 @@
-import type { ErrorDetail } from "../generated/types.gen";
-import type { ApiErrorKind } from "./api-error";
+import type { ApiErrorDetail, ApiErrorKind } from "./api-error";
 
 interface ApiErrorClassificationInput {
   error: unknown;
   status: number | null;
   errorCode?: string;
-  details: readonly ErrorDetail[];
+  details: readonly ApiErrorDetail[];
 }
 
 /** Phân loại lỗi theo error_code, HTTP status rồi đến loại lỗi kỹ thuật. */
@@ -13,6 +12,7 @@ export function classifyApiError(
   input: ApiErrorClassificationInput,
 ): ApiErrorKind {
   const { details, error, errorCode, status } = input;
+  if (errorCode === "ANALYTICAL_SOURCE_GAP") return "business";
   if (errorCode === "DATA_MODEL_REVISION_CONFLICT") return "conflict";
   if (errorCode === "UNAUTHORIZED") return "authentication";
   if (errorCode === "FORBIDDEN" || errorCode === "PERMISSION_DENIED") {
@@ -20,7 +20,7 @@ export function classifyApiError(
   }
   if (errorCode?.endsWith("_NOT_FOUND")) return "not-found";
   if (
-    details.length > 0 &&
+    details.some((detail) => "field" in detail) &&
     (errorCode === "INVALID_INPUT_SCHEMA" || status === 400 || status === 422)
   ) {
     return "validation";

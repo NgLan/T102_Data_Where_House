@@ -1,7 +1,7 @@
 """DuckDB profiler nhận diện toàn bộ date/datetime format yêu cầu."""
 
 import pytest
-from src.infrastructure.storage.duckdb_csv_profiler import DuckDbCsvProfiler
+from src.infrastructure.storage.parsers.csv.duckdb_csv_profiler import DuckDbCsvProfiler
 
 
 @pytest.mark.parametrize("value", ["2026-08-22", "22/08/2026", "22-08-2026"])

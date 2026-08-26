@@ -53,8 +53,12 @@ export function useDataSources(projectId: string) {
   });
   const uploadCsvFiles = async (files: File[]) => {
     const errorCode = validateSourceFiles(files, sourcesQuery.data?.items ?? []);
-    if (errorCode) return notifyError(errorCode);
+    if (errorCode) {
+      notifyError(errorCode);
+      return false;
+    }
     await uploadMutation.mutateAsync(files);
+    return true;
   };
   return {
     canEdit: sourcesQuery.data?.can_edit ?? false,

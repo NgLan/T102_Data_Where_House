@@ -11,16 +11,13 @@ from src.application.data_warehouse_workflows.data_warehouse_workflow_service im
 from src.application.data_warehouse_workflows.i_data_warehouse_workflow_service import (
     IDataModelValidationEngine,
     IDataWarehouseDesignAgent,
-    IRequirementAnalysisAgent,
 )
 from src.application.data_warehouse_workflows.input import (
-    AnalyticalAnalysisInput,
     ConversationDesignInput,
     CreateAiEditProposalInput,
     DataWarehouseDesignInput,
     GenerateDataModelInput,
     GetAnalysisStatusInput,
-    RawRequirementAnalysisInput,
     ReanalyzeProjectInput,
     RegenerateDataModelInput,
     RevisionDesignInput,
@@ -28,18 +25,32 @@ from src.application.data_warehouse_workflows.input import (
 from src.application.data_warehouse_workflows.output import (
     AgentTurnKind,
     ConversationDesignResult,
-    GeneratedAnalyticalRequirement,
     GeneratedDbml,
-    GeneratedRequirement,
     ValidationIssue,
     ValidationIssueCode,
     ValidationSeverity,
+)
+from src.application.requirements.i_requirement_service import IRequirementAnalysisAgent
+from src.application.requirements.input import (
+    ClarifyRequirementsInput,
+    DeriveAnalyticalRequirementsInput,
+)
+from src.application.requirements.output import (
+    AnalyticalDerivationOutcome,
+    AnalyticalDerivationResult,
+    AnalyticalDerivationStatus,
+    AnalyticalSourceGap,
+    GeneratedAnalyticalRequirement,
+    RequirementClarificationResult,
+    SourceGapKind,
+    SuggestedSourceAction,
 )
 from src.common.exceptions.business import BusinessException
 from src.common.exceptions.error_codes import ErrorCode
 from src.domain.data_source.entities import DataSource
 from src.domain.data_source.value_objects import ColumnMetadata, SchemaMetadata, TableMetadata
 from src.domain.project.entities import Project
+from src.domain.requirement.entities import Requirement
 from typing_extensions import override
 
 from tests.fakes import (
@@ -60,26 +71,30 @@ class RecordingRequirementAgent(IRequirementAnalysisAgent):
     """Fake ghi số lần gọi hai operation."""
 
     def __init__(self) -> None:
-        self.raw_calls = 0
+        self.clarification_calls = 0
         self.analytical_calls = 0
 
     @override
-    async def structure_raw_requirement(
-        self, data: RawRequirementAnalysisInput
-    ) -> tuple[GeneratedRequirement, ...]:
-        self.raw_calls += 1
-        return (GeneratedRequirement("Revenue", data.raw_requirement, "ANALYTICAL", "HIGH"),)
+    async def clarify_requirements(self, data: ClarifyRequirementsInput) -> RequirementClarificationResult:
+        del data
+        self.clarification_calls += 1
+        raise AssertionError("Data Warehouse workflow must not clarify requirements")
 
     @override
     async def derive_analytical_requirements(
-        self, data: AnalyticalAnalysisInput
-    ) -> tuple[GeneratedAnalyticalRequirement, ...]:
+        self, data: DeriveAnalyticalRequirementsInput
+    ) -> AnalyticalDerivationResult:
         self.analytical_calls += 1
         requirement_id = data.requirements[0].id
-        return (
-            GeneratedAnalyticalRequirement(
-                requirement_id, "revenue", "month", "MONTH", "SUM", "one ride"
-            ),
+        generated = GeneratedAnalyticalRequirement(requirement_id, "revenue", "month", "MONTH", "SUM", "one ride")
+        return AnalyticalDerivationResult(
+            (
+                AnalyticalDerivationOutcome(
+                    requirement_id,
+                    AnalyticalDerivationStatus.READY,
+                    (generated,),
+                ),
+            )
         )
 
 
@@ -112,10 +127,43 @@ class FailingAnalyticalAgent(RecordingRequirementAgent):
 
     @override
     async def derive_analytical_requirements(
-        self, data: AnalyticalAnalysisInput
-    ) -> tuple[GeneratedAnalyticalRequirement, ...]:
+        self, data: DeriveAnalyticalRequirementsInput
+    ) -> AnalyticalDerivationResult:
         del data
         raise RuntimeError("provider failed")
+
+
+class BlockingAnalyticalAgent(RecordingRequirementAgent):
+    """Fake trả semantic gap hoặc source gap có truy vết."""
+
+    def __init__(self, status: AnalyticalDerivationStatus) -> None:
+        super().__init__()
+        self.status = status
+
+    @override
+    async def derive_analytical_requirements(
+        self, data: DeriveAnalyticalRequirementsInput
+    ) -> AnalyticalDerivationResult:
+        self.analytical_calls += 1
+        source_gap = None
+        reason = "Thiếu quyết định hoặc nguồn bắt buộc."
+        if self.status is AnalyticalDerivationStatus.SOURCE_GAP:
+            reason = None
+            source_gap = AnalyticalSourceGap(
+                SourceGapKind.MISSING_DATA,
+                ("doanh thu",),
+                "Nguồn chưa có dữ liệu doanh thu.",
+                ("giá trị giao dịch",),
+                SuggestedSourceAction.ADD_OR_REPLACE_SOURCE,
+            )
+        outcome = AnalyticalDerivationOutcome(
+            data.requirements[0].id,
+            self.status,
+            reason=reason,
+            source_gap=source_gap,
+        )
+        return AnalyticalDerivationResult((outcome,))
+
 
 class MarkerValidator(IDataModelValidationEngine):
     """Coi chuỗi bắt đầu bằng invalid là validation ERROR."""
@@ -145,18 +193,23 @@ def _build_workflow(
     FakeChangeRepository,
     FakeUnitOfWork,
 ]:
+    if project.analyzed_requirement_revision != project.requirement_revision:
+        project.mark_requirement_analysis_completed()
+    requirement = Requirement(
+        project_id=project.id,
+        title="Revenue",
+        description=project.requirement or "Track revenue",
+    )
     projects = FakeProjectRepository([project])
     models = FakeDataModelRepository([])
     changes = FakeChangeRepository([])
     unit_of_work = FakeUnitOfWork()
-    access = ProjectAccessPolicy(
-        projects, FakeProjectMemberRepository([]), project.user_id
-    )
+    access = ProjectAccessPolicy(projects, FakeProjectMemberRepository([]), project.user_id)
     source_analysis = MagicMock()
     source_analysis.analyze_pending = AsyncMock()
     service = DataWarehouseWorkflowService(
         projects,
-        FakeRequirementRepository([]),
+        FakeRequirementRepository([requirement]),
         FakeAnalyticalRequirementRepository([]),
         FakeDataSourceRepository(sources or []),
         models,
@@ -172,26 +225,39 @@ def _build_workflow(
 
 
 @pytest.mark.asyncio
-async def test_initial_flow_calls_two_requirement_operations_and_design_once() -> None:
-    """Save & Analyze tạo model bằng ba Agent invocations logic."""
+async def test_initial_flow_derives_analytical_then_designs_once() -> None:
+    """Generate derives analytical output but never clarifies Raw Requirement."""
     project = Project(name="Demo", requirement="Track revenue", user_id=uuid4())
     requirement_agent = RecordingRequirementAgent()
     design_agent = RecordingDesignAgent()
-    workflow, models, _, unit_of_work = _build_workflow(
-        project, requirement_agent, design_agent
-    )
+    workflow, models, _, unit_of_work = _build_workflow(project, requirement_agent, design_agent)
 
     output = await workflow.generate_data_model(GenerateDataModelInput(project.id))
 
     assert output.dbml == VALID_DBML
-    assert requirement_agent.raw_calls == 1
+    assert requirement_agent.clarification_calls == 0
     assert requirement_agent.analytical_calls == 1
     assert len(design_agent.calls) == 1
     assert models._items[0].generated_from_requirement_revision == 1
     assert models._items[0].generated_from_source_revision == 0
     assert project.analyzed_requirement_revision == project.requirement_revision
     assert project.analyzed_source_revision == project.source_revision
-    assert unit_of_work.rollback_count == 3
+    assert unit_of_work.rollback_count == 2
+
+
+@pytest.mark.asyncio
+async def test_synchronize_reuses_current_analysis_and_data_model() -> None:
+    """Workflow không gửi lại input hiện hành cho Requirement hoặc Design Agent."""
+    project = Project(name="Demo", requirement="Track revenue", user_id=uuid4())
+    requirement_agent = RecordingRequirementAgent()
+    design_agent = RecordingDesignAgent()
+    workflow, _, _, _ = _build_workflow(project, requirement_agent, design_agent)
+    await workflow.generate_data_model(GenerateDataModelInput(project.id))
+
+    await workflow.synchronize_data_model(GenerateDataModelInput(project.id))
+
+    assert requirement_agent.analytical_calls == 1
+    assert len(design_agent.calls) == 1
 
 
 @pytest.mark.asyncio
@@ -199,14 +265,12 @@ async def test_unchanged_analysis_calls_no_agent() -> None:
     """Analysis revisions bằng nhau ngăn gọi LLM thừa."""
     project = Project(name="Demo", requirement="Track revenue", user_id=uuid4())
     requirement_agent = RecordingRequirementAgent()
-    workflow, _, _, _ = _build_workflow(
-        project, requirement_agent, RecordingDesignAgent()
-    )
+    workflow, _, _, _ = _build_workflow(project, requirement_agent, RecordingDesignAgent())
     await workflow.reanalyze(ReanalyzeProjectInput(project.id))
 
     await workflow.reanalyze(ReanalyzeProjectInput(project.id))
 
-    assert requirement_agent.raw_calls == 1
+    assert requirement_agent.clarification_calls == 0
     assert requirement_agent.analytical_calls == 1
 
 
@@ -219,22 +283,16 @@ async def test_source_change_only_repeats_analytical_operation() -> None:
         project_id=project.id,
         name="rides",
         location="rides.csv",
-        schema_metadata=SchemaMetadata(
-            tables=(TableMetadata("rides", (ColumnMetadata("id", "INTEGER"),)),)
-        ),
+        schema_metadata=SchemaMetadata(tables=(TableMetadata("rides", (ColumnMetadata("id", "INTEGER"),)),)),
     )
-    workflow, _, _, _ = _build_workflow(
-        project, requirement_agent, RecordingDesignAgent(), [source]
-    )
+    workflow, _, _, _ = _build_workflow(project, requirement_agent, RecordingDesignAgent(), [source])
     await workflow.reanalyze(ReanalyzeProjectInput(project.id))
-    source.schema_metadata = SchemaMetadata(
-        tables=(TableMetadata("rides", (ColumnMetadata("amount", "DECIMAL"),)),)
-    )
+    source.schema_metadata = SchemaMetadata(tables=(TableMetadata("rides", (ColumnMetadata("amount", "DECIMAL"),)),))
     project.increment_source_revision()
 
     await workflow.reanalyze(ReanalyzeProjectInput(project.id))
 
-    assert requirement_agent.raw_calls == 1
+    assert requirement_agent.clarification_calls == 0
     assert requirement_agent.analytical_calls == 2
 
 
@@ -242,15 +300,42 @@ async def test_source_change_only_repeats_analytical_operation() -> None:
 async def test_failed_analysis_does_not_advance_analyzed_revisions() -> None:
     """Agent thất bại giữ nguyên analyzed revisions để lần sau có thể chạy lại."""
     project = Project(name="Demo", requirement="Track revenue", user_id=uuid4())
-    workflow, _, _, _ = _build_workflow(
-        project, FailingAnalyticalAgent(), RecordingDesignAgent()
-    )
+    workflow, _, _, _ = _build_workflow(project, FailingAnalyticalAgent(), RecordingDesignAgent())
 
     with pytest.raises(RuntimeError, match="provider failed"):
         await workflow.reanalyze(ReanalyzeProjectInput(project.id))
 
-    assert project.analyzed_requirement_revision == 0
+    assert project.analyzed_requirement_revision == project.requirement_revision
+    assert project.derived_analytical_requirement_revision == 0
     assert project.analyzed_source_revision == 0
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("status", "error_code"),
+    [
+        (
+            AnalyticalDerivationStatus.NEEDS_REQUIREMENT_CLARIFICATION,
+            ErrorCode.REQUIREMENT_SEMANTIC_CLARIFICATION_REQUIRED,
+        ),
+        (AnalyticalDerivationStatus.SOURCE_GAP, ErrorCode.ANALYTICAL_SOURCE_GAP),
+    ],
+)
+async def test_derivation_gap_blocks_data_model_generation(
+    status: AnalyticalDerivationStatus, error_code: ErrorCode
+) -> None:
+    """Semantic/source gap không được đi tiếp sang DWDesignAgent."""
+    project = Project(name="Demo", requirement="Track revenue", user_id=uuid4())
+    design_agent = RecordingDesignAgent()
+    workflow, models, _, _ = _build_workflow(project, BlockingAnalyticalAgent(status), design_agent)
+
+    with pytest.raises(BusinessException) as raised:
+        await workflow.generate_data_model(GenerateDataModelInput(project.id))
+
+    assert raised.value.code == error_code
+    assert raised.value.details
+    assert design_agent.calls == []
+    assert models._items == []
 
 
 @pytest.mark.asyncio
@@ -258,9 +343,7 @@ async def test_validation_retry_passes_failed_dbml_and_stops_at_success() -> Non
     """Retry thuộc Application orchestration, không nằm trong Agent."""
     project = Project(name="Demo", requirement="Track revenue", user_id=uuid4())
     design_agent = RecordingDesignAgent(["invalid first", VALID_DBML])
-    workflow, _, _, _ = _build_workflow(
-        project, RecordingRequirementAgent(), design_agent
-    )
+    workflow, _, _, _ = _build_workflow(project, RecordingRequirementAgent(), design_agent)
 
     await workflow.generate_data_model(GenerateDataModelInput(project.id))
 
@@ -321,6 +404,7 @@ async def test_reanalyze_never_mutates_existing_model() -> None:
     original_dbml = models._items[0].dbml
     original_revision = models._items[0].revision
     project.increment_requirement_revision()
+    project.mark_requirement_analysis_completed()
 
     await workflow.reanalyze(ReanalyzeProjectInput(project.id))
 
@@ -349,7 +433,7 @@ async def test_regenerate_rejects_persistence_revision_race() -> None:
         await workflow.regenerate_data_model(RegenerateDataModelInput(project.id))
 
     assert raised.value.code == ErrorCode.DATA_MODEL_REVISION_CONFLICT
-    assert unit_of_work.commit_count == 3
+    assert unit_of_work.commit_count == 2
 
 
 @pytest.mark.asyncio
@@ -364,9 +448,7 @@ async def test_ai_edit_still_creates_proposal_without_overwrite() -> None:
     )
     initial = await workflow.generate_data_model(GenerateDataModelInput(project.id))
 
-    proposal = await workflow.create_ai_edit_proposal(
-        CreateAiEditProposalInput(project.id, "Thêm ghi chú")
-    )
+    proposal = await workflow.create_ai_edit_proposal(CreateAiEditProposalInput(project.id, "Thêm ghi chú"))
 
     assert models._items[0].dbml == initial.dbml
     assert proposal.summary.base_revision == initial.revision
@@ -378,9 +460,7 @@ async def test_ai_edit_still_creates_proposal_without_overwrite() -> None:
 async def test_legacy_model_without_generated_revisions_is_outdated() -> None:
     """Model cũ thiếu generated revisions cần Update Data Model."""
     project = Project(name="Demo", requirement="Track revenue", user_id=uuid4())
-    workflow, models, _, _ = _build_workflow(
-        project, RecordingRequirementAgent(), RecordingDesignAgent()
-    )
+    workflow, models, _, _ = _build_workflow(project, RecordingRequirementAgent(), RecordingDesignAgent())
     await workflow.generate_data_model(GenerateDataModelInput(project.id))
     models._items[0].generated_from_requirement_revision = 0
 

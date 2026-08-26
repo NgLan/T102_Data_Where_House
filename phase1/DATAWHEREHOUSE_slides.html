@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DATAWHEREHOUSE — Nhóm T-102</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,600;0,700;0,800;0,900;1,800&family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<style>
+/* ============================================================
+   DESIGN SYSTEM — derived from the DATAWHEREHOUSE thumbnail
+   ink outlines · marker red · cream speech bubble · graph paper
+   ============================================================ */
+:root{
+  --ink:#14110F;
+  --ink-70:#4A4441;
+  --ink-45:#807A75;
+  --red:#EE1D23;
+  --red-soft:#FDE9E9;
+  --cream:#FBE2C0;
+  --cream-deep:#F6D2A2;
+  --paper:#FFFFFF;
+  --wash:#FAF9F7;
+  --rule:#E6E3DE;
+  --grid:#F0EEEA;
+  --amber:#E8A33D;
+  --shadow:5px 5px 0 var(--ink);
+  --shadow-sm:3px 3px 0 var(--ink);
+  --f-display:'Montserrat',sans-serif;
+  --f-body:'Be Vietnam Pro',sans-serif;
+  --f-hand:'Caveat',cursive;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:#E9E6E1;
+  font-family:var(--f-body);
+  color:var(--ink);
+  display:flex;align-items:center;justify-content:center;
+  min-height:100vh;overflow:hidden;
+}
+.stage{transform-origin:center center}
+
+/* ---------- slide shell ---------- */
+.slide{
+  position:relative;
+  width:1280px;height:720px;overflow:hidden;
+  background:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),
+                   linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:40px 40px;
+  border:2px solid var(--ink);
+  box-shadow:0 18px 44px rgba(20,17,15,.22);
+  display:none;
+  padding:52px 56px;
+}
+.slide.active{display:block;animation:in .32s ease both}
+@keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.slide.active{animation:none}}
+
+/* ---------- shared type ---------- */
+.kicker{
+  font-family:var(--f-display);font-weight:800;font-size:11px;
+  letter-spacing:.22em;text-transform:uppercase;color:var(--ink-45);
+}
+.kicker .dot{color:var(--red)}
+.s-title{
+  font-family:var(--f-display);font-weight:900;
+  font-size:42px;line-height:1.02;letter-spacing:-.02em;text-transform:uppercase;
+}
+.s-title .hl{color:var(--red)}
+.s-sub{font-family:var(--f-hand);font-size:26px;color:var(--ink-70);line-height:1}
+.head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:26px}
+.head-l{display:flex;flex-direction:column;gap:9px}
+
+/* leftover template stamp from the source deck, kept as a corner mark */
+.stamp{
+  position:absolute;right:22px;bottom:18px;
+  font-family:var(--f-display);font-weight:800;font-size:9px;
+  letter-spacing:.3em;color:#D9D5CF;text-transform:uppercase;
+}
+.pageno{
+  position:absolute;left:56px;bottom:20px;
+  font-family:var(--f-display);font-weight:800;font-size:11px;letter-spacing:.14em;color:var(--ink-45);
+}
+.pageno b{color:var(--red)}
+
+/* ---------- sticker card ---------- */
+.card{
+  background:var(--paper);border:2px solid var(--ink);border-radius:14px;
+  box-shadow:var(--shadow);padding:20px 22px;
+}
+.card.soft{box-shadow:var(--shadow-sm)}
+.card.cream{background:var(--cream)}
+.card.tint{background:var(--wash)}
+.card-h{
+  display:flex;align-items:center;gap:10px;margin-bottom:12px;
+}
+.card-h .ic{
+  width:32px;height:32px;flex:0 0 32px;display:grid;place-items:center;
+  border:2px solid var(--ink);border-radius:9px;background:var(--paper);
+  font-size:14px;
+}
+.card-h .ic.red{background:var(--red);color:#fff;border-color:var(--ink)}
+.card-h .ic.cream{background:var(--cream)}
+.card-h h3{
+  font-family:var(--f-display);font-weight:800;font-size:15px;
+  letter-spacing:.01em;text-transform:uppercase;line-height:1.15;
+}
+.card-h .sm{font-size:13px}
+
+/* ---------- lists ---------- */
+ul.dash{list-style:none;display:flex;flex-direction:column;gap:8px}
+ul.dash li{
+  position:relative;padding-left:18px;font-size:14px;line-height:1.5;color:var(--ink-70);
+}
+ul.dash li::before{
+  content:"";position:absolute;left:0;top:9px;width:9px;height:2px;background:var(--red);border-radius:2px;
+}
+ul.dash.tiny li{font-size:12.5px;padding-left:15px;gap:6px}
+ul.dash.tiny li::before{width:7px;top:8px}
+
+/* ---------- wordmark ---------- */
+.wordmark{position:relative;display:inline-block}
+.wm-1{font-family:var(--f-display);font-weight:900;font-size:64px;letter-spacing:-.02em;line-height:.9}
+.wm-2{font-family:var(--f-hand);font-weight:700;font-size:104px;color:var(--red);line-height:.72;letter-spacing:-.01em;display:block;margin:2px 0 0 6px}
+.wm-3{font-family:var(--f-display);font-weight:900;font-size:56px;letter-spacing:-.02em;line-height:.9;display:flex;align-items:center;gap:12px;margin-left:44px}
+.wm-3 i.sq{width:22px;height:22px;background:var(--red);display:inline-block;border-radius:3px}
+.qmark{
+  position:absolute;right:-58px;top:26px;
+  font-family:var(--f-hand);font-weight:700;font-size:150px;color:var(--red);line-height:.7;
+}
+
+/* ---------- speech bubble ---------- */
+.bubble{
+  position:relative;background:var(--cream);border:2px solid var(--ink);
+  border-radius:999px;padding:12px 26px;display:inline-block;
+  font-family:var(--f-hand);font-size:26px;line-height:1.1;box-shadow:var(--shadow-sm);
+}
+.bubble::after{
+  content:"";position:absolute;left:34px;bottom:-15px;width:0;height:0;
+  border:8px solid transparent;border-top:15px solid var(--cream);
+}
+.bubble::before{
+  content:"";position:absolute;left:32px;bottom:-19px;width:0;height:0;
+  border:9px solid transparent;border-top:17px solid var(--ink);
+}
+
+/* ---------- ticker ---------- */
+.ticker{
+  position:absolute;left:0;width:200%;white-space:nowrap;
+  font-family:var(--f-hand);font-weight:600;font-size:30px;color:#EDEAE5;
+  letter-spacing:.06em;text-transform:uppercase;pointer-events:none;user-select:none;
+}
+.ticker.t1{top:14px}
+.ticker.t2{bottom:12px}
+
+/* ============ SLIDE 1 ============ */
+.s1{display:grid;grid-template-columns:1.15fr .85fr;height:100%;align-items:center;gap:20px}
+.s1-badge{
+  display:inline-flex;align-items:center;gap:8px;align-self:flex-start;
+  border:2px solid var(--ink);border-radius:999px;padding:6px 16px;background:var(--paper);
+  font-family:var(--f-display);font-weight:800;font-size:11px;letter-spacing:.2em;text-transform:uppercase;
+  box-shadow:var(--shadow-sm);
+}
+.s1-badge .d{width:8px;height:8px;background:var(--red);border-radius:50%}
+.team{display:flex;flex-wrap:wrap;gap:8px;max-width:520px}
+.team .chip{
+  border:2px solid var(--ink);border-radius:999px;padding:5px 14px;background:var(--paper);
+  font-size:13px;font-weight:500;
+}
+.doodles{position:relative;height:420px}
+.doodle{
+  position:absolute;display:grid;place-items:center;
+  border:2.5px solid var(--ink);border-radius:16px;background:var(--paper);
+  box-shadow:var(--shadow);
+}
+.doodle i{font-size:34px}
+.d1{width:96px;height:110px;top:6px;left:34px;transform:rotate(-7deg)}
+.d2{width:104px;height:104px;top:78px;right:16px;transform:rotate(6deg)}
+.d3{width:112px;height:112px;top:186px;left:4px;transform:rotate(4deg);background:var(--cream)}
+.d4{width:132px;height:120px;top:250px;right:44px;transform:rotate(-5deg)}
+.d3 i,.d2 i{color:var(--ink)}
+.d4 i{color:var(--red)}
+
+/* ============ SLIDE 2 ============ */
+.s2{height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:28px}
+.goal-quote{
+  max-width:1000px;border:2.5px solid var(--ink);border-radius:26px;background:var(--cream);
+  box-shadow:var(--shadow);padding:44px 52px;position:relative;
+}
+.goal-quote p{font-family:var(--f-display);font-weight:800;font-size:32px;line-height:1.35}
+.goal-quote .qm{
+  position:absolute;top:-30px;left:34px;font-family:var(--f-hand);font-size:110px;color:var(--red);line-height:1;
+}
+.goal-tags{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.goal-tags span{
+  border:2px solid var(--ink);border-radius:999px;padding:7px 18px;background:#fff;
+  font-family:var(--f-display);font-weight:700;font-size:12px;letter-spacing:.1em;text-transform:uppercase;
+}
+
+/* ============ SLIDE 3 ============ */
+.s3-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;height:500px;align-items:center}
+.s3-grid .card{min-height:340px;display:flex;flex-direction:column}
+.s3-grid ul.dash li{font-size:15.5px;line-height:1.6}
+.who{
+  font-family:var(--f-hand);font-size:24px;color:var(--red);line-height:1;margin-bottom:2px;
+}
+
+/* ============ SLIDE 4 ============ */
+.s4{display:grid;grid-template-columns:330px 1fr;gap:22px;height:528px}
+.persona{display:flex;flex-direction:column;gap:14px}
+.persona-card{
+  border:2px solid var(--ink);border-radius:16px;box-shadow:var(--shadow);
+  background:var(--paper);padding:18px 20px;
+}
+.persona-name{
+  display:inline-block;background:var(--red);color:#fff;border:2px solid var(--ink);
+  font-family:var(--f-display);font-weight:900;font-size:20px;letter-spacing:.02em;
+  padding:5px 16px;border-radius:8px;box-shadow:var(--shadow-sm);margin-bottom:14px;
+}
+.meta{display:flex;flex-direction:column;gap:7px}
+.meta div{display:flex;gap:8px;font-size:13.5px}
+.meta b{font-family:var(--f-display);font-weight:800;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-45);min-width:78px;padding-top:3px}
+.pquote{
+  background:var(--cream);border:2px solid var(--ink);border-radius:16px;padding:16px 18px;
+  box-shadow:var(--shadow-sm);font-family:var(--f-hand);font-size:20px;line-height:1.28;
+}
+.s4-right{display:grid;grid-template-rows:auto auto auto;gap:13px}
+.mini{border:2px solid var(--ink);border-radius:14px;background:var(--paper);box-shadow:var(--shadow-sm);padding:14px 16px}
+.mini h4{font-family:var(--f-display);font-weight:800;font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);margin-bottom:8px}
+.mini ul.dash li{font-size:12.8px;line-height:1.42}
+.s4-bottom{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.pill-row{display:flex;flex-direction:column;gap:5px}
+.pill-row .lab{font-family:var(--f-display);font-weight:800;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-45)}
+.pill-row .val{font-size:14px;font-weight:600}
+
+/* ============ SLIDE 5 ============ */
+.emap{position:relative;height:528px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:18px}
+.quad{border:2px solid var(--ink);border-radius:16px;background:var(--paper);box-shadow:var(--shadow-sm);padding:18px 22px;display:flex;flex-direction:column}
+.quad .qh{font-family:var(--f-display);font-weight:900;font-size:14px;letter-spacing:.24em;color:var(--red);margin-bottom:10px}
+.quad.says{background:var(--wash)}
+.quad.feels{background:var(--cream)}
+.quad ul.dash li{font-size:13.4px;line-height:1.45}
+.emap-center{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  background:var(--ink);color:#fff;border:2px solid var(--ink);border-radius:999px;
+  padding:10px 26px;font-family:var(--f-display);font-weight:900;font-size:17px;letter-spacing:.06em;
+  box-shadow:0 0 0 7px #fff;z-index:3;white-space:nowrap;
+}
+
+/* ============ SLIDE 6 ============ */
+.pg{display:grid;grid-template-columns:1fr 1fr;gap:22px;height:470px}
+.pg .card{display:flex;flex-direction:column;justify-content:center}
+.pg-head{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.pg-head .big{font-family:var(--f-display);font-weight:900;font-size:26px;letter-spacing:.06em}
+.pg-head .ring{width:40px;height:40px;border:2.5px solid var(--ink);border-radius:50%;display:grid;place-items:center;font-size:16px}
+.pains .ring{background:var(--red-soft);color:var(--red)}
+.gains .ring{background:var(--cream)}
+.pg ul.dash li{font-size:16px;line-height:1.6}
+.pg ul.dash{gap:14px}
+.pains ul.dash li::before{background:var(--ink-45)}
+
+/* ============ SLIDE 7 ============ */
+.sol{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.sol .card{min-height:212px;display:flex;flex-direction:column;gap:12px}
+.sol .n{font-family:var(--f-hand);font-size:30px;color:var(--red);line-height:.8}
+.sol p{font-size:15px;line-height:1.45;color:var(--ink)}
+.sol .ico{width:36px;height:36px;border:2px solid var(--ink);border-radius:10px;display:grid;place-items:center;font-size:15px;background:var(--cream)}
+.sol .card:nth-child(4) .ico,.sol .card:nth-child(5) .ico{background:var(--red-soft);color:var(--red)}
+.brandline{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+.brandline .bm{font-family:var(--f-display);font-weight:900;font-size:24px;letter-spacing:-.01em}
+.brandline .bm em{font-family:var(--f-hand);font-style:normal;color:var(--red);font-size:32px}
+.brandline .line{flex:1;height:2px;background:var(--rule)}
+
+/* ============ SLIDE 8 ============ */
+.s8{display:grid;grid-template-columns:.9fr 1.1fr;gap:26px;height:520px;align-items:center}
+.mvp-note{font-size:15px;line-height:1.6;color:var(--ink-70)}
+.mvp-badge{
+  display:inline-block;border:2px solid var(--ink);background:var(--red);color:#fff;
+  font-family:var(--f-display);font-weight:900;font-size:13px;letter-spacing:.14em;
+  padding:8px 18px;border-radius:8px;box-shadow:var(--shadow-sm);margin-bottom:16px;
+}
+.feat{display:flex;flex-direction:column;gap:12px}
+.feat .row{
+  display:flex;align-items:center;gap:14px;border:2px solid var(--ink);border-radius:14px;
+  background:var(--paper);box-shadow:var(--shadow-sm);padding:13px 18px;
+}
+.feat .row .ic{width:34px;height:34px;flex:0 0 34px;display:grid;place-items:center;border:2px solid var(--ink);border-radius:9px;background:var(--wash);font-size:14px}
+.feat .row:nth-child(odd) .ic{background:var(--cream)}
+.feat .row span{font-size:14.4px;font-weight:500;line-height:1.35}
+
+/* ============ SLIDE 9 ============ */
+.flow{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-top:18px}
+.step{
+  border:2px solid var(--ink);border-radius:14px;background:var(--paper);box-shadow:var(--shadow-sm);
+  padding:18px 12px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px;min-height:340px;
+}
+.step .num{font-family:var(--f-display);font-weight:900;font-size:11px;letter-spacing:.14em;color:var(--ink-45)}
+.step .ic{width:60px;height:60px;border:2px solid var(--ink);border-radius:50%;display:grid;place-items:center;font-size:22px;background:var(--wash)}
+.step:nth-child(2n) .ic{background:var(--cream)}
+.step.hl{background:var(--cream)}
+.step.hl .ic{background:var(--red);color:#fff}
+.step p{font-size:13px;line-height:1.35;font-weight:600}
+.flow-arrows{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-top:14px}
+.flow-arrows div{display:grid;place-items:center;color:var(--red);font-size:14px}
+.flow-line{
+  margin-top:26px;border:2px dashed var(--rule);border-radius:14px;padding:14px 20px;
+  font-family:var(--f-hand);font-size:22px;color:var(--ink-70);text-align:center;line-height:1.25;
+}
+
+/* ============ SLIDE 10 ============ */
+.s10{height:540px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;text-align:center}
+.note-card{
+  border:2.5px dashed var(--ink);border-radius:22px;background:var(--wash);
+  padding:44px 56px;max-width:860px;position:relative;
+}
+.note-card .tag{
+  position:absolute;top:-16px;left:50%;transform:translateX(-50%);
+  background:var(--red);color:#fff;border:2px solid var(--ink);border-radius:999px;
+  padding:5px 18px;font-family:var(--f-display);font-weight:800;font-size:10.5px;letter-spacing:.2em;
+  white-space:nowrap;
+}
+.note-card p{font-size:22px;line-height:1.55;font-weight:500}
+.note-card .ic{font-size:30px;color:var(--red);margin-bottom:16px}
+.note-sub{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.note-sub span{border:2px solid var(--ink);border-radius:999px;padding:7px 18px;background:#fff;font-size:13px;font-weight:600}
+
+/* ============ SLIDE 11 ============ */
+.matrix{position:relative;height:528px;border:2px solid var(--ink);border-radius:18px;background:var(--paper);box-shadow:var(--shadow-sm);overflow:hidden}
+.mx-axis-v{position:absolute;left:50%;top:0;bottom:0;width:2px;background:var(--ink);transform:translateX(-1px)}
+.mx-axis-h{position:absolute;top:50%;left:0;right:0;height:2px;background:var(--ink);transform:translateY(-1px)}
+.mx-lab{position:absolute;font-family:var(--f-display);font-weight:800;font-size:12px;letter-spacing:.16em;text-transform:uppercase;background:var(--paper);padding:4px 10px;z-index:4}
+.mx-top{top:8px;left:50%;transform:translateX(-50%)}
+.mx-bottom{bottom:8px;left:50%;transform:translateX(-50%)}
+.mx-left{left:10px;top:50%;transform:translateY(-50%)}
+.mx-right{right:10px;top:50%;transform:translateY(-50%)}
+.mx-q{position:absolute;width:50%;height:50%;padding:44px 34px;display:flex;flex-direction:column;gap:9px;justify-content:center}
+.q-tl{top:0;left:0;align-items:flex-start}
+.q-tr{top:0;right:0;align-items:flex-end}
+.q-bl{bottom:0;left:0;align-items:flex-start}
+.q-br{bottom:0;right:0;align-items:flex-end;justify-content:center}
+.tool{border:2px solid var(--ink);border-radius:10px;background:var(--paper);box-shadow:2px 2px 0 var(--ink);padding:7px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px}
+.tool i{font-size:12px;color:var(--ink-45)}
+.tool.us{
+  background:var(--red);color:#fff;border-color:var(--ink);box-shadow:var(--shadow-sm);
+  font-family:var(--f-display);font-weight:900;font-size:17px;letter-spacing:-.01em;padding:12px 22px;
+}
+.tool.us i{color:#fff}
+.mx-hand{position:absolute;right:34px;bottom:118px;font-family:var(--f-hand);font-size:22px;color:var(--red);transform:rotate(-4deg)}
+
+/* ============ SLIDE 12 ============ */
+.canvas{display:grid;grid-template-columns:1fr 1.06fr 1fr;gap:12px;height:548px}
+.cv-col{display:flex;flex-direction:column;gap:12px}
+.cv{
+  border:2px solid var(--ink);border-radius:12px;background:var(--paper);box-shadow:2px 2px 0 var(--ink);
+  padding:12px 14px;display:flex;flex-direction:column;overflow:hidden;
+}
+.cv.grow{flex:1}
+.cv h4{
+  font-family:var(--f-display);font-weight:900;font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;
+  margin-bottom:9px;display:flex;align-items:center;gap:7px;line-height:1.25;
+}
+.cv h4 .sq{width:9px;height:9px;flex:0 0 9px;background:var(--red);border-radius:2px}
+.cv.hero{background:var(--cream)}
+.cv.hero h4 .sq{background:var(--ink)}
+.cv.q{background:var(--wash)}
+.cv ul{list-style:none;display:flex;flex-direction:column;gap:6px}
+.cv li{position:relative;padding-left:12px;font-size:10.4px;line-height:1.5;color:var(--ink-70)}
+.cv li::before{content:"";position:absolute;left:0;top:7px;width:6px;height:1.6px;background:var(--red);border-radius:2px}
+.cv.hero li::before{background:var(--ink)}
+
+/* ============ SLIDE 13 ============ */
+.cmp{width:100%;border-collapse:separate;border-spacing:0;border:2px solid var(--ink);border-radius:16px;overflow:hidden;background:var(--paper);box-shadow:var(--shadow-sm)}
+.cmp th,.cmp td{padding:19px 16px;text-align:left;border-bottom:2px solid var(--rule);vertical-align:middle}
+.cmp thead th{
+  font-family:var(--f-display);font-weight:800;font-size:12px;letter-spacing:.04em;text-transform:uppercase;
+  background:var(--wash);border-bottom:2px solid var(--ink);line-height:1.3;
+}
+.cmp thead th.us{background:var(--red);color:#fff}
+.cmp tbody tr:last-child td{border-bottom:none}
+.cmp td.cap{font-size:13.6px;font-weight:600;line-height:1.4;width:34%}
+.cmp td.cap .em{font-size:15px;margin-right:8px}
+.cmp td.mid{text-align:center;width:19%;font-size:17px}
+.cmp td.mid.us{background:var(--cream);text-align:center}
+.mk-no{color:#C7C2BB;font-weight:700}
+.mk-half{color:var(--amber);font-weight:700}
+.mk-yes{color:var(--red);font-weight:900}
+.cmp-foot{margin-top:16px;display:flex;gap:22px;align-items:center;font-size:12px;color:var(--ink-45)}
+.cmp-foot span{display:flex;align-items:center;gap:7px}
+
+/* ============ SLIDE 14 ============ */
+.s14{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center}
+.ty{font-family:var(--f-display);font-weight:900;font-size:96px;line-height:.92;letter-spacing:-.03em}
+.ty .r{color:var(--red)}
+.ty2{font-family:var(--f-hand);font-size:44px;color:var(--ink-70);line-height:1}
+.ty-badge{
+  margin-top:16px;border:2.5px solid var(--ink);border-radius:999px;background:var(--cream);
+  padding:10px 30px;font-family:var(--f-display);font-weight:900;font-size:18px;letter-spacing:.24em;
+  box-shadow:var(--shadow-sm);
+}
+
+/* ---------- navigation ---------- */
+.nav{
+  position:fixed;left:50%;bottom:14px;transform:translateX(-50%);
+  display:flex;align-items:center;gap:10px;z-index:50;
+  background:rgba(255,255,255,.94);border:2px solid var(--ink);border-radius:999px;
+  padding:6px 8px;box-shadow:var(--shadow-sm);
+}
+.nav button{
+  width:34px;height:34px;border-radius:50%;border:2px solid var(--ink);background:#fff;
+  cursor:pointer;font-size:12px;color:var(--ink);display:grid;place-items:center;
+  transition:background .15s,color .15s;
+}
+.nav button:hover{background:var(--red);color:#fff}
+.nav button:focus-visible{outline:3px solid var(--red);outline-offset:2px}
+.nav .cnt{font-family:var(--f-display);font-weight:800;font-size:12px;letter-spacing:.1em;padding:0 8px;min-width:60px;text-align:center}
+.nav .cnt b{color:var(--red)}
+.bar{position:fixed;left:0;top:0;height:4px;background:var(--red);z-index:60;transition:width .3s ease}
+</style>
+</head>
+<body>
+
+<div class="bar" id="bar"></div>
+
+<div class="stage" id="stage">
+
+<!-- =================== SLIDE 1 =================== -->
+<section class="slide active">
+  <div class="ticker t1">MAKE DWH EASIER &nbsp; MAKE DWH EASIER &nbsp; MAKE DWH EASIER &nbsp; MAKE DWH EASIER &nbsp; MAKE DWH EASIER</div>
+  <div class="ticker t2">MAKE DWH EASIER &nbsp; MAKE DWH EASIER &nbsp; MAKE DWH EASIER &nbsp; MAKE DWH EASIER &nbsp; MAKE DWH EASIER</div>
+
+  <div class="s1">
+    <div style="display:flex;flex-direction:column;gap:22px;align-items:flex-start">
+      <div class="s1-badge"><span class="d"></span> ĐÃ TỚI ĐÂY RỒI</div>
+
+      <div class="bubble">Căn nhà của dữ liệu nằm ở đâu?</div>
+
+      <div class="wordmark" style="margin-top:12px">
+        <div class="wm-1">DATA</div>
+        <div class="wm-2">WHERE</div>
+        <div class="wm-3">HOUSE <i class="sq"></i></div>
+        <div class="qmark">?</div>
+      </div>
+
+      <div style="margin-top:14px">
+        <div class="kicker" style="margin-bottom:10px">NHÓM T-102</div>
+        <div class="team">
+          <span class="chip">Vũ Hải Nam</span>
+          <span class="chip">Giáp Quốc Anh</span>
+          <span class="chip">Nguyễn Ngọc Lan</span>
+          <span class="chip">Hoàng Hương Giang</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="doodles">
+      <div class="doodle d1"><i class="fa-regular fa-file-lines"></i></div>
+      <div class="doodle d2"><i class="fa-regular fa-lightbulb"></i></div>
+      <div class="doodle d3"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+      <div class="doodle d4"><i class="fa-solid fa-database"></i></div>
+    </div>
+  </div>
+  <div class="pageno"><b>01</b> / 14</div>
+</section>
+
+<!-- =================== SLIDE 2 =================== -->
+<section class="slide">
+  <div class="s2">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+      <div class="kicker">DATAWHEREHOUSE <span class="dot">•</span> T-102</div>
+      <h1 class="s-title" style="font-size:52px">MỤC <span class="hl">TIÊU</span></h1>
+    </div>
+
+    <div class="goal-quote">
+      <div class="qm">“</div>
+      <p>Thiết kế trợ lí AI giúp người học Data Engineering<br>dễ dàng thiết kế Data Warehouse chuẩn Kimball</p>
+    </div>
+
+    <div class="goal-tags">
+      <span><i class="fa-solid fa-graduation-cap" style="color:var(--red);margin-right:7px"></i>Người học DE</span>
+      <span><i class="fa-solid fa-robot" style="color:var(--red);margin-right:7px"></i>Trợ lí AI</span>
+      <span><i class="fa-solid fa-sitemap" style="color:var(--red);margin-right:7px"></i>Chuẩn Kimball</span>
+    </div>
+  </div>
+  <div class="pageno"><b>02</b> / 14</div>
+</section>
+
+<!-- =================== SLIDE 3 =================== -->
+<section class="slide">
+  <div class="head">
+    <div class="head-l">
+      <div class="kicker">01 <span class="dot">—</span> PROBLEM</div>
+      <h1 class="s-title">VẤN <span class="hl">ĐỀ</span></h1>
+    </div>
+    <div class="s-sub">Học xong lý thuyết vẫn không biết bắt đầu từ đâu</div>
+  </div>
+
+  <div class="s3-grid">
+    <div class="card">
+      <div class="card-h">
+        <div class="ic cream"><i class="fa-solid fa-user-graduate"></i></div>
+        <h3>Người mới học DE/DWH</h3>
+      </div>
+      <div class="who">nhóm 1</div>
+      <ul class="dash" style="margin-top:12px">
+        <li>Không biết bắt đầu từ đâu</li>
+        <li>Khó chuyển yêu cầu nghiệp vụ thành Fact/Dimension/Grain/Measure</li>
+        <li>Không có cách tự kiểm chứng mô hình đúng hay sai</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-h">
+        <div class="ic red"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        <h3>Người có ít kinh nghiệm</h3>
+      </div>
+      <div class="who">nhóm 2</div>
+      <ul class="dash" style="margin-top:12px">
+        <li>Mắc nhiều lỗi như Fan Trap, Chasm Trap, thiếu Surrogate Key</li>
+        <li>Tốn nhiều công sửa lại ETL/BI khi phát hiện lỗi muộn</li>
+      </ul>
+    </div>
+  </div>
+  <div class="stamp">IN DAILY LIFE</div>
+  <div class="pageno"><b>03</b> / 14</div>
+</section>
+
+<!-- =================== SLIDE 4 =================== -->
+<section class="slide">
+  <div class="head" style="margin-bottom:20px">
+    <div class="head-l">
+      <div class="kicker">02 <span class="dot">—</span> PERSONA</div>
+      <h1 class="s-title" style="font-size:38px">CHÂN DUNG <span class="hl">KHÁCH HÀNG</span></h1>
+    </div>
+    <div class="s-sub">Đặc điểm · Mục tiêu · Nỗi đau</div>
+  </div>
+
+  <div class="s4">
+    <div class="persona">
+      <div class="persona-card">
+        <div class="persona-name">CHỊ TRANG</div>
+        <div class="meta">
+          <div><b>Tuổi</b><span>19</span></div>
+          <div><b>Nghề nghiệp</b><span>Sinh viên năm 2 CNTT</span></div>
+          <div><b>Sinh sống</b><span>Hà Nội</span></div>
+        </div>
+      </div>
+      <div class="pquote">
+        “Tôi không sợ học khó, tôi chỉ sợ học sai mà không biết mình sai ở chỗ nào. Tôi cần người giải thích tại sao mà không chỉ đưa ra đáp án”
+      </div>
+    </div>
+
+    <div class="s4-right">
+      <div class="mini">
+        <h4><i class="fa-solid fa-fingerprint" style="margin-right:6px"></i>Đặc điểm</h4>
+        <ul class="dash">
+          <li>Biết SQL cơ bản, đã học lý thuyết Data Warehouse, chưa tự thiết kế một mô hình</li>
+          <li>Học chủ yếu qua video, tài liệu online, ít có mentor kèm 1-1</li>
+          <li>Làm bài tập lớn vào buổi tối hoặc cuối tuần, thời gian học rời rạc</li>
+          <li>Ngại hỏi người có kinh nghiệm vì sợ câu hỏi “quá cơ bản”, thường tự mày mò trên Google trước khi hỏi.</li>
+        </ul>
+      </div>
+
+      <div class="s4-bottom">
+        <div class="mini">
+          <h4><i class="fa-solid fa-bullseye" style="margin-right:6px"></i>Mục tiêu</h4>
+          <ul class="dash">
+            <li>Tự thiết kế một Star Schema hoàn chỉnh cho một bài toán cụ thể.</li>
+            <li>Biết mình sai ở đâu trước khi nộp bài hoặc luyện tập phỏng vấn, thay vì chỉ viết đúng/sai sau khi đã trễ</li>
+          </ul>
+        </div>
+        <div class="mini">
+          <h4><i class="fa-solid fa-heart-crack" style="margin-right:6px"></i>Nỗi đau</h4>
+          <ul class="dash">
+            <li>Đọc lý thuyết xong vẫn không biết áp dụng cụ thể như nào</li>
+            <li>Không có ai review giúp, tự làm xong không rõ đúng hay sai</li>
+            <li>Sợ mắc lỗi thiết kế vì chưa va vấp thực tế để rút kinh nghiệm</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="s4-bottom">
+        <div class="mini"><div class="pill-row"><span class="lab">Platform</span><span class="val"><i class="fa-solid fa-globe" style="color:var(--red);margin-right:8px"></i>Website</span></div></div>
+        <div class="mini"><div class="pill-row"><span class="lab">Payment medium</span><span class="val"><i class="fa-solid fa-tag" style="color:var(--red);margin-right:8px"></i>Miễn phí cho học tập cá nhân</span></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="pageno"><b>04</b> / 14</div>
+</section>
+
+<!-- =================== SLIDE 5 =================== -->
+<section class="slide">
+  <div class="head" style="margin-bottom:18px">
+    <div class="head-l">
+      <div class="kicker">03 <span class="dot">—</span> EMPATHY MAP</div>
+      <h1 class="s-title" style="font-size:38px">BIỂU ĐỒ <span class="hl">THẤU CẢM</span></h1>
+    </div>
+    <div class="s-sub">Chị Trang nói gì · nghĩ gì · làm gì · cảm thấy gì</div>
+  </div>
+
+  <div class="emap">
+    <div class="emap-center">CHỊ TRANG</div>
+
+    <div class="quad says">
+      <div class="qh">SAYS</div>
+      <ul class="dash">
+        <li>“Em không biết nên bắt đầu từ đâu</li>
+        <li>“Cái em làm vầy đã đúng chưa ạ”</li>
+        <li>“Có ví dụ cụ thể hơn không, em đọc định nghĩa hổng hỉu”</li>
+      </ul>
+    </div>
+
+    <div class="quad thinks">
+      <div class="qh">THINKS</div>
+      <ul class="dash">
+        <li>“Mình sợ hỏi câu này dễ quá sẽ làm phiền họ”</li>
+        <li>“Chắc mình học dở nên mới thấy khó vậy”</li>
+        <li>“Mình sợ hiểu sai sẽ khiến cho team mình cảm thấy bực”</li>
+      </ul>
+    </div>
+
+    <div class="quad does">
+      <div class="qh">DOES</div>
+      <ul class="dash">
+        <li>Tìm tòi trên nhiều trang web chia sẻ kiến thức</li>
+        <li>Liên tục xem lại lý thuyết để đối chiếu với các bảng</li>
+        <li>Đọc rất nhiều mô tả và xem xét kỹ lưỡng đánh giá các bài mẫu</li>
+      </ul>
+    </div>
+
+    <div class="quad feels">
+      <div class="qh">FEELS</div>
+      <ul class="dash">
+        <li>Cảm thấy chán nản khi không tự giải thích được cách thiết kế</li>
+        <li>Cảm thấy an tâm khi nhận được hỗ trợ trực tiếp</li>
+        <li>Cảm thấy bực bội khi không hiểu thiết kế cho một bài toán cụ thể</li>
+      </ul>
+    </div>
+  </div>
+  <div class="pageno"><b>05</b> / 14</div>
+</section>
+
+<!-- =================== SLIDE 6 =================== -->
+<section class="slide">
+  <div class="head">
+    <div class="head-l">
+      <div class="kicker">04 <span class="dot">—</span> PAINS &amp; GAINS</div>
+      <h1 class="s-title" style="font-size:36px">CHỊ TRANG — <span class="hl">SINH VIÊN NĂM 2 CNTT</span></h1>
+    </div>
+    <div class="s-sub">Điều cản trở &amp; điều mong đợi</div>
+  </div>
+
+  <div class="pg">
+    <div class="card pains">
+      <div class="pg-head">
+        <div class="ring"><i class="fa-solid fa-bolt"></i></div>
+        <div class="big">PAINS</div>
+      </div>
+      <ul class="dash">
+        <li>Website khó để sử dụng, không có người hỗ trợ kịp thời</li>
+        <li>Không có tính năng giải thích thiết kế</li>
+        <li>Sợ mắc lỗi thiết kế kinh điển mà không biết mình sai</li>
+        <li>Không có các anti-patterns</li>
+      </ul>
+    </div>
+
+    <div class="card gains cream">
+      <div class="pg-head">
+        <div class="ring"><i class="fa-solid fa-star"></i></div>
+        <div class="big">GAINS</div>
+      </div>
+      <ul class="dash">
+        <li>Hy vọng có chatbot giúp hỗ trợ 24/7</li>
+        <li>Muốn được hỏi lại và làm rõ yêu cầu trước khi nhận mô hình, thay vì chỉ nhận kết quả 1 chiều</li>
+        <li>Muốn có sơ đồ ERD trực quan và ví dụ gắn với nghiệp vụ thực tế để dễ hình dung</li>
+        <li>Tự tin thiết kế mô hình đúng nay từ đầu, có sản phẩm cụ thể làm portfolio</li>
+      </ul>
+    </div>
+  </div>
+  <div class="pageno"><b>06</b> / 14</div>
+</section>
+
+<!-- =================== SLIDE 7 =================== -->
+<section class="slide">
+  <div class="head" style="margin-bottom:14px">
+    <div class="head-l">
+      <div class="kicker">05 <span class="dot">—</span> SOLUTION</div>
+      <h1 class="s-title">GIẢI <span class="hl">PHÁP</span></h1>
+    </div>
+    <div class="s-sub">Trợ lí thiết kế, không chỉ là máy sinh mô hình</div>
+  </div>
+
+  <div class="brandline">
+    <div class="bm">DATA<em>WHERE</em>HOUSE</div>
+    <div class="line"></div>
+  </div>
+
+  <div class="sol">
+    <div class="card soft">
+      <div class="ico"><i class="fa-solid fa-comments"></i></div>
+      <p><b>Q&amp;A để làm rõ nghiệp vụ trước khi thiết kế</b></p>
+    </div>
+    <div class="card soft">
+      <div class="ico"><i class="fa-solid fa-diagram-project"></i></div>
+      <p><b>Đề xuất mô hình chuẩn Kimball kèm lý do cho từng lựa chọn</b></p>
+    </div>
+    <div class="card soft">
+      <div class="ico"><i class="fa-solid fa-shield-halved"></i></div>
+      <p><b>Tự động cảnh báo anti-pattern và gợi ý sửa</b></p>
+    </div>
+    <div class="card soft">
+      <div class="ico"><i class="fa-solid fa-user-pen"></i></div>
+      <p><b>HITL giúp sửa trực tiếp trên bảng hoặc ra lệnh bằng hội thoại tự nhiên</b></p>
+    </div>
+    <div class="card soft">
+      <div class="ico"><i class="fa-solid fa-code"></i></div>
+      <p><b>Sinh DDL + ERD trực quan và chạy trên Sanbox</b></p>
+    </div>
+    <div class="card soft cream" style="justify-content:center">
+      <div class="n">Where is the house of Data?</div>
+    </div>
+  </div>
+  <div class="stamp">IN DAILY LIFE</div>
+  <div class="pageno"><b>07</b> / 14</div>
+</section>
+
+<!-- =================== SLIDE 8 =================== -->
+<section class="slide">
+  <div class="head" style="margin-bottom:22px">
+    <div class="head-l">
+      <div class="kicker">06 <span class="dot">—</span> MVP</div>
+      <h1 class="s-title" style="font-size:38px">THIẾT KẾ <span class="hl">SẢN PHẨM</span></h1>
+    </div>
+    <div class="s-sub">Minimum Viable Product</div>
+  </div>
+
+  <div class="s8">
+    <div>
+      <div class="mvp-badge">MVP (MINIMUM VIABLE PRODUCT)</div>
+      <p class="mvp-note">Sau khi nghiên cứu người dùng, MVP tổng hợp lại tất cả thành một trang web đơn giản với các tính năng cốt lõi:</p>
+      <div class="bubble" style="margin-top:26px;font-size:22px">Make DWH easier</div>
+    </div>
+
+    <div class="feat">
+      <div class="row"><div class="ic"><i class="fa-solid fa-wand-magic-sparkles"></i></div><span>Gợi ý thiết kế mô hình dữ liệu trực quan</span></div>
+      <div class="row"><div class="ic"><i class="fa-solid fa-magnifying-glass-chart"></i></div><span>Chi tiết thông tin từng biểu đồ</span></div>
+      <div class="row"><div class="ic"><i class="fa-solid fa-pen-to-square"></i></div><span>Dễ dàng chỉnh sửa</span></div>
+      <div class="row"><div class="ic"><i class="fa-solid fa-triangle-exclamation"></i></div><span>Tính năng cảnh báo anti-pattern</span></div>
+      <div class="row"><div class="ic"><i class="fa-solid fa-file-export"></i></div><span>Hỗ trợ xuất file dữ liệu theo nhiều định dạng khác nhau</span></div>
+    </div>
+  </div>
+  <div class="stamp">IN DAILY LIFE</div>
+  <div class="pageno"><b>08</b> / 14</div>
+</section>
+
+<!-- =================== SLIDE 9 =================== -->
+<section class="slide">
+  <div class="head" style="margin-bottom:18px">
+    <div class="head-l">
+      <div class="kicker">07 <span class="dot">—</span> UI FLOW</div>
+      <h1 class="s-title">LUỒNG <span class="hl">CÔNG VIỆC</span></h1>
+    </div>
+    <div class="s-sub">6 bước từ mô tả nghiệp vụ đến file DDL</div>
+  </div>
+
+  <div class="flow">
+    <div class="step">
+      <div class="num">BƯỚC 01</div>
+      <div class="ic"><i class="fa-solid fa-keyboard"></i></div>
+      <p>Khởi tạo dữ liệu</p>
+    </div>
+    <div class="step">
+      <div class="num">BƯỚC 02</div>
+      <div class="ic"><i class="fa-solid fa-robot"></i></div>
+      <p>AI xử lý</p>
+    </div>
+    <div class="step">
+      <div class="num">BƯỚC 03</div>
+      <div class="ic"><i class="fa-solid fa-diagram-project"></i></div>
+      <p>Xem kết quả phân tích</p>
+    </div>
+    <div class="step">
+      <div class="num">BƯỚC 04</div>
+      <div class="ic"><i class="fa-solid fa-triangle-exclamation"></i></div>
+      <p>Cảnh báo lỗi</p>
+    </div>
+    <div class="step hl">
+      <div class="num">BƯỚC 05</div>
+      <div class="ic"><i class="fa-solid fa-user-pen"></i></div>
+      <p>HITL tinh chỉnh kết quả</p>
+    </div>
+    <div class="step">
+      <div class="num">BƯỚC 06</div>
+      <div class="ic"><i class="fa-solid fa-file-export"></i></div>
+      <p>Xuất kết quả</p>
+    </div>
+  </div>
+
+  <div class="flow-line">
+    Khởi tạo dữ liệu → AI xử lý → Xem kết quả phân tích → Cảnh báo lỗi → HITL tinh chỉnh kết quả → Xuất kết quả
+  </div>
+  <div class="stamp">IN DAILY LIFE</div>
+  <div class="pageno"><b>09</b> / 14</div>
+</section>
+
+<!-- =================== SLIDE 10 =================== -->
+<section class="slide">
+  <div class="head" style="margin-bottom:0">
+    <div class="head-l">
+      <div class="kicker">08 <span class="dot">—</span> UI FLOW</div>
+      <h1 class="s-title">UI <span class="hl">FLOW</span></h1>
+    </div>
+    <div class="s-sub">Nội dung dự kiến</div>
+  </div>
+
+  <div class="s10">
+    <div class="note-card">
+      <div class="tag">NỘI DUNG DỰ KIẾN</div>
+      <div class="ic"><i class="fa-solid fa-pen-ruler"></i></div>
+      <p>Slide này định trình bày chi phí sử dụng, cách tối ưu nguồn lực, khả năng triển khai</p>
+    </div>
+    <div class="note-sub">
+      <span><i class="fa-solid fa-coins" style="color:var(--red);margin-right:8px"></i>Chi phí sử dụng</span>
+      <span><i class="fa-solid fa-gauge-high" style="color:var(--red);margin-right:8px"></i>Tối ưu nguồn lực</span>
+      <span><i class="fa-solid fa-rocket" style="color:var(--red);margin-right:8px"></i>Khả năng triển khai</span>
+    </div>
+  </div>
+  <div class="stamp">IN DAILY LIFE</div>
+  <div class="pageno"><b>10</b> / 14</div>
+</section>
+
+<!-- =================== SLIDE 11 =================== -->
+<section class="slide">
+  <div class="head" style="margin-bottom:16px">
+    <div class="head-l">
+      <div class="kicker">09 <span class="dot">—</span> MARKET</div>
+      <h1 class="s-title" style="font-size:38px">THỊ TRƯỜNG <span class="hl">&amp; CƠ HỘI</span></h1>
+    </div>
+    <div class="s-sub">Biểu đồ định vị cạnh tranh</div>
+  </div>
+
+  <div class="matrix">
+    <div class="mx-axis-v"></div>
+    <div class="mx-axis-h"></div>
+    <div class="mx-lab mx-top">Chuyên gia</div>
+    <div class="mx-lab mx-bottom">Người mới học</div>
+    <div class="mx-lab mx-left">Thủ công</div>
+    <div class="mx-lab mx-right">Tự động</div>
+
+    <div class="mx-q q-tl">
+      <div class="tool"><i class="fa-solid fa-cube"></i>SAP PowerDesigner</div>
+      <div class="tool"><i class="fa-solid fa-cube"></i>ER/Studio</div>
+      <div class="tool"><i class="fa-solid fa-cube"></i>erwin DM</div>
+    </div>
+
+    <div class="mx-q q-tr">
+      <div class="tool"><i class="fa-solid fa-cloud"></i>Cloudairy</div>
+      <div class="tool"><i class="fa-solid fa-cloud"></i>SqlDBM</div>
+      <div class="tool"><i class="fa-solid fa-cloud"></i>ChartDB</div>
+    </div>
+
+    <div class="mx-q q-bl">
+      <div class="tool"><i class="fa-solid fa-pen-nib"></i>draw.io</div>
+      <div class="tool"><i class="fa-solid fa-pen-nib"></i>DrawDB</div>
+      <div class="tool"><i class="fa-solid fa-pen-nib"></i>Lucidchart</div>
+    </div>
+
+    <div class="mx-q q-br">
+      <div class="tool us"><i class="fa-solid fa-location-dot"></i>DATAWHEREHOUSE</div>
+    </div>
+
+    <div class="mx-hand">khoảng trống của thị trường</div>
+  </div>
+  <div class="pageno"><b>11</b> / 14</div>
+</section>
+
+<!-- =================== SLIDE 12 =================== -->
+<section class="slide" style="padding:44px 40px">
+  <div class="head" style="margin-bottom:16px">
+    <div class="head-l">
+      <div class="kicker">10 <span class="dot">—</span> LEAN CANVAS</div>
+      <h1 class="s-title" style="font-size:34px">LEAN CANVAS OF <span class="hl">DATAWHEREHOUSE</span></h1>
+    </div>
+    <div class="s-sub">Problem · Solution · Outcome · Users · Learn</div>
+  </div>
+
+  <div class="canvas">
+    <!-- column 1 -->
+    <div class="cv-col">
+      <div class="cv grow">
+        <h4><span class="sq"></span>Business Problem</h4>
+        <ul>
+          <li>Người mới học Data Engineering/DWH không biết bắt đầu thiết kế từ đâu, khó chuyển yêu cầu nghiệp vụ thành Fact/Dimension/Grain/Measure.</li>
+          <li>Không có cách tự kiểm chứng mô hình mình thiết kế đúng hay sai, dễ mắc lỗi kinh điển.</li>
+          <li>Thiếu công cụ tiếng Việt gắn lý thuyết Kimball với case thực hành cụ thể, học xong lý thuyết vẫn mơ hồ.</li>
+          <li>Tốn nhiều thời gian vẽ ERD, viết DDL thủ công khi thực hành hoặc làm đồ án.</li>
+        </ul>
+      </div>
+      <div class="cv grow">
+        <h4><span class="sq"></span>Users &amp; Customers</h4>
+        <ul>
+          <li>Sinh viên năm 3–4 ngành CNTT đang học môn/khóa Data Warehouse, cần thực hành thiết kế mô hình cho đồ án.</li>
+          <li>Học viên bootcamp Data Engineering/Data Analytics, muốn luyện tập với case gần thực tế.</li>
+          <li>Analytics Engineer/BA mới vào nghề, dùng để tự đối chiếu mô hình mình thiết kế trước khi trình review.</li>
+          <li>Giảng viên/mentor các khóa Data Engineering muốn có công cụ hỗ trợ hướng dẫn và chấm bài học viên.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- column 2 -->
+    <div class="cv-col">
+      <div class="cv hero grow">
+        <h4><span class="sq"></span>Solution Ideas</h4>
+        <ul>
+          <li>Agent hỏi lại làm rõ yêu cầu nghiệp vụ trước khi thiết kế, thay vì chỉ nhận mô tả một chiều rồi trả kết quả.</li>
+          <li>Tự động phân loại Fact/Dimension, xác định Grain, đề xuất Surrogate Key và PK/FK kèm giải thích lý do cho từng lựa chọn.</li>
+          <li>Phát hiện và cảnh báo anti-pattern (Fan/Chasm Trap, Missing Surrogate Key, Over-Denormalization) kèm gợi ý cách sửa.</li>
+          <li>Giao diện HITL: chỉnh sửa trực tiếp trên bảng hoặc ra lệnh bằng chat tự nhiên với AI, có Diff View xem thay đổi.</li>
+          <li>Sinh DDL chuẩn PostgreSQL/Snowflake + sơ đồ ERD (Mermaid.js) chạy thử ngay trên Sandbox.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- column 3 -->
+    <div class="cv-col">
+      <div class="cv grow">
+        <h4><span class="sq"></span>Business Outcome</h4>
+        <ul>
+          <li>Giảm 60–70% thời gian phác thảo mô hình dữ liệu ban đầu cho một nghiệp vụ mới.</li>
+          <li>Người học tự tin thiết kế đúng mô hình chuẩn Kimball ngay từ lần đầu, có sản phẩm cụ thể để làm portfolio.</li>
+          <li>Đạt tối thiểu 85% độ chính xác trong phân loại Fact/Dim và xác định Grain.</li>
+          <li>Mở ra cơ hội hợp tác pilot với các trung tâm đào tạo/bootcamp Data Engineering.</li>
+        </ul>
+      </div>
+      <div class="cv q grow">
+        <h4><span class="sq"></span>What's the most important thing to learn first?</h4>
+        <ul>
+          <li>Người học có thực sự đọc và hiểu phần giải thích của AI, hay chỉ copy kết quả mà không tìm hiểu lý do?</li>
+          <li>Việc AI “hỏi lại để làm rõ yêu cầu” có đúng là điều người mới cần, hay khiến họ thấy rườm rà so với nhận kết quả ngay?</li>
+          <li>Độ chính xác của cảnh báo anti-pattern có đủ tin cậy để người học yên tâm nộp bài/đồ án không?</li>
+          <li>Người dùng có sẵn sàng quay lại dùng nhiều lần, hay chỉ thử một lần cho đồ án rồi bỏ?</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="pageno" style="left:40px"><b>12</b> / 14</div>
+</section>
+
+<!-- =================== SLIDE 13 =================== -->
+<section class="slide">
+  <div class="head" style="margin-bottom:20px">
+    <div class="head-l">
+      <div class="kicker">11 <span class="dot">—</span> COMPETITIVE EDGE</div>
+      <h1 class="s-title" style="font-size:38px">LỢI THẾ <span class="hl">CẠNH TRANH</span></h1>
+    </div>
+    <div class="s-sub">Chúng tôi làm được gì mà công cụ khác chưa làm</div>
+  </div>
+
+  <table class="cmp">
+    <thead>
+      <tr>
+        <th>Năng lực</th>
+        <th>Công cụ vẽ ERD thủ công<br>(dbdiagram.io, DrawDB,...)</th>
+        <th>LLMs<br>(ChatGPT, Copilot,...)</th>
+        <th class="us">DATAWHEREHOUSE</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="cap"><span class="em">🗂️</span>Phân loại Fact/Dimension &amp; xác định Grain</td>
+        <td class="mid"><span class="mk-no">—</span></td>
+        <td class="mid"><span class="mk-half">◐</span></td>
+        <td class="mid us"><span class="mk-yes">✓</span></td>
+      </tr>
+      <tr>
+        <td class="cap"><span class="em">⚠️</span>Cảnh báo Anti-pattern (Fan Trap, Chasm Trap, Missing Surrogate Key…)</td>
+        <td class="mid"><span class="mk-no">—</span></td>
+        <td class="mid"><span class="mk-half">◐</span></td>
+        <td class="mid us"><span class="mk-yes">✓</span></td>
+      </tr>
+      <tr>
+        <td class="cap"><span class="em">✏️</span>Human-in-the-Loop (sửa trực tiếp + chat AI + Diff View)</td>
+        <td class="mid"><span class="mk-half">◐</span></td>
+        <td class="mid"><span class="mk-no">—</span></td>
+        <td class="mid us"><span class="mk-yes">✓</span></td>
+      </tr>
+      <tr>
+        <td class="cap"><span class="em">🧩</span>Sinh DDL &amp; ERD sẵn sàng chạy trên Sandbox</td>
+        <td class="mid"><span class="mk-yes" style="color:var(--ink)">✓</span></td>
+        <td class="mid"><span class="mk-half">◐</span></td>
+        <td class="mid us"><span class="mk-yes">✓</span></td>
+      </tr>
+      <tr>
+        <td class="cap"><span class="em">🎓</span>Giải thích chi tiết thiết kế</td>
+        <td class="mid"><span class="mk-no">—</span></td>
+        <td class="mid"><span class="mk-half">◐</span></td>
+        <td class="mid us"><span class="mk-yes">✓</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="cmp-foot">
+    <span><b class="mk-yes">✓</b> Đáp ứng đầy đủ</span>
+    <span><b class="mk-half">◐</b> Đáp ứng một phần</span>
+    <span><b class="mk-no">—</b> Không đáp ứng</span>
+  </div>
+  <div class="pageno"><b>13</b> / 14</div>
+</section>
+
+<!-- =================== SLIDE 14 =================== -->
+<section class="slide">
+  <div class="ticker t1">MAKE DWH EASIER &nbsp; MAKE DWH EASIER &nbsp; MAKE DWH EASIER &nbsp; MAKE DWH EASIER &nbsp; MAKE DWH EASIER</div>
+  <div class="ticker t2">MAKE DWH EASIER &nbsp; MAKE DWH EASIER &nbsp; MAKE DWH EASIER &nbsp; MAKE DWH EASIER &nbsp; MAKE DWH EASIER</div>
+
+  <div class="s14">
+    <div class="ty">THANK <span class="r">YOU</span></div>
+    <div class="ty2">FOR YOUR ATTENTION!</div>
+    <div class="ty-badge">T-102</div>
+    <div style="display:flex;gap:12px;margin-top:22px;color:var(--ink-45);font-size:22px">
+      <i class="fa-regular fa-file-lines"></i>
+      <i class="fa-regular fa-lightbulb"></i>
+      <i class="fa-solid fa-wand-magic-sparkles" style="color:var(--red)"></i>
+      <i class="fa-solid fa-database"></i>
+    </div>
+  </div>
+</section>
+
+</div><!-- /stage -->
+
+<div class="nav">
+  <button id="prev" aria-label="Slide trước"><i class="fa-solid fa-chevron-left"></i></button>
+  <div class="cnt"><b id="cur">01</b> / <span id="tot">14</span></div>
+  <button id="next" aria-label="Slide sau"><i class="fa-solid fa-chevron-right"></i></button>
+</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var i = 0;
+  var stage = document.getElementById('stage');
+  var cur = document.getElementById('cur');
+  var bar = document.getElementById('bar');
+  document.getElementById('tot').textContent = String(slides.length).padStart(2,'0');
+
+  function show(n){
+    i = Math.max(0, Math.min(slides.length-1, n));
+    slides.forEach(function(s,k){ s.classList.toggle('active', k===i); });
+    cur.textContent = String(i+1).padStart(2,'0');
+    bar.style.width = ((i+1)/slides.length*100) + '%';
+  }
+  function fit(){
+    var s = Math.min(1, (window.innerWidth-48)/1280, (window.innerHeight-96)/720);
+    stage.style.transform = 'scale(' + s + ')';
+  }
+  document.getElementById('next').onclick = function(){ show(i+1); };
+  document.getElementById('prev').onclick = function(){ show(i-1); };
+  document.addEventListener('keydown', function(e){
+    if(e.key==='ArrowRight' || e.key==='PageDown' || e.key===' '){ e.preventDefault(); show(i+1); }
+    if(e.key==='ArrowLeft'  || e.key==='PageUp'){ e.preventDefault(); show(i-1); }
+    if(e.key==='Home'){ show(0); }
+    if(e.key==='End'){ show(slides.length-1); }
+  });
+  window.addEventListener('resize', fit);
+  fit(); show(0);
+})();
+</script>
+</body>
+</html>

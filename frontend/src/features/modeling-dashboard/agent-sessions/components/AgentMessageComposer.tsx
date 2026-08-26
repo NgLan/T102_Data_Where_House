@@ -8,6 +8,7 @@ export function AgentMessageComposer(props: {
   canSend: boolean;
   isSending: boolean;
   hasSession: boolean;
+  isClarificationPending: boolean;
   onDraftChange: (value: string) => void;
   onSend: () => void;
 }) {
@@ -18,9 +19,13 @@ export function AgentMessageComposer(props: {
         <Textarea
           value={props.draft}
           onChange={(event) => props.onDraftChange(event.target.value)}
-          disabled={!props.hasSession || props.isSending}
+          disabled={
+            !props.hasSession || props.isSending || props.isClarificationPending
+          }
           placeholder={
-            props.hasSession
+            props.isClarificationPending
+              ? t("TXT_ANSWER_CLARIFICATION_FIRST")
+              : props.hasSession
               ? t("AI_CHAT_INPUT_PLACEHOLDER")
               : t("TXT_CREATE_SESSION_FIRST")
           }

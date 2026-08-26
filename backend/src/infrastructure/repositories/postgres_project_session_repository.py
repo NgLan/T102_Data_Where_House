@@ -3,6 +3,7 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.domain.project_session.entities import ProjectSession
+from src.domain.project_session.enums import SessionPurpose
 from src.domain.project_session.i_project_session_repository import IProjectSessionRepository
 from src.domain.shared.types import EntityID
 from src.infrastructure.database.error_translation import translate_database_errors
@@ -62,6 +63,49 @@ class PostgresProjectSessionRepository(IProjectSessionRepository):
         )
         result = await self._session.execute(statement)
         return [ProjectSessionMapper.to_domain(model) for model in result.scalars().all()]
+
+    @override
+    @translate_database_errors
+    async def list_by_project_user_and_purpose(
+        self,
+        project_id: EntityID,
+        user_id: EntityID,
+        purpose: SessionPurpose,
+    ) -> list[ProjectSession]:
+        """Lấy session theo purpose, mới cập nhật trước."""
+        result = await self._session.execute(
+            select(ProjectSessionModel)
+            .where(
+                ProjectSessionModel.project_id == project_id,
+                ProjectSessionModel.user_id == user_id,
+                ProjectSessionModel.purpose == purpose.value,
+            )
+            .order_by(ProjectSessionModel.updated_at.desc())
+        )
+        return [
+            ProjectSessionMapper.to_domain(model)
+            for model in result.scalars().all()
+        ]
+
+    @override
+    @translate_database_errors
+    async def get_active_by_project_purpose_for_update(
+        self,
+        project_id: EntityID,
+        purpose: SessionPurpose,
+    ) -> ProjectSession | None:
+        """Khóa active session của một purpose nếu tồn tại."""
+        result = await self._session.execute(
+            select(ProjectSessionModel)
+            .where(
+                ProjectSessionModel.project_id == project_id,
+                ProjectSessionModel.purpose == purpose.value,
+                ProjectSessionModel.status == "ACTIVE",
+            )
+            .with_for_update()
+        )
+        model = result.scalar_one_or_none()
+        return ProjectSessionMapper.to_domain(model) if model else None
 
     @override
     async def save(self, entity: ProjectSession) -> ProjectSession:

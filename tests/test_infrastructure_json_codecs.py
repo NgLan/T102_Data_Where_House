@@ -1,5 +1,7 @@
 """Kiểm thử round-trip và fail-fast của JSONB codecs."""
 
+from uuid import uuid4
+
 import pytest
 from src.common.exceptions.infrastructure import InfrastructureException
 from src.domain.data_source.constraints import (
@@ -15,6 +17,11 @@ from src.domain.data_source.value_objects import (
     SchemaMetadata,
     TableMetadata,
 )
+from src.domain.project_session.clarification import (
+    ClarificationAnswerMetadata,
+    ClarificationQuestionMetadata,
+)
+from src.domain.project_session.enums import ClarificationAnswerKind
 from src.domain.project_session.value_objects import MessageMetadata
 from src.infrastructure.database.mappers.data_source.schema_metadata_codec import (
     decode_schema_metadata,
@@ -88,3 +95,16 @@ def test_session_event_metadata_round_trip() -> None:
 def test_corrupted_session_event_metadata_raises_infrastructure_error() -> None:
     with pytest.raises(InfrastructureException):
         decode_event_metadata({"unknown": True}, MessageMetadata)
+
+
+@pytest.mark.parametrize(
+    "metadata",
+    [
+        ClarificationQuestionMetadata(("Theo ngày", "Theo tháng"), True, "Thiếu grain"),
+        ClarificationAnswerMetadata(uuid4(), ClarificationAnswerKind.OPTION, 1),
+    ],
+)
+def test_clarification_metadata_round_trip(metadata: object) -> None:
+    restored = decode_event_metadata(encode_event_metadata(metadata), type(metadata))
+
+    assert restored == metadata

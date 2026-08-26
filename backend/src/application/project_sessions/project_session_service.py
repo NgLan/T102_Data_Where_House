@@ -7,11 +7,17 @@ from src.application.common.unit_of_work import IUnitOfWork
 from src.application.data_warehouse_workflows.i_data_warehouse_workflow_service import (
     IDataWarehouseWorkflowService,
 )
+from src.application.project_sessions.clarification_output import ClarificationQuestionOutput
+from src.application.project_sessions.conversation_summary_compactor import (
+    ConversationSummaryCompactor,
+)
 from src.application.project_sessions.i_project_session_service import (
     IProjectSessionService,
 )
 from src.application.project_sessions.input import (
+    AnswerClarificationInput,
     CreateSessionInput,
+    GetPendingClarificationInput,
     GetSessionInput,
     ListSessionEventsInput,
     ListSessionsInput,
@@ -24,11 +30,18 @@ from src.application.project_sessions.output import (
     SessionTurnOutput,
 )
 from src.application.project_sessions.session_access import OwnedSessionAccess
+from src.application.project_sessions.session_clarification_coordinator import (
+    ClarificationDependencies,
+    SessionClarificationCoordinator,
+)
 from src.application.project_sessions.session_turn_coordinator import (
     SessionTurnCoordinator,
     SessionTurnDependencies,
 )
+from src.common.exceptions.business import BusinessException
+from src.common.exceptions.error_codes import ErrorCode
 from src.domain.project_session.entities import DEFAULT_SESSION_TITLE, ProjectSession
+from src.domain.project_session.enums import SessionPurpose
 from src.domain.project_session.i_project_session_repository import (
     IProjectSessionRepository,
 )
@@ -45,6 +58,7 @@ class ProjectSessionDependencies:
     workflow: IDataWarehouseWorkflowService
     unit_of_work: IUnitOfWork
     access: ProjectAccessPolicy
+    context: ConversationSummaryCompactor
 
 
 class ProjectSessionService(IProjectSessionService):
@@ -53,9 +67,7 @@ class ProjectSessionService(IProjectSessionService):
         self._events = dependencies.events
         self._unit_of_work = dependencies.unit_of_work
         self._projects = dependencies.access
-        self._access = OwnedSessionAccess(
-            dependencies.sessions, dependencies.access
-        )
+        self._access = OwnedSessionAccess(dependencies.sessions, dependencies.access)
         self._turns = SessionTurnCoordinator(
             SessionTurnDependencies(
                 dependencies.sessions,
@@ -63,18 +75,33 @@ class ProjectSessionService(IProjectSessionService):
                 dependencies.workflow,
                 dependencies.unit_of_work,
                 self._access,
+                dependencies.context,
+            )
+        )
+        self._clarifications = SessionClarificationCoordinator(
+            ClarificationDependencies(
+                dependencies.sessions,
+                dependencies.events,
+                dependencies.workflow,
+                dependencies.unit_of_work,
+                self._access,
+                dependencies.context,
             )
         )
 
     @override
-    async def create_session(
-        self, data: CreateSessionInput
-    ) -> ProjectSessionOutput:
+    async def create_session(self, data: CreateSessionInput) -> ProjectSessionOutput:
+        if data.purpose is not SessionPurpose.DATA_MODELING:
+            raise BusinessException(
+                ErrorCode.SESSION_PURPOSE_MISMATCH,
+                "Requirement sessions chỉ được tạo bởi clarification workflow.",
+            )
         await self._projects.require_owner(data.project_id)
         session = ProjectSession(
             project_id=data.project_id,
             user_id=self._projects.actor_id,
             title=data.title or DEFAULT_SESSION_TITLE,
+            purpose=data.purpose,
         )
         async with self._unit_of_work:
             saved = await self._sessions.save(session)
@@ -82,12 +109,10 @@ class ProjectSessionService(IProjectSessionService):
         return ProjectSessionOutput.from_domain(saved)
 
     @override
-    async def list_sessions(
-        self, data: ListSessionsInput
-    ) -> tuple[ProjectSessionOutput, ...]:
+    async def list_sessions(self, data: ListSessionsInput) -> tuple[ProjectSessionOutput, ...]:
         await self._projects.require_owner(data.project_id)
-        sessions = await self._sessions.list_by_project_user(
-            data.project_id, self._projects.actor_id
+        sessions = await self._sessions.list_by_project_user_and_purpose(
+            data.project_id, self._projects.actor_id, data.purpose
         )
         return tuple(ProjectSessionOutput.from_domain(item) for item in sessions)
 
@@ -106,17 +131,30 @@ class ProjectSessionService(IProjectSessionService):
         return ProjectSessionOutput.from_domain(saved)
 
     @override
-    async def list_events(
-        self, data: ListSessionEventsInput
-    ) -> tuple[SessionEventOutput, ...]:
-        await self._access.require(data.session_id)
-        events = await self._events.list_by_session(
-            data.session_id, data.after_id, data.limit
-        )
+    async def list_events(self, data: ListSessionEventsInput) -> tuple[SessionEventOutput, ...]:
+        if data.conversation_only:
+            await self._access.require_conversation_reader(data.session_id)
+            from src.domain.project_session.i_session_event_repository import ConversationEventQuery
+
+            events = await self._events.list_conversation_events(
+                ConversationEventQuery(data.session_id, data.after_id)
+            )
+            events = events[: data.limit]
+        else:
+            await self._access.require(data.session_id)
+            events = await self._events.list_by_session(
+                data.session_id, data.after_id, data.limit
+            )
         return tuple(SessionEventOutput.from_domain(item) for item in events)
 
     @override
-    async def send_message(
-        self, data: SendSessionMessageInput
-    ) -> SessionTurnOutput:
+    async def send_message(self, data: SendSessionMessageInput) -> SessionTurnOutput:
         return await self._turns.send(data)
+
+    @override
+    async def get_pending_clarification(self, data: GetPendingClarificationInput) -> ClarificationQuestionOutput | None:
+        return await self._clarifications.get_pending(data)
+
+    @override
+    async def answer_clarification(self, data: AnswerClarificationInput) -> SessionTurnOutput:
+        return await self._clarifications.answer(data)

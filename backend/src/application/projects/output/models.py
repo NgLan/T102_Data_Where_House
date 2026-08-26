@@ -55,6 +55,9 @@ class ProjectOutput:
 
     summary: ProjectSummaryOutput
     requirement: str | None = None
+    requirement_revision: int = 0
+    analyzed_requirement_revision: int = 0
+    derived_analytical_requirement_revision: int = 0
     requirements: tuple[RequirementOutput, ...] = ()
     data_sources: tuple[DataSourceOutput, ...] = ()
 
@@ -70,6 +73,19 @@ class ProjectOutput:
         return cls(
             summary=summary,
             requirement=project.requirement,
+            requirement_revision=project.requirement_revision,
+            analyzed_requirement_revision=project.analyzed_requirement_revision,
+            derived_analytical_requirement_revision=(
+                project.derived_analytical_requirement_revision
+            ),
             requirements=tuple(RequirementOutput.from_domain(item) for item in requirements),
             data_sources=tuple(DataSourceOutput.from_domain(item) for item in sources),
         )
+
+
+@dataclass(frozen=True, slots=True)
+class RawRequirementOutput:
+    """Raw Requirement đã persist cùng revision hiện hành."""
+
+    requirement: str | None
+    requirement_revision: int

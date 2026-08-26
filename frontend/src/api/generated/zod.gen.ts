@@ -14,10 +14,49 @@ export const zAgentResultStatus = z.enum([
 ]);
 
 /**
+ * AnalyzeRequirementClarificationRequest
+ *
+ * Analyze revision đã lưu, không nhận draft editor.
+ */
+export const zAnalyzeRequirementClarificationRequest = z.object({
+    expected_revision: z.int().gte(0)
+});
+
+/**
+ * AnswerClarificationRequest
+ *
+ * Chọn option có sẵn hoặc nhập câu trả lời tùy chỉnh.
+ */
+export const zAnswerClarificationRequest = z.object({
+    answer_type: z.enum(['option', 'custom']),
+    option_index: z.int().gte(0).lte(3).nullish(),
+    custom_answer: z.string().min(1).max(2000).nullish()
+});
+
+/**
+ * AnswerRequirementClarificationRequest
+ *
+ * Chọn grounded option hoặc gửi custom answer.
+ */
+export const zAnswerRequirementClarificationRequest = z.object({
+    answer_type: z.enum(['option', 'custom']),
+    option_index: z.int().gte(0).lte(3).nullish(),
+    custom_answer: z.string().min(1).max(2000).nullish()
+});
+
+/**
  * Body_uploadProjectDataSources
  */
 export const zBodyUploadProjectDataSources = z.object({
     files: z.array(z.string())
+});
+
+/**
+ * Body_uploadProjectRequirementFiles
+ */
+export const zBodyUploadProjectRequirementFiles = z.object({
+    files: z.array(z.string()),
+    expected_revision: z.int().gte(0)
 });
 
 /**
@@ -31,13 +70,43 @@ export const zCheckConstraintDto = z.object({
 });
 
 /**
+ * ClarificationQuestionResponse
+ *
+ * Clarification hiện đang chờ người dùng trả lời.
+ */
+export const zClarificationQuestionResponse = z.object({
+    question_id: z.uuid(),
+    session_id: z.uuid(),
+    turn_id: z.uuid(),
+    question: z.string(),
+    options: z.array(z.string()),
+    allow_custom_answer: z.boolean(),
+    reason: z.string().nullable(),
+    created_at: z.iso.datetime()
+});
+
+/**
+ * ApiResponse[Union[ClarificationQuestionResponse, NoneType]]
+ */
+export const zApiResponseUnionClarificationQuestionResponseNoneType = z.object({
+    status: z.literal('success').optional().default('success'),
+    code: z.int().gte(200).lte(299).optional().default(200),
+    message: z.string().optional().default('Xử lý thành công'),
+    data: zClarificationQuestionResponse.nullish()
+});
+
+/**
  * ClarificationTurnResponse
  */
 export const zClarificationTurnResponse = z.object({
     session_id: z.uuid(),
     turn_id: z.uuid(),
     kind: z.literal('clarification'),
+    question_id: z.uuid(),
     question: z.string(),
+    options: z.array(z.string()),
+    allow_custom_answer: z.boolean(),
+    reason: z.string().nullish(),
     summary: z.string().nullish()
 });
 
@@ -65,18 +134,9 @@ export const zColumnDataType = z.enum([
  */
 export const zCreateProjectRequest = z.object({
     name: z.string().min(3).max(255),
-    requirement: z.string().min(10).nullish(),
     domain: z.string().max(100).nullish(),
-    description: z.string().nullish()
-});
-
-/**
- * CreateProjectSessionRequest
- *
- * Payload tạo session do người dùng chủ động khởi tạo.
- */
-export const zCreateProjectSessionRequest = z.object({
-    title: z.string().max(255).nullish()
+    description: z.string().nullish(),
+    requirement: z.string().min(10).nullish()
 });
 
 /**
@@ -315,6 +375,18 @@ export const zForeignKeyConstraintDto = z.object({
 });
 
 /**
+ * InputReadinessStatus
+ *
+ * Gate quyết định workflow có được phép gọi DWDesignAgent hay không.
+ */
+export const zInputReadinessStatus = z.enum([
+    'REQUIREMENT_CLARIFICATION_REQUIRED',
+    'SOURCE_CONFIRMATION_REQUIRED',
+    'SOURCE_DATA_REQUIRED',
+    'READY_FOR_DESIGN'
+]);
+
+/**
  * LivenessResponse
  */
 export const zLivenessResponse = z.object({
@@ -381,6 +453,25 @@ export const zLoginRequest = z.object({
 });
 
 /**
+ * NoChangeTurnResponse
+ *
+ * Lượt Agent hoàn tất mà không tạo thay đổi Data Model.
+ */
+export const zNoChangeTurnResponse = z.object({
+    session_id: z.uuid(),
+    turn_id: z.uuid(),
+    kind: z.literal('no_change'),
+    summary: z.string().nullish()
+});
+
+/**
+ * ProjectInitializationStatus
+ *
+ * Trạng thái dừng có chủ đích của workflow.
+ */
+export const zProjectInitializationStatus = z.enum(['PAUSED', 'COMPLETED']);
+
+/**
  * ProjectStatus
  *
  * Trạng thái hoạt động của Dự án.
@@ -431,16 +522,37 @@ export const zProposalTurnResponse = z.object({
 });
 
 /**
- * ApiResponse[Annotated[Union[ClarificationTurnResponse, ProposalTurnResponse], FieldInfo(annotation=NoneType, required=True, discriminator='kind')]]
+ * ApiResponse[Annotated[Union[ClarificationTurnResponse, NoChangeTurnResponse, ProposalTurnResponse], FieldInfo(annotation=NoneType, required=True, discriminator='kind')]]
  */
-export const zApiResponseAnnotatedUnionClarificationTurnResponseProposalTurnResponseFieldInfoAnnotationNoneTypeRequiredTrueDiscriminatorKind = z.object({
+export const zApiResponseAnnotatedUnionClarificationTurnResponseNoChangeTurnResponseProposalTurnResponseFieldInfoAnnotationNoneTypeRequiredTrueDiscriminatorKind = z.object({
     status: z.literal('success').optional().default('success'),
     code: z.int().gte(200).lte(299).optional().default(200),
     message: z.string().optional().default('Xử lý thành công'),
     data: z.discriminatedUnion('kind', [
         zClarificationTurnResponse,
+        zNoChangeTurnResponse,
         zProposalTurnResponse
     ]).nullish()
+});
+
+/**
+ * RawRequirementResponse
+ *
+ * Payload sau khi lưu Raw Requirement.
+ */
+export const zRawRequirementResponse = z.object({
+    requirement: z.string().nullable(),
+    requirement_revision: z.int().gte(0)
+});
+
+/**
+ * ApiResponse[RawRequirementResponse]
+ */
+export const zApiResponseRawRequirementResponse = z.object({
+    status: z.literal('success').optional().default('success'),
+    code: z.int().gte(200).lte(299).optional().default(200),
+    message: z.string().optional().default('Xử lý thành công'),
+    data: zRawRequirementResponse.nullish()
 });
 
 /**
@@ -463,6 +575,14 @@ export const zApiResponseReadinessResponse = z.object({
 });
 
 /**
+ * RecheckSourceCoverageRequest
+ */
+export const zRecheckSourceCoverageRequest = z.object({
+    batch_id: z.uuid(),
+    expected_source_revision: z.int().gte(0)
+});
+
+/**
  * RecommendedWorkflowAction
  *
  * Hành động workflow tiếp theo dành cho UI.
@@ -472,29 +592,6 @@ export const zRecommendedWorkflowAction = z.enum([
     'ANALYZE_CHANGES',
     'UPDATE_DATA_MODEL'
 ]);
-
-/**
- * AnalysisStatusResponse
- *
- * Trạng thái outdated và action tiếp theo của workflow.
- */
-export const zAnalysisStatusResponse = z.object({
-    requirement_analysis_outdated: z.boolean(),
-    source_analysis_outdated: z.boolean(),
-    data_model_outdated: z.boolean(),
-    data_model_exists: z.boolean(),
-    recommended_action: zRecommendedWorkflowAction
-});
-
-/**
- * ApiResponse[AnalysisStatusResponse]
- */
-export const zApiResponseAnalysisStatusResponse = z.object({
-    status: z.literal('success').optional().default('success'),
-    code: z.int().gte(200).lte(299).optional().default(200),
-    message: z.string().optional().default('Xử lý thành công'),
-    data: zAnalysisStatusResponse.nullish()
-});
 
 /**
  * RegisterRequest
@@ -511,6 +608,92 @@ export const zRegisterRequest = z.object({
  */
 export const zRenameProjectSessionRequest = z.object({
     title: z.string().min(1).max(255)
+});
+
+/**
+ * RequirementClarificationStatus
+ *
+ * Trạng thái hiển thị của Requirement clarification cycle.
+ */
+export const zRequirementClarificationStatus = z.enum([
+    'IDLE',
+    'PROCESSING',
+    'NEEDS_CLARIFICATION',
+    'READY'
+]);
+
+/**
+ * RequirementContinuationAction
+ *
+ * Action công khai mà owner được chọn tại continuation gate.
+ */
+export const zRequirementContinuationAction = z.enum(['CONTINUE_EDITING', 'CONTINUE_ANALYSIS']);
+
+/**
+ * ChooseRequirementContinuationRequest
+ *
+ * Action tại continuation gate của current Requirement revision.
+ */
+export const zChooseRequirementContinuationRequest = z.object({
+    action: zRequirementContinuationAction,
+    expected_revision: z.int().gte(0)
+});
+
+/**
+ * RequirementContinuationState
+ *
+ * Quyết định tiếp tục workflow sau một clarification turn READY.
+ */
+export const zRequirementContinuationState = z.enum([
+    'NOT_REQUIRED',
+    'AWAITING_DECISION',
+    'CONTINUE_EDITING',
+    'CONTINUE_ANALYSIS'
+]);
+
+/**
+ * RequirementFileType
+ *
+ * Định dạng Requirement Document hỗ trợ trong MVP.
+ */
+export const zRequirementFileType = z.enum([
+    'DOCX',
+    'TXT',
+    'MD'
+]);
+
+/**
+ * RequirementFileResponse
+ *
+ * Metadata an toàn của một Requirement Document.
+ */
+export const zRequirementFileResponse = z.object({
+    id: z.uuid(),
+    project_id: z.uuid(),
+    name: z.string(),
+    file_type: zRequirementFileType,
+    created_at: z.iso.datetime(),
+    updated_at: z.iso.datetime()
+});
+
+/**
+ * RequirementFileListResponse
+ *
+ * Danh sách document cùng quyền chỉnh sửa.
+ */
+export const zRequirementFileListResponse = z.object({
+    items: z.array(zRequirementFileResponse),
+    can_edit: z.boolean()
+});
+
+/**
+ * ApiResponse[RequirementFileListResponse]
+ */
+export const zApiResponseRequirementFileListResponse = z.object({
+    status: z.literal('success').optional().default('success'),
+    code: z.int().gte(200).lte(299).optional().default(200),
+    message: z.string().optional().default('Xử lý thành công'),
+    data: zRequirementFileListResponse.nullish()
 });
 
 /**
@@ -671,6 +854,26 @@ export const zApiResponseUnionSandboxConfigResponseNoneType = z.object({
 });
 
 /**
+ * SaveRawRequirementRequest
+ *
+ * Payload lưu Raw Requirement độc lập Project information.
+ */
+export const zSaveRawRequirementRequest = z.object({
+    requirement: z.string().nullish(),
+    expected_revision: z.int().gte(0)
+});
+
+/**
+ * SendRequirementClarificationMessageRequest
+ *
+ * Tin nhắn follow-up không phụ thuộc pending question.
+ */
+export const zSendRequirementClarificationMessageRequest = z.object({
+    expected_revision: z.int().gte(0),
+    message: z.string().min(1).max(2000)
+});
+
+/**
  * SendSessionMessageRequest
  *
  * Payload gửi message vào một session đã tồn tại.
@@ -717,6 +920,9 @@ export const zSessionEventResponse = z.object({
     content: z.string().nullable(),
     status: zAgentResultStatus.nullable(),
     proposal_change_id: z.uuid().nullable(),
+    question_options: z.array(z.string()),
+    allow_custom_answer: z.boolean(),
+    answer_to_question_id: z.uuid().nullable(),
     created_at: z.iso.datetime()
 });
 
@@ -728,6 +934,23 @@ export const zApiResponseListSessionEventResponse = z.object({
     code: z.int().gte(200).lte(299).optional().default(200),
     message: z.string().optional().default('Xử lý thành công'),
     data: z.array(zSessionEventResponse).nullish()
+});
+
+/**
+ * SessionPurpose
+ *
+ * Mục đích nghiệp vụ của Project Session.
+ */
+export const zSessionPurpose = z.enum(['REQUIREMENT_CLARIFICATION', 'DATA_MODELING']);
+
+/**
+ * CreateProjectSessionRequest
+ *
+ * Payload tạo session do người dùng chủ động khởi tạo.
+ */
+export const zCreateProjectSessionRequest = z.object({
+    title: z.string().max(255).nullish(),
+    purpose: zSessionPurpose
 });
 
 /**
@@ -749,6 +972,8 @@ export const zProjectSessionResponse = z.object({
     project_id: z.uuid(),
     title: z.string(),
     status: zSessionStatus,
+    purpose: zSessionPurpose,
+    base_requirement_revision: z.int().nullable(),
     is_running: z.boolean(),
     created_at: z.iso.datetime(),
     updated_at: z.iso.datetime()
@@ -772,6 +997,173 @@ export const zApiResponseListProjectSessionResponse = z.object({
     code: z.int().gte(200).lte(299).optional().default(200),
     message: z.string().optional().default('Xử lý thành công'),
     data: z.array(zProjectSessionResponse).nullish()
+});
+
+/**
+ * RequirementClarificationResponse
+ *
+ * Canonical structured state và derived UI status của current cycle.
+ */
+export const zRequirementClarificationResponse = z.object({
+    session: zProjectSessionResponse.nullable(),
+    status: zRequirementClarificationStatus,
+    pending_question: zClarificationQuestionResponse.nullable(),
+    requirements: z.array(zRequirementResponse),
+    requirement_revision: z.int().gte(0),
+    analyzed_requirement_revision: z.int().gte(0),
+    is_outdated: z.boolean(),
+    continuation_state: zRequirementContinuationState
+});
+
+/**
+ * ApiResponse[RequirementClarificationResponse]
+ */
+export const zApiResponseRequirementClarificationResponse = z.object({
+    status: z.literal('success').optional().default('success'),
+    code: z.int().gte(200).lte(299).optional().default(200),
+    message: z.string().optional().default('Xử lý thành công'),
+    data: zRequirementClarificationResponse.nullish()
+});
+
+/**
+ * SourceCandidateKind
+ *
+ * Loại bằng chứng source có thể ánh xạ tới một business concept.
+ */
+export const zSourceCandidateKind = z.enum(['COLUMN', 'RELATIONSHIP']);
+
+/**
+ * SourceConfirmationStatus
+ *
+ * Trạng thái câu trả lời của một confirmation item trong batch hiện hành.
+ */
+export const zSourceConfirmationStatus = z.enum([
+    'PENDING',
+    'CONFIRMED',
+    'REJECTED'
+]);
+
+/**
+ * SourceCoverageCandidateResponse
+ */
+export const zSourceCoverageCandidateResponse = z.object({
+    id: z.uuid(),
+    kind: zSourceCandidateKind,
+    source_id: z.uuid(),
+    source_name: z.string(),
+    table_name: z.string().nullish(),
+    column_name: z.string().nullish(),
+    from_column: z.string().nullish(),
+    to_column: z.string().nullish()
+});
+
+/**
+ * SourceCoverageResolutionAction
+ *
+ * Hành động có cấu trúc để resolve một coverage assessment.
+ */
+export const zSourceCoverageResolutionAction = z.enum(['CONFIRM_CANDIDATE', 'REJECT_ALL_CANDIDATES']);
+
+/**
+ * ResolveSourceCoverageRequest
+ */
+export const zResolveSourceCoverageRequest = z.object({
+    batch_id: z.uuid(),
+    expected_source_revision: z.int().gte(0),
+    expected_resolution_revision: z.int().gte(0),
+    action: zSourceCoverageResolutionAction,
+    candidate_id: z.uuid().nullish()
+});
+
+/**
+ * SourceCoverageStatus
+ *
+ * Mức sẵn sàng của một khái niệm nghiệp vụ so với source hiện tại.
+ */
+export const zSourceCoverageStatus = z.enum([
+    'SUPPORTED',
+    'NEEDS_SOURCE_CONFIRMATION',
+    'MISSING_SOURCE'
+]);
+
+/**
+ * SourceCoverageAssessmentResponse
+ */
+export const zSourceCoverageAssessmentResponse = z.object({
+    id: z.uuid(),
+    analytical_requirement_id: z.uuid(),
+    requirement_id: z.uuid(),
+    requirement_title: z.string(),
+    coverage_status: zSourceCoverageStatus,
+    required_concept_key: z.string(),
+    title: z.string(),
+    explanation: z.string(),
+    question: z.string().nullish(),
+    confirmation_status: zSourceConfirmationStatus.nullish(),
+    selected_candidate_id: z.uuid().nullish(),
+    resolution_revision: z.int().gte(0),
+    candidates: z.array(zSourceCoverageCandidateResponse)
+});
+
+/**
+ * SourceCoverageBatchResponse
+ */
+export const zSourceCoverageBatchResponse = z.object({
+    id: z.uuid(),
+    evaluated_source_revision: z.int().gte(0),
+    confirmation_total: z.int().gte(0),
+    confirmation_resolved: z.int().gte(0),
+    can_recheck: z.boolean(),
+    assessments: z.array(zSourceCoverageAssessmentResponse)
+});
+
+/**
+ * AnalysisStatusResponse
+ *
+ * Trạng thái outdated và action tiếp theo của workflow.
+ */
+export const zAnalysisStatusResponse = z.object({
+    requirement_analysis_outdated: z.boolean(),
+    source_analysis_outdated: z.boolean(),
+    data_model_outdated: z.boolean(),
+    data_model_exists: z.boolean(),
+    source_revision: z.int().gte(0),
+    recommended_action: zRecommendedWorkflowAction,
+    readiness_status: zInputReadinessStatus,
+    source_coverage_batch: zSourceCoverageBatchResponse.nullish()
+});
+
+/**
+ * ApiResponse[AnalysisStatusResponse]
+ */
+export const zApiResponseAnalysisStatusResponse = z.object({
+    status: z.literal('success').optional().default('success'),
+    code: z.int().gte(200).lte(299).optional().default(200),
+    message: z.string().optional().default('Xử lý thành công'),
+    data: zAnalysisStatusResponse.nullish()
+});
+
+/**
+ * ProjectInitializationResponse
+ *
+ * Trạng thái workflow cùng resource vừa sẵn sàng.
+ */
+export const zProjectInitializationResponse = z.object({
+    status: zProjectInitializationStatus,
+    session_id: z.uuid().nullish(),
+    data_model_id: z.uuid().nullish(),
+    readiness_status: zInputReadinessStatus,
+    source_coverage_batch: zSourceCoverageBatchResponse.nullish()
+});
+
+/**
+ * ApiResponse[ProjectInitializationResponse]
+ */
+export const zApiResponseProjectInitializationResponse = z.object({
+    status: z.literal('success').optional().default('success'),
+    code: z.int().gte(200).lte(299).optional().default(200),
+    message: z.string().optional().default('Xử lý thành công'),
+    data: zProjectInitializationResponse.nullish()
 });
 
 /**
@@ -956,6 +1348,9 @@ export const zProjectResponse = z.object({
     updated_at: z.iso.datetime(),
     data_source_count: z.int().gte(0),
     requirement: z.string().nullable(),
+    requirement_revision: z.int().gte(0),
+    analyzed_requirement_revision: z.int().gte(0),
+    derived_analytical_requirement_revision: z.int().gte(0),
     requirements: z.array(zProjectRequirementResponse),
     data_sources: z.array(zDataSourceResponse)
 });
@@ -1010,7 +1405,6 @@ export const zUpdateDataSourceColumnRequest = z.object({
  */
 export const zUpdateProjectRequest = z.object({
     name: z.string().min(3).max(255),
-    requirement: z.string().min(10).nullish(),
     domain: z.string().max(100).nullish(),
     description: z.string().nullish()
 });
@@ -1033,6 +1427,26 @@ export const zApiResponseUploadDataSourcesResponse = z.object({
     code: z.int().gte(200).lte(299).optional().default(200),
     message: z.string().optional().default('Xử lý thành công'),
     data: zUploadDataSourcesResponse.nullish()
+});
+
+/**
+ * UploadRequirementFilesResponse
+ *
+ * Kết quả upload/replace một batch documents.
+ */
+export const zUploadRequirementFilesResponse = z.object({
+    items: z.array(zRequirementFileResponse),
+    requirement_revision: z.int().gte(0)
+});
+
+/**
+ * ApiResponse[UploadRequirementFilesResponse]
+ */
+export const zApiResponseUploadRequirementFilesResponse = z.object({
+    status: z.literal('success').optional().default('success'),
+    code: z.int().gte(200).lte(299).optional().default(200),
+    message: z.string().optional().default('Xử lý thành công'),
+    data: zUploadRequirementFilesResponse.nullish()
 });
 
 /**
@@ -1186,6 +1600,17 @@ export const zUpdateProjectPath = z.object({
  */
 export const zUpdateProjectResponse = zApiResponseProjectResponse;
 
+export const zSaveProjectRawRequirementBody = zSaveRawRequirementRequest;
+
+export const zSaveProjectRawRequirementPath = z.object({
+    project_id: z.uuid()
+});
+
+/**
+ * Successful Response
+ */
+export const zSaveProjectRawRequirementResponse = zApiResponseRawRequirementResponse;
+
 export const zListRequirementsPath = z.object({
     project_id: z.uuid()
 });
@@ -1194,6 +1619,107 @@ export const zListRequirementsPath = z.object({
  * Successful Response
  */
 export const zListRequirementsResponse = zApiResponseListRequirementResponse;
+
+export const zDeleteRequirementPath = z.object({
+    project_id: z.uuid(),
+    requirement_id: z.uuid()
+});
+
+/**
+ * Successful Response
+ */
+export const zDeleteRequirementResponse = z.void();
+
+export const zListProjectRequirementFilesPath = z.object({
+    project_id: z.uuid()
+});
+
+/**
+ * Successful Response
+ */
+export const zListProjectRequirementFilesResponse = zApiResponseRequirementFileListResponse;
+
+export const zUploadProjectRequirementFilesBody = zBodyUploadProjectRequirementFiles;
+
+export const zUploadProjectRequirementFilesPath = z.object({
+    project_id: z.uuid()
+});
+
+/**
+ * Successful Response
+ */
+export const zUploadProjectRequirementFilesResponse = zApiResponseUploadRequirementFilesResponse;
+
+export const zDeleteProjectRequirementFilePath = z.object({
+    project_id: z.uuid(),
+    file_id: z.uuid()
+});
+
+export const zDeleteProjectRequirementFileQuery = z.object({
+    expected_revision: z.int().gte(0)
+});
+
+/**
+ * Successful Response
+ */
+export const zDeleteProjectRequirementFileResponse = z.void();
+
+export const zGetProjectRequirementClarificationPath = z.object({
+    project_id: z.uuid()
+});
+
+/**
+ * Successful Response
+ */
+export const zGetProjectRequirementClarificationResponse = zApiResponseRequirementClarificationResponse;
+
+export const zAnalyzeProjectRequirementClarificationBody = zAnalyzeRequirementClarificationRequest;
+
+export const zAnalyzeProjectRequirementClarificationPath = z.object({
+    project_id: z.uuid()
+});
+
+/**
+ * Successful Response
+ */
+export const zAnalyzeProjectRequirementClarificationResponse = zApiResponseRequirementClarificationResponse;
+
+export const zAnswerProjectRequirementClarificationBody = zAnswerRequirementClarificationRequest;
+
+export const zAnswerProjectRequirementClarificationPath = z.object({
+    project_id: z.uuid(),
+    session_id: z.uuid(),
+    question_id: z.uuid()
+});
+
+/**
+ * Successful Response
+ */
+export const zAnswerProjectRequirementClarificationResponse = zApiResponseRequirementClarificationResponse;
+
+export const zSendProjectRequirementClarificationMessageBody = zSendRequirementClarificationMessageRequest;
+
+export const zSendProjectRequirementClarificationMessagePath = z.object({
+    project_id: z.uuid(),
+    session_id: z.uuid()
+});
+
+/**
+ * Successful Response
+ */
+export const zSendProjectRequirementClarificationMessageResponse = zApiResponseRequirementClarificationResponse;
+
+export const zChooseProjectRequirementContinuationBody = zChooseRequirementContinuationRequest;
+
+export const zChooseProjectRequirementContinuationPath = z.object({
+    project_id: z.uuid(),
+    session_id: z.uuid()
+});
+
+/**
+ * Successful Response
+ */
+export const zChooseProjectRequirementContinuationResponse = zApiResponseRequirementClarificationResponse;
 
 export const zGetProjectAnalysisStatusPath = z.object({
     project_id: z.uuid()
@@ -1212,6 +1738,47 @@ export const zReanalyzeProjectPath = z.object({
  * Successful Response
  */
 export const zReanalyzeProjectResponse = zApiResponseAnalysisStatusResponse;
+
+export const zGetProjectSourceCoveragePath = z.object({
+    project_id: z.uuid()
+});
+
+/**
+ * Successful Response
+ */
+export const zGetProjectSourceCoverageResponse = zApiResponseAnalysisStatusResponse;
+
+export const zResolveProjectSourceCoverageBody = zResolveSourceCoverageRequest;
+
+export const zResolveProjectSourceCoveragePath = z.object({
+    project_id: z.uuid(),
+    assessment_id: z.uuid()
+});
+
+/**
+ * Successful Response
+ */
+export const zResolveProjectSourceCoverageResponse = zApiResponseAnalysisStatusResponse;
+
+export const zRecheckProjectSourceCoverageBody = zRecheckSourceCoverageRequest;
+
+export const zRecheckProjectSourceCoveragePath = z.object({
+    project_id: z.uuid()
+});
+
+/**
+ * Successful Response
+ */
+export const zRecheckProjectSourceCoverageResponse = zApiResponseAnalysisStatusResponse;
+
+export const zRunProjectInitializationWorkflowPath = z.object({
+    project_id: z.uuid()
+});
+
+/**
+ * Successful Response
+ */
+export const zRunProjectInitializationWorkflowResponse = zApiResponseProjectInitializationResponse;
 
 export const zGetDataModelPath = z.object({
     project_id: z.uuid()
@@ -1436,6 +2003,10 @@ export const zListProjectSessionsPath = z.object({
     project_id: z.uuid()
 });
 
+export const zListProjectSessionsQuery = z.object({
+    purpose: zSessionPurpose
+});
+
 /**
  * Successful Response
  */
@@ -1478,7 +2049,8 @@ export const zListProjectSessionEventsPath = z.object({
 
 export const zListProjectSessionEventsQuery = z.object({
     after_id: z.uuid().nullish(),
-    limit: z.int().gte(1).lte(200).optional().default(50)
+    limit: z.int().gte(1).lte(200).optional().default(50),
+    conversation_only: z.boolean().optional().default(false)
 });
 
 /**
@@ -1495,7 +2067,28 @@ export const zSendProjectSessionMessagePath = z.object({
 /**
  * Successful Response
  */
-export const zSendProjectSessionMessageResponse = zApiResponseAnnotatedUnionClarificationTurnResponseProposalTurnResponseFieldInfoAnnotationNoneTypeRequiredTrueDiscriminatorKind;
+export const zSendProjectSessionMessageResponse = zApiResponseAnnotatedUnionClarificationTurnResponseNoChangeTurnResponseProposalTurnResponseFieldInfoAnnotationNoneTypeRequiredTrueDiscriminatorKind;
+
+export const zGetPendingProjectSessionClarificationPath = z.object({
+    session_id: z.uuid()
+});
+
+/**
+ * Successful Response
+ */
+export const zGetPendingProjectSessionClarificationResponse = zApiResponseUnionClarificationQuestionResponseNoneType;
+
+export const zAnswerProjectSessionClarificationBody = zAnswerClarificationRequest;
+
+export const zAnswerProjectSessionClarificationPath = z.object({
+    session_id: z.uuid(),
+    question_id: z.uuid()
+});
+
+/**
+ * Successful Response
+ */
+export const zAnswerProjectSessionClarificationResponse = zApiResponseAnnotatedUnionClarificationTurnResponseNoChangeTurnResponseProposalTurnResponseFieldInfoAnnotationNoneTypeRequiredTrueDiscriminatorKind;
 
 export const zStreamProjectSessionEventsHeaders = z.object({
     'Last-Event-ID': z.uuid().nullish()

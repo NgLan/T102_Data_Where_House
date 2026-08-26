@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DATA WHERE HOUSE? — Pitch Video Slides</title>
+
+  <!-- Fonts (Full Vietnamese Support with Patrick Hand & Mali comic handwriting) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Mali:ital,wght@0,500;0,600;0,700;1,600;1,700&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,600;1,700&family=Montserrat:ital,wght@0,700;0,800;0,900;1,800;1,900&family=JetBrains+Mono:wght@500;700&display=swap"
+    rel="stylesheet">
+
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+  <!-- Modular Stylesheets -->
+  <link rel="stylesheet" href="./css/variables.css">
+  <link rel="stylesheet" href="./css/base.css">
+  <link rel="stylesheet" href="./css/typography.css">
+  <link rel="stylesheet" href="./css/components.css">
+  <link rel="stylesheet" href="./css/animations.css">
+</head>
+
+<body>
+
+  <!-- Top Shortcuts Indicator -->
+  <div class="shortcuts-hint">
+    <span><i class="fa-solid fa-video" style="color:var(--red)"></i> Pitch Deck</span>
+    <span class="kbd-badge">Space / &rarr;</span>
+    <span class="kbd-badge">F (Full)</span>
+    <span class="kbd-badge">T</span> <span id="pitch-timer">00:00 / 01:05</span>
+  </div>
+
+  <!-- 16:9 Presentation Stage Container -->
+  <div id="stage">
+
+    <!-- ========================================================
+         SLIDE 1: Ảo Tưởng Về Sự Đơn Giản (0:00 - 0:08)
+         ======================================================== -->
+    <section class="slide active" data-slide="1">
+      <header class="slide-header">
+        <div class="header-left">
+          <div class="kicker anim-in"><span class="dot"></span> THIẾT KẾ DATA WAREHOUSE</div>
+          <h1 class="slide-title anim-in anim-delay-1">NGHE CÓ VẺ ĐƠN GIẢN</h1>
+        </div>
+      </header>
+
+      <div class="slide-body">
+        <div style="display: flex; flex-direction: column; justify-content: center; height: 100%; gap: 36px;">
+          <!-- 3-Block Flow -->
+          <div style="display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; align-items: center; gap: 20px;">
+
+            <!-- Block 1 -->
+            <div class="card anim-in anim-delay-2" style="text-align: center; padding: 36px 20px;">
+              <div class="card-icon red pulse-badge"
+                style="margin: 0 auto 16px auto; width: 56px; height: 56px; font-size: 24px;">
+                <i class="fa-solid fa-database"></i>
+              </div>
+              <h2 class="card-title" style="font-size: 24px;">Có dữ liệu</h2>
+            </div>
+
+            <div class="anim-in anim-delay-2"
+              style="font-family: var(--f-display); font-weight: 900; font-size: 40px; color: var(--ink-45);">
+              +
+            </div>
+
+            <!-- Block 2 -->
+            <div class="card anim-in anim-delay-3" style="text-align: center; padding: 36px 20px;">
+              <div class="card-icon cream"
+                style="margin: 0 auto 16px auto; width: 56px; height: 56px; font-size: 24px;">
+                <i class="fa-regular fa-file-lines" style="color: var(--ink)"></i>
+              </div>
+              <h2 class="card-title" style="font-size: 24px;">Có yêu cầu</h2>
+            </div>
+
+            <div class="anim-in anim-delay-3 flow-arrow-anim"
+              style="font-family: var(--f-display); font-weight: 900; font-size: 40px; color: var(--red);">
+              &rarr;
+            </div>
+
+            <!-- Block 3 -->
+            <div class="card cream anim-in anim-delay-4"
+              style="text-align: center; padding: 36px 20px; border: 3px solid var(--ink);">
+              <div class="card-icon"
+                style="margin: 0 auto 16px auto; width: 56px; height: 56px; font-size: 24px; background: var(--ink); color: #fff;">
+                <i class="fa-solid fa-table-cells"></i>
+              </div>
+              <h2 class="card-title" style="font-size: 24px;">Tạo ra các bảng</h2>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <footer class="slide-footer">
+        <div class="slide-number"><b>01</b> / 07</div>
+        <div class="brand-watermark">
+          <img src="./assets/logo.png" alt="Logo">
+        </div>
+      </footer>
+    </section>
+
+
+    <!-- ========================================================
+         SLIDE 2: Thực Tế & Hàng Loạt Câu Hỏi (0:08 - 0:18)
+         ======================================================== -->
+    <section class="slide" data-slide="2">
+      <header class="slide-header">
+        <div class="header-left">
+          <div class="kicker anim-in"><span class="dot"></span> THỰC TẾ</div>
+          <h1 class="slide-title anim-in anim-delay-1">KHI THỰC SỰ BẮT TAY VÀO LÀM...</h1>
+        </div>
+        <div class="header-right anim-in anim-delay-1">
+          <span class="slide-subtitle red">Hàng loạt câu hỏi xuất hiện:</span>
+        </div>
+      </header>
+
+      <div class="slide-body">
+        <div class="question-list">
+
+          <!-- Q1 -->
+          <div class="question-row anim-in anim-delay-1">
+            <span class="q-bullet">?</span>
+            <span class="q-text">Đâu là Fact? Đâu là Dimension?</span>
+          </div>
+
+          <!-- Q2 -->
+          <div class="question-row anim-in anim-delay-2">
+            <span class="q-bullet">?</span>
+            <span class="q-text">Một dòng dữ liệu nên đại diện cho điều gì?</span>
+          </div>
+
+          <!-- Q3 -->
+          <div class="question-row anim-in anim-delay-3">
+            <span class="q-bullet">?</span>
+            <span class="q-text">Dữ liệu nào thực sự cần thiết?</span>
+          </div>
+
+          <!-- Q4 (Highlight Lớn) -->
+          <div class="question-row highlight anim-in anim-delay-4">
+            <span class="q-bullet" style="font-size: 26px;"><i class="fa-solid fa-triangle-exclamation"></i></span>
+            <span class="q-text">Và quan trọng hơn... làm sao biết thiết kế của mình đã đúng?</span>
+          </div>
+
+        </div>
+      </div>
+
+      <footer class="slide-footer">
+        <div class="slide-number"><b>02</b> / 07</div>
+        <div class="brand-watermark">
+          <img src="./assets/logo.png" alt="Logo">
+        </div>
+      </footer>
+    </section>
+
+
+    <!-- ========================================================
+         SLIDE 3: Giải Pháp: Data Where House? (0:18 - 0:25)
+         ======================================================== -->
+    <section class="slide" data-slide="3">
+      <header class="slide-header">
+        <div class="header-left">
+          <div class="kicker anim-in"><span class="dot"></span> GIẢI PHÁP</div>
+          <h1 class="slide-title anim-in anim-delay-1">ĐÓ CHÍNH LÀ LÝ DO ĐƯỢC TẠO RA</h1>
+        </div>
+      </header>
+
+      <div class="slide-body">
+        <div style="display: grid; grid-template-columns: 1.1fr 1fr; gap: 36px; align-items: center; height: 100%;">
+
+          <!-- Left: Actual AIDWH.png Logo Image -->
+          <div class="card anim-in anim-delay-2 hero-logo-container"
+            style="padding: 24px; border: 3px solid var(--ink); box-shadow: 8px 8px 0 var(--ink); height: 100%; display: flex; align-items: center; justify-content: center; background: var(--paper);">
+            <img src="./assets/logo.png" alt="DATA Where HOUSE?" class="hero-logo-img-lg wiggle" style="max-height: 290px;">
+          </div>
+
+          <!-- Right: Core Script Concept -->
+          <div style="display: flex; flex-direction: column; gap: 20px;">
+
+            <div class="card anim-in anim-delay-3" style="border-left: 6px solid var(--red); padding: 28px;">
+              <div class="card-header" style="margin-bottom: 8px;">
+                <div class="card-icon red"><i class="fa-solid fa-robot"></i></div>
+                <h3 class="card-title" style="font-size: 22px;">AI Agent Đồng Hành Từng Bước</h3>
+              </div>
+              <p style="font-size: 18px; line-height: 1.5; color: var(--ink-70); font-weight: 600;">
+                Thay vì để người dùng tự đi qua toàn bộ quá trình phức tạp đó.
+              </p>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+
+      <footer class="slide-footer">
+        <div class="slide-number"><b>03</b> / 07</div>
+        <div class="brand-watermark">
+          <img src="./assets/logo.png" alt="Logo">
+        </div>
+      </footer>
+    </section>
+
+
+    <!-- ========================================================
+         SLIDE 4: Luồng Hoạt Động (0:25 - 0:45)
+         ======================================================== -->
+    <section class="slide" data-slide="4">
+      <header class="slide-header">
+        <div class="header-left">
+          <div class="kicker anim-in"><span class="dot"></span> TỪ YÊU CẦU &amp; DỮ LIỆU NGUỒN</div>
+          <h1 class="slide-title anim-in anim-delay-1">AI AGENT ĐỒNG HÀNH TỪNG BƯỚC</h1>
+        </div>
+      </header>
+
+      <div class="slide-body">
+        <div style="display: flex; flex-direction: column; gap: 16px; height: 100%;">
+
+          <!-- 3 Steps -->
+          <div class="pipeline-row">
+
+            <!-- Step 1 -->
+            <div class="pipeline-step anim-in anim-delay-2">
+              <div class="step-num-badge">1</div>
+              <h3 class="step-title">Làm Rõ Thông Tin Còn Thiếu</h3>
+              <div class="step-subtext">Từ yêu cầu ngôn ngữ tự nhiên &amp; dữ liệu nguồn ban đầu</div>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="pipeline-step anim-in anim-delay-3">
+              <div class="step-num-badge">2</div>
+              <h3 class="step-title">Phân Tích Cấu Trúc Dữ Liệu</h3>
+              <div class="step-subtext">Khám phá và hiểu rõ cấu trúc dữ liệu nguồn</div>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="pipeline-step anim-in anim-delay-4" style="background: var(--cream-soft);">
+              <div class="step-num-badge" style="background: var(--ink);">3</div>
+              <h3 class="step-title">Đề Xuất Mô Hình Hoàn Chỉnh</h3>
+              <div class="step-subtext">Fact, Dimension, khóa và &amp; quan hệ phù hợp</div>
+            </div>
+
+          </div>
+
+          <!-- Image Placeholder Box -->
+          <div class="img-placeholder anim-in anim-delay-5" style="flex: 1;">
+            <div class="ph-icon"><i class="fa-regular fa-image"></i></div>
+            <div class="ph-title">[KHUNG ẢNH: Giao Diện Chat Làm Rõ Yêu Cầu &amp; Phân Tích Dữ Liệu Nguồn]</div>
+            <div class="ph-desc">
+              Ảnh chụp màn hình: Khung đối thoại với AI Agent để làm rõ thông tin và danh sách bảng dữ liệu nguồn tải
+              lên.
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <footer class="slide-footer">
+        <div class="slide-number"><b>04</b> / 07</div>
+        <div class="brand-watermark">
+          <img src="./assets/logo.png" alt="Logo">
+        </div>
+      </footer>
+    </section>
+
+
+    <!-- ========================================================
+         SLIDE 5: Quyền Quyết Định Thuộc Về Người Dùng (0:45 - 0:53)
+         ======================================================== -->
+    <section class="slide" data-slide="5">
+      <header class="slide-header">
+        <div class="header-left">
+          <div class="kicker anim-in"><span class="dot"></span> KIỂM SOÁT &amp; TINH CHỈNH</div>
+          <h1 class="slide-title anim-in anim-delay-1">AI KHÔNG PHẢI NGƯỜI QUYẾT ĐỊNH CUỐI CÙNG</h1>
+        </div>
+      </header>
+
+      <div class="slide-body">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; height: 100%;">
+
+          <!-- Left: 3 Script User Actions -->
+          <div style="display: flex; flex-direction: column; gap: 14px; justify-content: center;">
+
+            <div class="card anim-in anim-delay-2" style="padding: 16px 20px;">
+              <div class="card-header" style="margin-bottom: 0;">
+                <div class="card-icon red"><i class="fa-solid fa-list-check"></i></div>
+                <h4 class="card-title" style="font-size: 17px;">Kiểm Tra Theo Quy Tắc Thiết Kế</h4>
+              </div>
+            </div>
+
+            <div class="card anim-in anim-delay-3" style="padding: 16px 20px;">
+              <div class="card-header" style="margin-bottom: 0;">
+                <div class="card-icon cream"><i class="fa-solid fa-pen-ruler" style="color:var(--ink)"></i></div>
+                <h4 class="card-title" style="font-size: 17px;">Xem Sơ Đồ &amp; Tự Chỉnh Sửa</h4>
+              </div>
+            </div>
+
+            <div class="card anim-in anim-delay-4" style="padding: 16px 20px; background: var(--cream);">
+              <div class="card-header" style="margin-bottom: 0;">
+                <div class="card-icon" style="background: var(--ink); color: #fff;"><i
+                    class="fa-solid fa-comment-dots"></i></div>
+                <h4 class="card-title" style="font-size: 17px;">Nói Cho AI Biết Mình Muốn Thay Đổi Điều Gì</h4>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Right: Image Placeholder for Model & Detected Issues -->
+          <div class="img-placeholder anim-in anim-delay-5" style="height: 100%;">
+            <div class="ph-icon"><i class="fa-solid fa-diagram-project"></i></div>
+            <div class="ph-title">[KHUNG ẢNH: Sơ Đồ Mô Hình &amp; Các Vấn Đề Được Phát Hiện]</div>
+            <div class="ph-desc">
+              Ảnh chụp màn hình: Sơ đồ tương tác các bảng Fact/Dimension cùng khu vực hiển thị các vấn đề cảnh báo thiết
+              kế.
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <footer class="slide-footer">
+        <div class="slide-number"><b>05</b> / 07</div>
+        <div class="brand-watermark">
+          <img src="./assets/logo.png" alt="Logo">
+        </div>
+      </footer>
+    </section>
+
+
+    <!-- ========================================================
+         SLIDE 6: DDL & Sandbox (0:53 - 0:58)
+         ======================================================== -->
+    <section class="slide" data-slide="6">
+      <header class="slide-header">
+        <div class="header-left">
+          <div class="kicker anim-in"><span class="dot"></span> THỰC THI</div>
+          <h1 class="slide-title anim-in anim-delay-1">KHI MỌI THỨ ĐÃ SẴN SÀNG</h1>
+        </div>
+      </header>
+
+      <div class="slide-body">
+        <div style="display: grid; grid-template-columns: 1fr 1.1fr; gap: 24px; height: 100%;">
+
+          <!-- Left: 2 Big Deliverables -->
+          <div style="display: flex; flex-direction: column; gap: 20px; justify-content: center;">
+
+            <div class="card anim-in anim-delay-2" style="padding: 24px; border-left: 6px solid var(--red);">
+              <div class="card-header" style="margin-bottom: 0;">
+                <div class="card-icon red"><i class="fa-solid fa-code"></i></div>
+                <h3 class="card-title" style="font-size: 22px;">Chuyển Thành DDL</h3>
+              </div>
+            </div>
+
+            <div class="card cream anim-in anim-delay-3" style="padding: 24px; border-left: 6px solid var(--ink);">
+              <div class="card-header" style="margin-bottom: 0;">
+                <div class="card-icon" style="background: var(--ink); color: #fff;"><i class="fa-solid fa-play"></i>
+                </div>
+                <h3 class="card-title" style="font-size: 22px;">Chạy Thử Ngay Trên Sandbox</h3>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Right: Image Placeholder for DDL & Sandbox Run -->
+          <div class="img-placeholder anim-in anim-delay-4" style="height: 100%;">
+            <div class="ph-icon"><i class="fa-solid fa-terminal"></i></div>
+            <div class="ph-title">[KHUNG ẢNH: DDL Sinh Ra &amp; Chạy Thử Trên Môi Trường Sandbox]</div>
+            <div class="ph-desc">
+              Ảnh chụp màn hình: Cửa sổ mã nguồn DDL SQL và kết quả thực thi kiểm thử dữ liệu trực tiếp trên Sandbox.
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <footer class="slide-footer">
+        <div class="slide-number"><b>06</b> / 07</div>
+        <div class="brand-watermark">
+          <img src="./assets/logo.png" alt="Logo">
+        </div>
+      </footer>
+    </section>
+
+
+    <!-- ========================================================
+         SLIDE 7: Slogan Chốt (0:58 - 1:05)
+         ======================================================== -->
+    <section class="slide" data-slide="7">
+      <header class="slide-header">
+        <div class="header-left">
+          <div class="kicker anim-in"><span class="dot"></span> THÔNG ĐIỆP CỐT LÕI</div>
+        </div>
+      </header>
+
+      <div class="slide-body">
+        <div style="display: flex; flex-direction: column; justify-content: center; height: 100%; gap: 24px;">
+
+          <!-- Grand Punchline Box -->
+          <div class="punchline-box anim-in anim-delay-1" style="padding: 32px 48px;">
+            <div style="margin-bottom: 20px; display: flex; justify-content: center;">
+              <img src="./assets/logo.png" alt="DATA Where HOUSE?" class="hero-logo-img" style="max-height: 220px;">
+            </div>
+            
+            <div class="punchline-text-sub">
+              Không chỉ giúp bạn tạo ra một Data Warehouse.
+            </div>
+
+            <div class="punchline-text-main">
+              Mà giúp bạn <span class="hl">HIỂU VÌ SAO</span> nó được tạo ra như vậy.
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <footer class="slide-footer">
+        <div class="slide-number"><b>07</b> / 07</div>
+        <div class="brand-watermark">
+          <img src="./assets/logo.png" alt="Logo">
+        </div>
+      </footer>
+    </section>
+
+  </div><!-- /#stage -->
+
+  <!-- Modular Scripts -->
+  <script src="./js/engine.js"></script>
+  <script src="./js/presenter.js"></script>
+</body>
+
+</html>

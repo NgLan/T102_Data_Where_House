@@ -68,6 +68,9 @@ Các nguyên tắc chung:
 - Phương thức tổng hợp, nếu có, chỉ nhận `SUM`, `AVG`, `COUNT`, `COUNT_DISTINCT`, `MAX` hoặc `MIN`.
 - Metric, dimension, time granularity và grain hiện là dữ liệu tùy chọn.
 - Hiện chưa có use case CRUD riêng cho Analytical Requirement; các bản ghi chủ yếu được sinh và lưu trong pipeline phân tích Data Model.
+- Analytical derivation chỉ dùng Requirement đã rõ semantic; không dùng source availability để thay đổi, làm yếu hoặc bỏ Requirement.
+- Mỗi Analytical Requirement persist Source Coverage assessments theo required business concept. Trạng thái hợp lệ là `SUPPORTED`, `NEEDS_SOURCE_CONFIRMATION`, `MISSING_SOURCE`.
+- `NEEDS_SOURCE_CONFIRMATION` bắt buộc có candidate exact reference; `MISSING_SOURCE` không được có candidate hoặc tên cột giả định.
 
 ## 6. Data Source
 
@@ -85,10 +88,13 @@ Các nguyên tắc chung:
 - Name không vượt quá 255 ký tự.
 - Các loại Data Source được nhận diện: `CSV`, `EXCEL`, `JSON`, `SQL`, `TEXT`. Danh sách này không có nghĩa mọi loại đều được endpoint upload hiện tại hỗ trợ.
 - Metadata schema là snapshot bất biến gồm table, column và relationship.
+- Table metadata persist `row_count`. Column/relationship có thể chứa USER semantic annotation typed gồm `business_concept`, `CONFIRMED | REJECTED` và provenance `USER`; profiler không được tạo annotation này.
 - `data_type` chỉ nhận `TEXT`, `CATEGORY`, `INTEGER`, `NUMBER`, `DECIMAL`, `DATE`, `TIME`, `DATETIME` hoặc `BOOLEAN`; `CATEGORY` là một giá trị trực tiếp, không có lớp semantic type riêng.
 - CSV profiler gán `CATEGORY` khi cột phù hợp và chỉ thu thập `distinct_values` cần thiết; không lưu sample/options legacy.
 - Constraint là discriminated union: `FOREIGN_KEY(type, reference_table, reference_column)`, `UNIQUE(type)`, `CHECK(type, expression)` hoặc `DEFAULT(type, value)` với value là string, number, boolean hoặc null. `primary_key` và `nullable` vẫn là field riêng.
 - Không suy observed statistics thành business/database constraint.
+- Uniqueness, distinct count, key candidate và name similarity không tự chứng minh business identity.
+- Upload thay thế source xóa semantic annotations của chính source đó; mutation source khác không xóa confirmation còn hợp lệ.
 - PATCH column là partial update của `data_type`, `distinct_values`, `constraints` và bắt buộc có ít nhất một field.
 - Không tìm thấy table/column cần sửa trả `DATA_SOURCE_COLUMN_NOT_FOUND` và không thay snapshot hiện tại.
 
@@ -204,25 +210,28 @@ Các nguyên tắc chung:
 
 ### 12.1 Operation độc lập
 
-- RequirementAgent có đúng hai operation: raw requirement thành Requirements, và Requirements cùng `SchemaMetadata` thành AnalyticalRequirements.
+- RequirementAgent có ba operation: clarification/structure Requirements, derive AnalyticalRequirements không dùng source, và evaluate Source Coverage với SchemaMetadata.
 - DWDesignAgent có operation initial design và revision. Mỗi lần gọi operation thực hiện đúng một `ainvoke()`; không ReAct, planner, tool loop, graph hoặc SDK retry.
-- `SchemaMetadata` chỉ do parser/profiler tạo. Không có Agent phân tích lại schema nguồn.
+- Profile trong `SchemaMetadata` chỉ do parser/profiler tạo. Semantic confirmation chỉ do OWNER action ghi; LLM không được ghi annotation.
 - Analytical output bắt buộc mang `source_requirement_id` tồn tại; không được gắn fallback vào requirement đầu tiên.
 - Application có thể gọi tối đa ba DWDesign operation độc lập khi Validation Engine trả issue mức `ERROR`. Attempt sau nhận DBML vừa validation thất bại và danh sách issue.
 
 ### 12.2 Save & Analyze và Analyze Changes
 
 - `GET analysis-status` chỉ đọc trạng thái, không gọi Agent. `reanalyze` chỉ cập nhật kết quả phân tích cần thiết và không sửa Data Model.
-- Project chưa có model: `generate` chạy RequirementAgent hai operation cần thiết, initial DW design, validation rồi tạo snapshot đầu tiên.
+- Project chưa có model: workflow chạy clarification, analytical derivation, Source Coverage và readiness gate; chỉ `READY_FOR_DESIGN` mới gọi initial DW design.
 - Project đã có model: `regenerate` chạy DWDesignAgent từ input/analysis hiện tại, validate rồi ghi đè snapshot bằng optimistic locking và tăng revision.
-- Raw Requirement đổi thì chạy lại operation 1 và 2. Chỉ Data Source đổi thì chỉ chạy operation 2. Input revisions không đổi thì không gọi LLM.
+- Raw Requirement đổi thì chạy lại clarification, derivation và coverage. Chỉ Data Source hoặc semantic annotation đổi thì chỉ chạy coverage. Input revisions không đổi thì không gọi LLM.
+- Coverage blocker là normal persisted state, không phải generic error detail. Readiness dùng `REQUIREMENT_CLARIFICATION_REQUIRED`, `SOURCE_CONFIRMATION_REQUIRED`, `SOURCE_DATA_REQUIRED`, `READY_FOR_DESIGN`.
+- `GET /source-coverage` reload stable batch. OWNER resolution xác minh batch/source/item revision và chỉ persist đúng item, không gọi Agent. Recheck chỉ hợp lệ khi không còn item `PENDING`; nó materialize scoped USER annotations, tăng source revision đúng một lần cho cả batch rồi chỉ rerun Source Coverage.
+- Confirmation item có trạng thái `PENDING`, `CONFIRMED`, `REJECTED`; confirm/reject item này không thay đổi, disable hoặc xóa item khác. Batch và resolved progress phải sống qua reload.
 - Database transaction không được mở trong thời gian gọi LLM. Trước persistence phải kiểm tra lại revision; input đổi đồng thời trả `ANALYSIS_INPUT_CHANGED`.
 
 ### 12.3 Revision và trạng thái outdated
 
-- Project giữ `requirement_revision`, `source_revision` và hai analyzed revision tương ứng.
+- Project giữ revision riêng cho Requirement, analytical derivation, source và coverage (`covered_analytical_requirement_revision`).
 - Save Raw Requirement hoặc Requirement có cấu trúc thực sự thay đổi tăng requirement revision. Raw Requirement vẫn là nguồn của operation cấu trúc hóa. Upload, thay thế, sửa metadata hoặc xóa source tăng source revision.
-- Analysis chỉ được xem là current khi input revision bằng analyzed revision. Cờ outdated là derived output, không persist.
+- Analytical derivation chỉ outdated khi Requirement đổi. Coverage outdated khi Requirement/Analytical Requirement hoặc source revision đổi; assessment blocked nhưng đã persist là current, không phải outdated.
 - Data Model giữ hai generated revisions và là outdated khi chúng lệch analyzed revisions hiện tại.
 - Proposal giữ model base revision; chỉ khi revision này lệch snapshot hiện hành proposal mới `CONFLICTED`.
 - Source mutation chỉ parser/profile rồi tăng revision; không tự gọi Agent.

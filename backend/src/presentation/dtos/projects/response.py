@@ -54,6 +54,11 @@ class ProjectResponse(BaseModel):
     updated_at: datetime = Field(description="Thời điểm cập nhật")
     data_source_count: int = Field(ge=0, description="Số nguồn dữ liệu thuộc Project")
     requirement: str | None = Field(description="Yêu cầu nghiệp vụ thô")
+    requirement_revision: int = Field(ge=0, description="Raw/document revision")
+    analyzed_requirement_revision: int = Field(ge=0, description="Structured revision")
+    derived_analytical_requirement_revision: int = Field(
+        ge=0, description="Revision đã derive analytical requirements"
+    )
     requirements: list["ProjectRequirementResponse"] = Field(description="Requirement đã được chuẩn hóa và phân loại")
     data_sources: list[DataSourceResponse] = Field(description="Nguồn dữ liệu")
 
@@ -72,6 +77,11 @@ class ProjectResponse(BaseModel):
             id=summary.id,
             name=summary.name,
             requirement=output.requirement,
+            requirement_revision=output.requirement_revision,
+            analyzed_requirement_revision=output.analyzed_requirement_revision,
+            derived_analytical_requirement_revision=(
+                output.derived_analytical_requirement_revision
+            ),
             user_id=summary.user_id,
             status=summary.status,
             domain=summary.domain,
@@ -94,3 +104,10 @@ class ProjectRequirementResponse(BaseModel):
     description: str
     type: RequirementType
     priority: RequirementPriority
+
+
+class RawRequirementResponse(BaseModel):
+    """Payload sau khi lưu Raw Requirement."""
+
+    requirement: str | None = Field(description="Raw Requirement đã normalize")
+    requirement_revision: int = Field(ge=0, description="Revision hiện hành")

@@ -45,10 +45,10 @@ describe("project details generated SDK adapter", () => {
 
   it("updates project details through the fields response style", async () => {
     mocks.update.mockResolvedValue({ data: { data: project } });
-    const form = { name: "Sales", domain: "retail", requirement: "Track revenue" };
+    const form = { name: "Sales", domain: "retail", description: "Sales BI" };
     await expect(updateProjectDetails("project-1", form)).resolves.toEqual(project);
     expect(mocks.update).toHaveBeenCalledWith(expect.objectContaining({
-      body: form,
+      body: { name: form.name, domain: form.domain, description: form.description },
       responseStyle: "fields",
     }));
   });

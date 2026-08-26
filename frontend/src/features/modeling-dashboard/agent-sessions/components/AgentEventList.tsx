@@ -66,7 +66,6 @@ function AgentEvent({
   const [proposal, setProposal] =
     useState<ChangeProposalDetailResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-
   const isUser = event.role === "USER";
   const isFailed = event.status === "FAILED";
 
@@ -76,6 +75,10 @@ function AgentEvent({
     return <StatusEvent text={t("TXT_TOOL_STARTED")} />;
   if (event.type === "TOOL_RESULT")
     return <StatusEvent text={t("TXT_TOOL_COMPLETED")} />;
+  if (event.type === "AGENT_RESULT")
+    return isFailed ? (
+      <StatusEvent text={event.content ?? t("TXT_AGENT_COMPLETED")} />
+    ) : null;
 
   const handleToggleProposal = async () => {
     if (isExpanded) {

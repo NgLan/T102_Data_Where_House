@@ -11,6 +11,38 @@ class SessionStatus(StrEnum):
     ARCHIVED = "ARCHIVED"
 
 
+class SessionPurpose(StrEnum):
+    """Mục đích nghiệp vụ của Project Session."""
+
+    REQUIREMENT_CLARIFICATION = "REQUIREMENT_CLARIFICATION"
+    DATA_MODELING = "DATA_MODELING"
+
+
+class RequirementClarificationStatus(StrEnum):
+    """Trạng thái hiển thị của Requirement clarification cycle."""
+
+    IDLE = "IDLE"
+    PROCESSING = "PROCESSING"
+    NEEDS_CLARIFICATION = "NEEDS_CLARIFICATION"
+    READY = "READY"
+
+
+class RequirementContinuationState(StrEnum):
+    """Quyết định tiếp tục workflow sau một clarification turn READY."""
+
+    NOT_REQUIRED = "NOT_REQUIRED"
+    AWAITING_DECISION = "AWAITING_DECISION"
+    CONTINUE_EDITING = "CONTINUE_EDITING"
+    CONTINUE_ANALYSIS = "CONTINUE_ANALYSIS"
+
+
+class RequirementContinuationAction(StrEnum):
+    """Action công khai mà owner được chọn tại continuation gate."""
+
+    CONTINUE_EDITING = "CONTINUE_EDITING"
+    CONTINUE_ANALYSIS = "CONTINUE_ANALYSIS"
+
+
 class SessionEventRole(StrEnum):
     """Vai trò khởi tạo sự kiện trong phiên."""
 
@@ -29,6 +61,13 @@ class SessionEventType(StrEnum):
     AGENT_RESULT = "AGENT_RESULT"
     TOOL_CALL = "TOOL_CALL"
     TOOL_RESULT = "TOOL_RESULT"
+
+
+class ClarificationAnswerKind(StrEnum):
+    """Cách người dùng trả lời một clarification."""
+
+    OPTION = "OPTION"
+    CUSTOM = "CUSTOM"
 
 
 class AgentType(StrEnum):

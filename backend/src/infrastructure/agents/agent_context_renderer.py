@@ -3,18 +3,42 @@
 import json
 from dataclasses import asdict
 
-from src.application.data_warehouse_workflows.input import (
-    AnalyticalAnalysisInput,
-    DataWarehouseDesignInput,
-    RevisionDesignInput,
+from src.application.data_warehouse_workflows.input import DataWarehouseDesignInput, RevisionDesignInput
+from src.application.requirements.input import (
+    DeriveAnalyticalRequirementsInput,
+    EvaluateSourceCoverageInput,
 )
 from src.domain.data_source.entities import DataSource
 
 
-def render_analytical_input(data: AnalyticalAnalysisInput) -> tuple[str, str]:
-    """Render Requirements và parser-produced SchemaMetadata riêng biệt."""
+def render_analytical_input(
+    data: DeriveAnalyticalRequirementsInput,
+) -> str:
+    """Render Requirements đã rõ semantic mà không dùng source availability."""
     requirements = [asdict(item) for item in data.requirements]
-    return _json(requirements), _render_sources(data.data_sources)
+    return _json(requirements)
+
+
+def render_source_coverage_input(
+    data: EvaluateSourceCoverageInput,
+) -> tuple[str, str, str]:
+    """Render ba nhóm evidence riêng biệt cho Source Coverage."""
+    requirements = [asdict(item) for item in data.requirements]
+    analytical = [
+        {
+            "id": str(item.id),
+            "source_requirement_id": str(item.requirement_id),
+            "metric": item.metric,
+            "dimension": item.dimension,
+            "time_granularity": item.time_granularity,
+            "aggregation_method": (
+                item.aggregation_method.value if item.aggregation_method else None
+            ),
+            "grain": item.grain,
+        }
+        for item in data.analytical_requirements
+    ]
+    return _json(requirements), _json(analytical), _render_sources(data.data_sources)
 
 
 def render_design_input(

@@ -1,17 +1,13 @@
 "use client";
 
-import Link from "next/link";
 import {
-  ArrowLeft,
   CloudOff,
   PanelRightClose,
   PanelRightOpen,
-  Rocket,
   Bot,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/common/components/ui/button";
-import { createWorkflowHref } from "@/common/routing/workflow-routing";
 import type { WorkspaceStatus } from "../types/modeling-workspace-types";
 import type { AutosaveState } from "./draft-persistence/hooks/use-draft-autosave";
 import { UpdateDataModelButton } from "./header/UpdateDataModelButton";
@@ -26,7 +22,6 @@ interface ModelingWorkspaceHeaderProps {
   lastSavedAt: string | null;
   isInspectorOpen: boolean;
   hasExistingModel: boolean;
-  projectId: string | null;
   status: WorkspaceStatus;
   onGenerate: () => void;
   onReload: () => void;
@@ -38,15 +33,8 @@ interface ModelingWorkspaceHeaderProps {
 /** Hiển thị điều hướng và các action toàn cục của Modeling Workspace. */
 export function ModelingWorkspaceHeader(props: ModelingWorkspaceHeaderProps) {
   const { t } = useTranslation("modeling-workspace");
-  const projectId = props.projectId;
   return (
     <header className="flex flex-wrap items-center gap-2 border-b bg-card px-3 py-2">
-      <Button asChild variant="outline" size="sm">
-        <Link href={createWorkflowHref("project-init", projectId)}>
-          <ArrowLeft />
-          {t("BTN_RECONFIGURE")}
-        </Link>
-      </Button>
       <h2 className="mr-auto text-sm font-semibold text-foreground">
         {t("TXT_TITLE")}
       </h2>
@@ -89,12 +77,6 @@ export function ModelingWorkspaceHeader(props: ModelingWorkspaceHeaderProps) {
         isDisabled={!props.hasProject || props.status === "loading"}
         onReload={props.onReload}
       />
-      <Button asChild size="sm">
-        <Link href={createWorkflowHref("sandbox", projectId)}>
-          <Rocket />
-          {t("BTN_RUN_SANDBOX")}
-        </Link>
-      </Button>
     </header>
   );
 }

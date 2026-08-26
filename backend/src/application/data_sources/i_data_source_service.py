@@ -3,6 +3,7 @@
 from abc import ABC, abstractmethod
 from typing import Protocol
 
+from src.application.common.i_file_store import IFileStore
 from src.application.data_sources.input import (
     DataSourceIdInput,
     DataSourcePreviewInput,
@@ -18,16 +19,10 @@ from src.application.data_sources.output import (
 )
 
 
-class IDataSourceFileStore(Protocol):
+class IDataSourceFileStore(IFileStore, Protocol):
     """Outbound port lưu trữ file nguồn."""
 
-    async def save_file(self, project_id: str, filename: str, content: bytes) -> str: ...
-
-    async def read_file(self, file_path: str) -> bytes: ...
-
-    async def delete_file(self, file_path: str) -> None: ...
-
-    async def cleanup_empty_dir(self, project_id: str) -> None: ...
+    pass
 
 
 class IDataSourceService(ABC):

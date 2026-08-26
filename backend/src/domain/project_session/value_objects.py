@@ -3,6 +3,10 @@
 from dataclasses import dataclass
 
 from src.common.exceptions.error_codes import ErrorCode
+from src.domain.project_session.clarification import (
+    ClarificationAnswerMetadata,
+    ClarificationQuestionMetadata,
+)
 from src.domain.project_session.enums import AgentResultStatus, AgentType, ToolResultStatus
 from src.domain.shared.enum_rules import normalize_str_enum
 from src.domain.shared.types import EntityID
@@ -30,6 +34,8 @@ class MessageMetadata(BaseValueObject):
     """Metadata cho sự kiện dạng Tin nhắn (MESSAGE)."""
 
     model: str | None = None
+    agent_result_id: EntityID | None = None
+    proposal_change_id: EntityID | None = None
 
 
 @dataclass(frozen=True)
@@ -120,6 +126,8 @@ class ToolResultMetadata(BaseValueObject):
 
 SessionEventMetadata = (
     MessageMetadata
+    | ClarificationQuestionMetadata
+    | ClarificationAnswerMetadata
     | AgentCallMetadata
     | AgentResultMetadata
     | ToolCallMetadata

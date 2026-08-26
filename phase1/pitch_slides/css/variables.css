@@ -1,0 +1,59 @@
+/* ============================================================
+   DATA WHERE HOUSE? — Design System Variables
+   Pop-comic ink styling, graph paper, bold marker red & warm cream
+   ============================================================ */
+
+:root {
+  /* Color Palette */
+  --ink: #14110F;
+  --ink-90: #231F1D;
+  --ink-70: #4A4441;
+  --ink-45: #807A75;
+  --ink-20: #D6D2CC;
+  
+  --red: #EE1D23;
+  --red-dark: #C91419;
+  --red-soft: #FDE9E9;
+  --red-glow: rgba(238, 29, 35, 0.25);
+  
+  --cream: #FBE2C0;
+  --cream-deep: #F6D2A2;
+  --cream-soft: #FFF7ED;
+  
+  --paper: #FFFFFF;
+  --wash: #FAF9F7;
+  --rule: #E6E3DE;
+  --grid: #EFECE6;
+  --grid-dark: #E2DDD5;
+  
+  --amber: #E8A33D;
+  --amber-soft: #FEF3E2;
+  --blue: #2563EB;
+  --blue-soft: #EFF6FF;
+  --green: #10B981;
+  --green-soft: #ECFDF5;
+  --purple: #8B5CF6;
+  --purple-soft: #F5F3FF;
+
+  /* Comic Ink Shadows */
+  --shadow-sm: 3px 3px 0 var(--ink);
+  --shadow: 5px 5px 0 var(--ink);
+  --shadow-lg: 8px 8px 0 var(--ink);
+  --shadow-red: 5px 5px 0 var(--red);
+  --shadow-inset: inset 2px 2px 0 rgba(0,0,0,0.06);
+
+  /* Typography (100% Vietnamese diacritic compatibility) */
+  --f-display: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
+  --f-body: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+  --f-hand: 'Patrick Hand', 'Mali', cursive, sans-serif;
+  --f-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  /* Dimensions (16:9 Standard Presentation Frame) */
+  --slide-width: 1280px;
+  --slide-height: 720px;
+  --border-ink: 2.5px solid var(--ink);
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-pill: 999px;
+}

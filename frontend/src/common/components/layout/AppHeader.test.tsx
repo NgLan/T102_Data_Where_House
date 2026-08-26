@@ -13,7 +13,10 @@ const mocks = vi.hoisted(() => ({
   clearQueries: vi.fn(), clearDrafts: vi.fn(), language: "vi",
 }));
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push: mocks.push }) }));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: mocks.push }),
+  useSearchParams: () => new URLSearchParams("step=modeling"),
+}));
 vi.mock("next-themes", () => ({ useTheme: () => ({ resolvedTheme: "dark", setTheme: mocks.setTheme }) }));
 vi.mock("react-i18next", () => ({
   initReactI18next: { type: "3rdParty", init: vi.fn() },
@@ -44,6 +47,10 @@ vi.mock("@/common/projects/project-queries", () => ({
   useCurrentActorQuery: () => ({
     data: { id: "actor-1", username: "MVP Actor", email: "actor@example.com" },
     isPending: false,
+  }),
+  useProjectStatusQuery: () => ({
+    data: { data_model_exists: true },
+    isLoading: false,
   }),
 }));
 
@@ -95,5 +102,6 @@ describe("header controls", () => {
     expect(logo).toHaveAttribute("href", "/");
     expect(logo).toHaveClass("cursor-pointer");
     expect(screen.getByLabelText("PROJECT_SELECTOR_LABEL")).toHaveValue("project-1");
+    expect(screen.getAllByRole("link", { name: /TXT_WORKFLOW_STEP_PROJECT_INIT/ }).length).toBeGreaterThan(0);
   });
 });

@@ -26,6 +26,26 @@ describe("normalizeApiError", () => {
     });
   });
 
+  it("không dùng generic error details làm Source Coverage state", () => {
+    const error = normalizeApiError({
+      code: 422,
+      message: "Source gap",
+      error_code: "ANALYTICAL_SOURCE_GAP",
+      details: [{
+        requirement_id: "requirement-1",
+        requirement_title: "Phân tích doanh thu",
+        gap_kind: "MISSING_DATA",
+        missing_concepts: ["doanh thu"],
+        reason: "Nguồn chưa có giá trị giao dịch.",
+        suggested_source_fields: ["giá trị giao dịch"],
+        suggested_action: "ADD_OR_REPLACE_SOURCE",
+      }],
+    });
+
+    expect(error.kind).toBe("business");
+    expect(error.details).toEqual([]);
+  });
+
   it("chuẩn hóa AbortError thành timeout", () => {
     const error = normalizeApiError(new DOMException("Aborted", "AbortError"));
     expect(error).toMatchObject({ errorCode: "TIMEOUT_ERROR", kind: "timeout" });

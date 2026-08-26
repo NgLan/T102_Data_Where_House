@@ -18,7 +18,10 @@ class ProjectMapper:
             requirement_revision=model.requirement_revision,
             source_revision=model.source_revision,
             analyzed_requirement_revision=model.analyzed_requirement_revision,
+            confirmed_requirement_revision=model.confirmed_requirement_revision,
+            derived_analytical_requirement_revision=model.derived_analytical_requirement_revision,
             analyzed_source_revision=model.analyzed_source_revision,
+            covered_analytical_requirement_revision=model.covered_analytical_requirement_revision,
             user_id=model.user_id,
             description=model.description,
             domain=model.domain,
@@ -37,7 +40,10 @@ class ProjectMapper:
             requirement_revision=entity.requirement_revision,
             source_revision=entity.source_revision,
             analyzed_requirement_revision=entity.analyzed_requirement_revision,
+            confirmed_requirement_revision=entity.confirmed_requirement_revision,
+            derived_analytical_requirement_revision=entity.derived_analytical_requirement_revision,
             analyzed_source_revision=entity.analyzed_source_revision,
+            covered_analytical_requirement_revision=entity.covered_analytical_requirement_revision,
             user_id=entity.user_id,
             description=entity.description,
             domain=entity.domain,
@@ -54,7 +60,12 @@ class ProjectMapper:
         model.requirement_revision = entity.requirement_revision
         model.source_revision = entity.source_revision
         model.analyzed_requirement_revision = entity.analyzed_requirement_revision
+        model.confirmed_requirement_revision = entity.confirmed_requirement_revision
+        model.derived_analytical_requirement_revision = entity.derived_analytical_requirement_revision
         model.analyzed_source_revision = entity.analyzed_source_revision
+        model.covered_analytical_requirement_revision = (
+            entity.covered_analytical_requirement_revision
+        )
         model.description = entity.description
         model.domain = entity.domain
         model.status = entity.status.value

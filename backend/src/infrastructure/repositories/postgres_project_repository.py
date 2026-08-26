@@ -27,6 +27,18 @@ class PostgresProjectRepository(IProjectRepository):
 
     @override
     @translate_database_errors
+    async def get_by_id_for_update(self, entity_id: EntityID) -> Project | None:
+        """Lấy Project bằng row lock để serialize revision mutation."""
+        result = await self._session.execute(
+            select(ProjectModel)
+            .where(ProjectModel.id == entity_id)
+            .with_for_update()
+        )
+        model = result.scalar_one_or_none()
+        return ProjectMapper.to_domain(model) if model else None
+
+    @override
+    @translate_database_errors
     async def list_accessible_by_user(self, user_id: EntityID) -> list[Project]:
         """Lấy Project actor sở hữu hoặc có membership, mới cập nhật trước."""
         statement = (

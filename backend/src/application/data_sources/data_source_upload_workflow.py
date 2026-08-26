@@ -2,10 +2,10 @@
 
 from dataclasses import dataclass
 
+from src.application.common.file_mutation_log import FileMutationLog, FileReplacement
 from src.application.common.project_access_policy import ProjectAccessPolicy
 from src.application.common.unit_of_work import IUnitOfWork
 from src.application.data_sources.data_source_upload_policy import validate_upload
-from src.application.data_sources.file_mutation_log import FileMutationLog, FileReplacement
 from src.application.data_sources.i_data_source_service import IDataSourceFileStore
 from src.application.data_sources.input import UploadDataSourcesInput, UploadFileInput
 from src.application.data_sources.output import DataSourceOutput, UploadDataSourcesOutput

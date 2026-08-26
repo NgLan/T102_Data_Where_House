@@ -6,8 +6,10 @@ import pytest
 from langchain_core.language_models import BaseChatModel
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_openai import ChatOpenAI
+from pydantic import SecretStr
 from src.common.exceptions.infrastructure import InfrastructureException
 from src.infrastructure.llm import factory
+from src.infrastructure.llm.api_key_pool import LlmApiKeyPool
 from src.infrastructure.llm.lazy_chat_model import LazyChatModel
 from src.infrastructure.llm.provider_registry import (
     ChatModelConfiguration,
@@ -18,7 +20,9 @@ from src.infrastructure.llm.provider_registry import (
 
 def _configuration(provider: str, base_url: str = "") -> ChatModelConfiguration:
     """Tạo cấu hình tối thiểu không thực hiện network call."""
-    return ChatModelConfiguration(provider, "test-model", "test-key", base_url, 0.0, 100, 5.0)
+    return ChatModelConfiguration(
+        provider, "test-model", SecretStr("test-key"), base_url, 0.0, 100, 5.0
+    )
 
 
 @pytest.mark.parametrize("provider", ["openai", "openai_compatible"])
@@ -60,7 +64,7 @@ def test_lazy_chat_model_builds_once_per_process_resource() -> None:
     calls = 0
     sentinel = cast(BaseChatModel, object())
 
-    def builder() -> BaseChatModel:
+    def builder(**_kwargs: object) -> BaseChatModel:
         nonlocal calls
         calls += 1
         return sentinel
@@ -77,13 +81,18 @@ def test_default_model_factory_is_cached_per_process(monkeypatch: pytest.MonkeyP
     calls = 0
     sentinel = cast(BaseChatModel, object())
 
-    def builder() -> BaseChatModel:
+    def builder(**_kwargs: object) -> BaseChatModel:
         nonlocal calls
         calls += 1
         return sentinel
 
     factory.get_cached_chat_model.cache_clear()
     monkeypatch.setattr(factory, "build_chat_model", builder)
+    monkeypatch.setattr(
+        factory,
+        "get_cached_api_key_pool",
+        lambda: LlmApiKeyPool((SecretStr("test-key"),)),
+    )
 
     assert factory.get_cached_chat_model() is sentinel
     assert factory.get_cached_chat_model() is sentinel
@@ -96,9 +105,10 @@ def test_auto_provider_is_rejected_instead_of_guessing_from_model() -> None:
     from config import Settings
 
     settings = Settings(
+        _env_file=None,
         app_name="Test", app_env="test", app_host="127.0.0.1", app_port=8000, debug=True,
         postgres_user="u", postgres_password="p", postgres_host="h", postgres_port=5432, postgres_db="d",
-        redis_host="r", redis_port=6379, secret_key="s", jwt_algorithm="HS256", access_token_expire_minutes=30,
+        redis_host="r", redis_port=6379, redis_db=0, secret_key="s", jwt_algorithm="HS256", access_token_expire_minutes=30,
         llm_provider="auto", model_name="gemini-1.5-flash", google_api_key="test-key",
         llm_temperature=0.0, log_level="INFO", langchain_tracing_v2=False, langchain_project="p", cors_origins="*",
     )

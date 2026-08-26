@@ -2,19 +2,26 @@
 
 import { Bot, Columns3, PanelBottom, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import type { ProjectSessionResponse, SessionEventResponse } from "@/api";
+import type {
+  AnswerClarificationRequest,
+  ClarificationQuestionResponse,
+  ProjectSessionResponse,
+  SessionEventResponse,
+} from "@/api";
 import { Button } from "@/common/components/ui/button";
 import { useAppNotification } from "@/common/notifications";
 import type { AgentDock } from "../hooks/use-agent-dock";
 import { AgentEventList } from "./AgentEventList";
 import { AgentSessionControls } from "./AgentSessionControls";
 import { AgentMessageComposer } from "./AgentMessageComposer";
+import { AgentClarificationCard } from "./AgentClarificationCard";
 
 interface AgentSessionPanelProps {
   projectId: string;
   sessions: ProjectSessionResponse[];
   selectedSessionId: string | null;
   events: SessionEventResponse[];
+  pendingClarification: ClarificationQuestionResponse | null;
   draft: string;
   isSending: boolean;
   canSend: boolean;
@@ -23,6 +30,7 @@ interface AgentSessionPanelProps {
   onNewSession: () => void;
   onDraftChange: (value: string) => void;
   onSend: () => void;
+  onAnswerClarification: (answer: AnswerClarificationRequest) => void;
   onDockChange: (dock: AgentDock) => void;
   onRenameSession: (title: string) => void;
 }
@@ -78,12 +86,23 @@ export function AgentSessionPanel(props: AgentSessionPanelProps) {
         isSending={props.isSending}
         projectId={props.projectId}
       />
+      {props.pendingClarification && (
+        <AgentClarificationCard
+          clarification={props.pendingClarification}
+          isSubmitting={props.isSending}
+          onSubmit={props.onAnswerClarification}
+        />
+      )}
       {props.errorCode && (
         <p role="alert" className="px-3 text-xs text-destructive">
           {getErrorMessage(props.errorCode)}
         </p>
       )}
-      <AgentMessageComposer {...props} hasSession={Boolean(props.selectedSessionId)} />
+      <AgentMessageComposer
+        {...props}
+        hasSession={Boolean(props.selectedSessionId)}
+        isClarificationPending={Boolean(props.pendingClarification)}
+      />
     </section>
   );
 }

@@ -2,8 +2,18 @@
 
 from collections.abc import Sequence
 from dataclasses import dataclass
+from typing import Protocol, runtime_checkable
 
 from src.common.exceptions.error_codes import ErrorCode
+
+ExceptionDetailValue = str | list[str]
+
+
+@runtime_checkable
+class ExceptionDetailPayload(Protocol):
+    """Contract trung lập cho một phần tử details có thể serialize."""
+
+    def to_dict(self) -> dict[str, ExceptionDetailValue]: ...
 
 
 @dataclass(frozen=True, slots=True)
@@ -13,7 +23,7 @@ class ExceptionDetail:
     field: str
     message: str
 
-    def to_dict(self) -> dict[str, str]:
+    def to_dict(self) -> dict[str, ExceptionDetailValue]:
         """Chuyển chi tiết lỗi sang dữ liệu JSON.
 
         Returns:
@@ -32,7 +42,7 @@ class AppException(Exception):  # noqa: N818
         self,
         code: ErrorCode,
         message: str,
-        details: Sequence[ExceptionDetail] | None = None,
+        details: Sequence[ExceptionDetailPayload] | None = None,
     ) -> None:
         """Khởi tạo AppException.
 
@@ -44,12 +54,14 @@ class AppException(Exception):  # noqa: N818
         Raises:
             TypeError: Khi details chứa phần tử không phải ``ExceptionDetail``.
         """
-        if details and not all(isinstance(detail, ExceptionDetail) for detail in details):
-            raise TypeError("details chỉ được chứa ExceptionDetail.")
+        if details and not all(
+            isinstance(detail, ExceptionDetailPayload) for detail in details
+        ):
+            raise TypeError("details chỉ được chứa payload có contract hợp lệ.")
         super().__init__(message)
         self.code: ErrorCode = code
         self.message: str = message
-        self.details: tuple[ExceptionDetail, ...] | None = (
+        self.details: tuple[ExceptionDetailPayload, ...] | None = (
             tuple(details) if details else None
         )
 

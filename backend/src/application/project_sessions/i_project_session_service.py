@@ -2,8 +2,11 @@
 
 from abc import ABC, abstractmethod
 
+from src.application.project_sessions.clarification_output import ClarificationQuestionOutput
 from src.application.project_sessions.input import (
+    AnswerClarificationInput,
     CreateSessionInput,
+    GetPendingClarificationInput,
     GetSessionInput,
     ListSessionEventsInput,
     ListSessionsInput,
@@ -33,3 +36,13 @@ class IProjectSessionService(ABC):
 
     @abstractmethod
     async def send_message(self, data: SendSessionMessageInput) -> SessionTurnOutput: ...
+
+    @abstractmethod
+    async def get_pending_clarification(
+        self, data: GetPendingClarificationInput
+    ) -> ClarificationQuestionOutput | None: ...
+
+    @abstractmethod
+    async def answer_clarification(
+        self, data: AnswerClarificationInput
+    ) -> SessionTurnOutput: ...

@@ -58,6 +58,23 @@ class ProjectAccessPolicy:
             _raise_permission_denied()
         return access.project
 
+    async def require_owner_for_update(self, project_id: EntityID) -> Project:
+        """Khóa Project row rồi xác minh actor có quyền OWNER."""
+        project = await self._projects.get_by_id_for_update(project_id)
+        if project is None:
+            raise BusinessException(
+                code=ErrorCode.PROJECT_NOT_FOUND,
+                message="Dự án không tồn tại.",
+            )
+        if project.user_id == self.actor_id:
+            return project
+        membership = await self._members.get_by_project_and_user(
+            project_id, self.actor_id
+        )
+        if membership is None or membership.role != ProjectRole.OWNER:
+            _raise_permission_denied()
+        return project
+
     async def _get_project(self, project_id: EntityID) -> Project:
         project = await self._projects.get_by_id(project_id)
         if project is None:

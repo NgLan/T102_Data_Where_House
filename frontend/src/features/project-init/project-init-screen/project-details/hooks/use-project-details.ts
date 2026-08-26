@@ -14,12 +14,14 @@ import {
 } from "../schemas/project-details-schema";
 import {
   getProjectDetails,
+  saveRawRequirement,
   updateProjectDetails,
 } from "../services/project-details-api";
 
 const EMPTY_FORM: ProjectDetailsValues = {
   name: "",
   domain: "",
+  description: "",
   requirement: "",
 };
 
@@ -45,7 +47,9 @@ export function useProjectDetails(projectId: string) {
     mutationFn: (values: ProjectDetailsValues) =>
       updateProject(projectId, values),
     onSuccess: async (project) => {
-      form.reset(toFormValues(project));
+      form.resetField("name", { defaultValue: project.name });
+      form.resetField("domain", { defaultValue: project.domain ?? "" });
+      form.resetField("description", { defaultValue: project.description ?? "" });
       queryClient.setQueryData(
         projectInitQueryKeys.project(projectId),
         project,
@@ -56,16 +60,60 @@ export function useProjectDetails(projectId: string) {
           queryKey: projectInitQueryKeys.status(projectId),
         }),
       ]);
-      notifySuccess("MSG_PROJECT_DETAILS_SAVED");
     },
   });
-  const save = async (): Promise<boolean> => {
-    if (!form.formState.isDirty) return true;
+  const rawRequirementMutation = useMutation({
+    mutationKey: ["save-raw-requirement", projectId],
+    mutationFn: (input: { requirement: string; expectedRevision: number }) =>
+      saveRawRequirement(
+        projectId,
+        input.requirement,
+        input.expectedRevision,
+      ),
+    onSuccess: async (raw) => {
+      if (!raw) return;
+      form.resetField("requirement", {
+        defaultValue: raw.requirement ?? "",
+      });
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: projectInitQueryKeys.project(projectId),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: projectInitQueryKeys.clarification(projectId),
+        }),
+      ]);
+    },
+  });
+  const persistDraft = async (shouldNotify: boolean): Promise<boolean> => {
     if (!(await form.trigger())) return false;
-    await updateMutation.mutateAsync(form.getValues());
+    const values = form.getValues();
+    const updated = await updateMutation.mutateAsync(values);
+    const raw = await rawRequirementMutation.mutateAsync({
+      requirement: values.requirement,
+      expectedRevision: updated.requirement_revision,
+    });
+    form.reset(toFormValues({ ...updated, requirement: raw.requirement }));
+    await queryClient.invalidateQueries({
+      queryKey: projectInitQueryKeys.clarification(projectId),
+    });
+    if (shouldNotify) notifySuccess("MSG_PROJECT_DRAFT_SAVED");
     return true;
   };
-  return { form, projectQuery, save, updateMutation };
+  return {
+    form,
+    projectQuery,
+    saveDraft: () => persistDraft(true),
+    saveInputsForWorkflow: () => persistDraft(false),
+    updateMutation,
+    rawRequirementMutation,
+    isInfoDirty: Boolean(
+      form.formState.dirtyFields.name ||
+        form.formState.dirtyFields.domain ||
+        form.formState.dirtyFields.description,
+    ),
+    isRequirementDirty: Boolean(form.formState.dirtyFields.requirement),
+  };
 }
 
 async function updateProject(projectId: string, values: ProjectDetailsValues) {
@@ -77,11 +125,13 @@ async function updateProject(projectId: string, values: ProjectDetailsValues) {
 function toFormValues(project: {
   name: string;
   domain: string | null;
+  description: string | null;
   requirement: string | null;
 }): ProjectDetailsValues {
   return {
     name: project.name,
     domain: project.domain ?? "",
+    description: project.description ?? "",
     requirement: project.requirement ?? "",
   };
 }

@@ -19,9 +19,12 @@ from src.domain.data_source.enums import (
     DataSourceAnalysisStatus,
     DataSourceType,
     RelationshipType,
+    SourceSemanticDecision,
+    SourceSemanticProvenance,
 )
 from src.domain.data_source.i_data_source_repository import IDataSourceRepository
 from src.domain.data_source.rules import normalize_data_source_fields
+from src.domain.data_source.semantic_metadata import SourceSemanticAnnotation
 from src.domain.data_source.value_objects import (
     ColumnMetadata,
     ColumnUpdate,
@@ -34,6 +37,9 @@ __all__: list[str] = [
     "DataSource",
     "DataSourceType",
     "RelationshipType",
+    "SourceSemanticAnnotation",
+    "SourceSemanticDecision",
+    "SourceSemanticProvenance",
     "SchemaMetadata",
     "TableMetadata",
     "ColumnMetadata",

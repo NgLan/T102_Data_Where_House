@@ -21,9 +21,17 @@ class UpdateProjectInput:
 
     project_id: EntityID
     name: str
-    requirement: str | None = None
     domain: str | None = None
     description: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class SaveRawRequirementInput:
+    """Dữ liệu lưu Raw Requirement với optimistic concurrency."""
+
+    project_id: EntityID
+    requirement: str | None
+    expected_revision: int
 
 
 @dataclass(frozen=True, slots=True)

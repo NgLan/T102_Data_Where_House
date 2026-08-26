@@ -19,3 +19,9 @@ export function notifyAppError(notification: AppNotification): void {
 export function notifyAppWarning(notification: AppNotification): void {
   toast.warning(notification.title, { description: notification.message });
 }
+
+/** Hiển thị thông tin qua registry toast dùng chung. */
+export function notifyAppInfo(notification: AppNotification): void {
+  toast.info(notification.title, { description: notification.message });
+}
+

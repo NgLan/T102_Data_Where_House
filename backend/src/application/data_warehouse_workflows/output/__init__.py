@@ -8,10 +8,16 @@ from src.application.data_warehouse_workflows.output.models import (
     GeneratedAnalyticalRequirement,
     GeneratedDbml,
     GeneratedRequirement,
+    InputReadinessStatus,
     RecommendedWorkflowAction,
     ValidationIssue,
     ValidationIssueCode,
     ValidationSeverity,
+)
+from src.application.data_warehouse_workflows.output.source_coverage import (
+    SourceCoverageAssessmentOutput,
+    SourceCoverageBatchOutput,
+    SourceCoverageCandidateOutput,
 )
 
 __all__ = [
@@ -22,8 +28,12 @@ __all__ = [
     "GeneratedAnalyticalRequirement",
     "GeneratedDbml",
     "GeneratedRequirement",
+    "InputReadinessStatus",
     "RecommendedWorkflowAction",
     "ValidationIssue",
     "ValidationIssueCode",
     "ValidationSeverity",
+    "SourceCoverageAssessmentOutput",
+    "SourceCoverageBatchOutput",
+    "SourceCoverageCandidateOutput",
 ]

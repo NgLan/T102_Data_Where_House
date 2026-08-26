@@ -9,6 +9,7 @@ from src.domain.shared.types import EntityID
 
 if TYPE_CHECKING:
     from src.application.data_models.output import ChangeProposalDetailOutput
+    from src.application.data_warehouse_workflows.output.source_coverage import SourceCoverageBatchOutput
 
 
 class ValidationSeverity(StrEnum):
@@ -34,6 +35,15 @@ class RecommendedWorkflowAction(StrEnum):
     NONE = "NONE"
     ANALYZE_CHANGES = "ANALYZE_CHANGES"
     UPDATE_DATA_MODEL = "UPDATE_DATA_MODEL"
+
+
+class InputReadinessStatus(StrEnum):
+    """Gate quyết định workflow có được phép gọi DWDesignAgent hay không."""
+
+    REQUIREMENT_CLARIFICATION_REQUIRED = "REQUIREMENT_CLARIFICATION_REQUIRED"
+    SOURCE_CONFIRMATION_REQUIRED = "SOURCE_CONFIRMATION_REQUIRED"
+    SOURCE_DATA_REQUIRED = "SOURCE_DATA_REQUIRED"
+    READY_FOR_DESIGN = "READY_FOR_DESIGN"
 
 
 @dataclass(frozen=True, slots=True)
@@ -69,6 +79,7 @@ class AgentTurnKind(StrEnum):
     """Loại kết quả công khai của một lượt Agent."""
 
     CLARIFICATION = "clarification"
+    NO_CHANGE = "no_change"
     PROPOSAL = "proposal"
 
 
@@ -78,6 +89,9 @@ class ConversationDesignResult:
 
     kind: AgentTurnKind
     question: str | None = None
+    options: tuple[str, ...] = ()
+    allow_custom_answer: bool = False
+    reason: str | None = None
     dbml: str | None = None
     summary: str | None = None
 
@@ -88,8 +102,12 @@ class AgentTurnOutput:
 
     kind: AgentTurnKind
     question: str | None = None
+    options: tuple[str, ...] = ()
+    allow_custom_answer: bool = False
+    reason: str | None = None
     proposal: "ChangeProposalDetailOutput | None" = None
     summary: str | None = None
+    original_intent: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -112,4 +130,7 @@ class AnalysisStatusOutput:
     source_analysis_outdated: bool
     data_model_outdated: bool
     data_model_exists: bool
+    source_revision: int
     recommended_action: RecommendedWorkflowAction
+    readiness_status: InputReadinessStatus
+    source_coverage_batch: "SourceCoverageBatchOutput | None" = None

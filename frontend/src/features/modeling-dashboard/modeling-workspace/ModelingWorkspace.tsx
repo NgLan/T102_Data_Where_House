@@ -93,6 +93,7 @@ export function ModelingWorkspace({ projectId }: { projectId: string }) {
       sessions={chat.sessions}
       selectedSessionId={chat.selectedSessionId}
       events={chat.events}
+      pendingClarification={chat.pendingClarification}
       draft={chat.draft}
       isSending={chat.isSending}
       canSend={chat.canSend}
@@ -101,6 +102,7 @@ export function ModelingWorkspace({ projectId }: { projectId: string }) {
       onNewSession={() => void chat.createSession()}
       onDraftChange={chat.setDraft}
       onSend={() => void chat.send()}
+      onAnswerClarification={(answer) => void chat.answerClarification(answer)}
       onDockChange={setAgentDock}
       onRenameSession={(title) => void chat.renameSession(title)}
     />
@@ -128,7 +130,6 @@ export function ModelingWorkspace({ projectId }: { projectId: string }) {
         lastSavedAt={workspace.snapshot?.updated_at ?? null}
         isInspectorOpen={isInspectorOpen}
         hasExistingModel={Boolean(workspace.snapshot)}
-        projectId={projectId}
         status={workspace.status}
         onGenerate={() => void workspace.generate()}
         onReload={() => void workspace.load()}

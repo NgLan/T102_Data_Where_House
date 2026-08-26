@@ -1,5 +1,7 @@
 import type { ErrorDetail } from "../generated/types.gen";
 
+export type ApiErrorDetail = ErrorDetail;
+
 /** Nhóm lỗi chuẩn hóa quyết định cách giao diện phản hồi. */
 export type ApiErrorKind =
   | "authentication"
@@ -19,7 +21,7 @@ export interface ApiErrorInput {
   status: number | null;
   errorCode: string;
   message: string;
-  details: readonly ErrorDetail[];
+  details: readonly ApiErrorDetail[];
   kind: ApiErrorKind;
   originalError: unknown;
 }
@@ -28,7 +30,7 @@ export interface ApiErrorInput {
 export class ApiError extends Error {
   readonly status: number | null;
   readonly errorCode: string;
-  readonly details: readonly ErrorDetail[];
+  readonly details: readonly ApiErrorDetail[];
   readonly kind: ApiErrorKind;
   readonly originalError: unknown;
 
@@ -58,5 +60,9 @@ export function isApiError(error: unknown): error is ApiError {
 export function isApiValidationError(
   error: ApiError,
 ): error is ApiValidationError {
-  return error.kind === "validation" && error.details.length > 0;
+  return error.kind === "validation" && error.details.every(isFieldErrorDetail);
+}
+
+function isFieldErrorDetail(detail: ApiErrorDetail): detail is ErrorDetail {
+  return "field" in detail && "message" in detail;
 }

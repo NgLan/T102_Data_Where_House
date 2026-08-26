@@ -1,5 +1,6 @@
 {
   "MSG_PROJECT_DETAILS_SAVED": "Project details saved successfully.",
+  "MSG_RAW_REQUIREMENT_SAVED": "Raw requirement saved.",
   "MSG_DATA_SOURCES_UPLOADED": "Successfully uploaded {{count}} source file(s).",
   "MSG_DATA_SOURCE_DELETED": "Source data deleted successfully.",
   "TXT_SUCCESS_TITLE": "Success",
@@ -36,5 +37,9 @@
   "MSG_SYSTEM_ERROR": "The system encountered an error. Please try again later.",
   "MSG_VALIDATION_ERROR": "Some submitted fields are invalid.",
   "TXT_RUNTIME_ERROR_TITLE": "Something went wrong",
-  "TXT_RUNTIME_ERROR_DESCRIPTION": "The page could not be displayed. Try again to recover it."
+  "TXT_RUNTIME_ERROR_DESCRIPTION": "The page could not be displayed. Try again to recover it.",
+  "MSG_SOURCE_COVERAGE_BLOCKED": "Review the source data items before continuing.",
+  "MSG_SOURCE_CONFIRMATION_SAVED": "Choice saved.",
+  "MSG_SOURCE_COVERAGE_RECHECKED": "Source data rechecked.",
+  "MSG_PROJECT_DRAFT_SAVED": "Project draft saved. No analysis was run."
 }

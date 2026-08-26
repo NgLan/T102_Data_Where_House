@@ -8,8 +8,17 @@ import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from main import app
 from src.application.projects.i_project_service import IProjectService
-from src.application.projects.input import CreateProjectInput, ProjectIdInput, UpdateProjectInput
-from src.application.projects.output import ProjectOutput, ProjectSummaryOutput
+from src.application.projects.input import (
+    CreateProjectInput,
+    ProjectIdInput,
+    SaveRawRequirementInput,
+    UpdateProjectInput,
+)
+from src.application.projects.output import (
+    ProjectOutput,
+    ProjectSummaryOutput,
+    RawRequirementOutput,
+)
 from src.common.exceptions.business import BusinessException
 from src.common.exceptions.error_codes import ErrorCode
 from src.common.exceptions.infrastructure import InfrastructureException
@@ -45,8 +54,17 @@ class StubProjectService(IProjectService):
     @override
     async def update_project(self, data: UpdateProjectInput) -> ProjectOutput:
         raise_for_test_id(data.project_id)
-        self.project = make_project_output(name=data.name, requirement=data.requirement)
+        self.project = make_project_output(
+            name=data.name, requirement=self.project.requirement
+        )
         return self.project
+
+    @override
+    async def save_raw_requirement(
+        self, data: SaveRawRequirementInput
+    ) -> RawRequirementOutput:
+        self.project = make_project_output(requirement=data.requirement)
+        return RawRequirementOutput(data.requirement, data.expected_revision + 1)
 
     @override
     async def delete_project(self, data: ProjectIdInput) -> None:
@@ -71,10 +89,18 @@ async def test_project_endpoints_have_expected_runtime_contract(project_client: 
     listed = await project_client.get("/api/v1/projects")
     project_id = created.json()["data"]["id"]
     fetched = await project_client.get(f"/api/v1/projects/{project_id}")
-    updated = await project_client.put(f"/api/v1/projects/{project_id}", json=body)
+    updated = await project_client.put(
+        f"/api/v1/projects/{project_id}",
+        json={"name": body["name"], "domain": body["domain"]},
+    )
+    raw_saved = await project_client.put(
+        f"/api/v1/projects/{project_id}/requirement",
+        json={"requirement": "Updated raw requirement", "expected_revision": 0},
+    )
     deleted = await project_client.delete(f"/api/v1/projects/{project_id}")
-    assert [created.status_code, listed.status_code, fetched.status_code, updated.status_code, deleted.status_code] == [
+    assert [created.status_code, listed.status_code, fetched.status_code, updated.status_code, raw_saved.status_code, deleted.status_code] == [
         201,
+        200,
         200,
         200,
         200,
@@ -138,11 +164,15 @@ def test_project_openapi_has_stable_operations_and_concrete_envelopes() -> None:
         "deleteProject",
     ]
     assert "204" in item["delete"]["responses"]
+    assert paths["/api/v1/projects/{project_id}/requirement"]["put"]["operationId"] == (
+        "saveProjectRawRequirement"
+    )
     create_ref = paths["/api/v1/projects"]["post"]["responses"]["201"]["content"]["application/json"]["schema"]["$ref"]
     assert "ApiResponse_ProjectResponse_" in create_ref
     components = schema["components"]["schemas"]
     assert "data_sources" not in components["CreateProjectRequest"]["properties"]
     assert "data_sources" not in components["UpdateProjectRequest"]["properties"]
+    assert "requirement" not in components["UpdateProjectRequest"]["properties"]
     summary_properties = components["ProjectSummaryResponse"]["properties"]
     assert "data_source_count" in summary_properties
     assert "requirement" not in summary_properties

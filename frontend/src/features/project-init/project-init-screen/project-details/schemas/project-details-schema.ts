@@ -1,10 +1,11 @@
-import { zUpdateProjectRequest } from "@/api";
+import { zSaveRawRequirementRequest, zUpdateProjectRequest } from "@/api";
 import { z } from "zod";
 
 /** Giá trị chuỗi mà input HTML sử dụng trước khi chuyển sang contract API nullable. */
 export interface ProjectDetailsValues {
   name: string;
   domain: string;
+  description: string;
   requirement: string;
 }
 
@@ -16,7 +17,7 @@ export function parseProjectDetailsForm(values: ProjectDetailsValues) {
   return zUpdateProjectRequest.safeParse({
     name: values.name.trim(),
     domain: values.domain.trim() || null,
-    requirement: values.requirement.trim() || null,
+    description: values.description.trim() || null,
   });
 }
 
@@ -25,6 +26,7 @@ export const projectDetailsFormSchema = z
   .object({
     name: z.string(),
     domain: z.string(),
+    description: z.string(),
     requirement: z.string(),
   })
   .superRefine((values, context) => {
@@ -39,13 +41,32 @@ export const projectDetailsFormSchema = z
           path: issue.path,
         }),
       );
+    const rawResult = zSaveRawRequirementRequest.safeParse({
+      requirement: values.requirement.trim() || null,
+      expected_revision: 0,
+    });
+    if (!rawResult.success)
+      rawResult.error.issues.forEach((issue) =>
+        context.addIssue({
+          code: "custom",
+          message: projectDetailsIssueKey(issue),
+          path: issue.path,
+        }),
+      );
+    const raw = values.requirement.trim();
+    if (raw && raw.length < 10)
+      context.addIssue({
+        code: "custom",
+        message: "MSG_PROJECT_REQUIREMENT_MIN",
+        path: ["requirement"],
+      });
   });
 
 function normalizeProjectDetails(values: ProjectDetailsValues) {
   return {
     name: values.name.trim(),
     domain: values.domain.trim() || null,
-    requirement: values.requirement.trim() || null,
+    description: values.description.trim() || null,
   };
 }
 

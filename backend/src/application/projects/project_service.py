@@ -6,9 +6,16 @@ from src.application.projects.i_project_service import IProjectArtifactStore, IP
 from src.application.projects.input import (
     CreateProjectInput,
     ProjectIdInput,
+    SaveRawRequirementInput,
     UpdateProjectInput,
 )
-from src.application.projects.output import ProjectOutput, ProjectSummaryOutput
+from src.application.projects.output import (
+    ProjectOutput,
+    ProjectSummaryOutput,
+    RawRequirementOutput,
+)
+from src.common.exceptions.business import BusinessException
+from src.common.exceptions.error_codes import ErrorCode
 from src.domain.data_model.entities import DataModel
 from src.domain.data_model.i_data_model_repository import IDataModelRepository
 from src.domain.data_source.i_data_source_repository import IDataSourceRepository
@@ -91,12 +98,31 @@ class ProjectService(IProjectService):
         """Cập nhật Project nếu actor là OWNER."""
         async with self._unit_of_work:
             project = await self._access.require_owner(data.project_id)
-            project.update_info(_project_details(data))
+            project.update_info(
+                ProjectDetails(data.name, project.requirement, data.domain, data.description)
+            )
             saved = await self._projects.save(project)
             await self._unit_of_work.commit()
         sources = await self._data_sources.list_by_project(saved.id)
         requirements = await self._requirements.list_by_project(saved.id)
         return ProjectOutput.from_domain(saved, tuple(sources), tuple(requirements))
+
+    @override
+    async def save_raw_requirement(
+        self, data: SaveRawRequirementInput
+    ) -> RawRequirementOutput:
+        """Lưu riêng Raw Requirement bằng row lock và expected revision."""
+        async with self._unit_of_work:
+            project = await self._access.require_owner_for_update(data.project_id)
+            if project.requirement_revision != data.expected_revision:
+                raise BusinessException(
+                    ErrorCode.REQUIREMENT_REVISION_CONFLICT,
+                    "Requirement đã thay đổi; hãy tải lại revision mới nhất.",
+                )
+            project.save_requirement(data.requirement)
+            saved = await self._projects.save(project)
+            await self._unit_of_work.commit()
+        return RawRequirementOutput(saved.requirement, saved.requirement_revision)
 
     @override
     async def delete_project(self, data: ProjectIdInput) -> None:
@@ -108,7 +134,7 @@ class ProjectService(IProjectService):
             await self._unit_of_work.commit()
 
 
-def _project_details(data: CreateProjectInput | UpdateProjectInput) -> ProjectDetails:
+def _project_details(data: CreateProjectInput) -> ProjectDetails:
     return ProjectDetails(data.name, data.requirement, data.domain, data.description)
 
 

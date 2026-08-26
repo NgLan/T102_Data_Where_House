@@ -1,26 +1,18 @@
 """Ranh giới gọi structured LLM dùng chung, có bảo vệ PII và dịch lỗi."""
 
 from dataclasses import dataclass
-from typing import Protocol, TypeVar
+from typing import TypeVar
 
-from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import HumanMessage, SystemMessage
 from pydantic import BaseModel
 from src.common.exceptions.error_codes import ErrorCode
 from src.common.exceptions.infrastructure import InfrastructureException
-from src.common.logging import get_logger
+from src.infrastructure.llm.exception_translator import translate_llm_failure
+from src.infrastructure.llm.failure_classifier import LlmFailureClassifier
+from src.infrastructure.llm.lazy_chat_model import StructuredChatModel, StructuredModel
 from src.infrastructure.security.pii_guard import PiiGuard
 
 StructuredOutput = TypeVar("StructuredOutput", bound=BaseModel)
-logger = get_logger(__name__)
-
-
-class StructuredModel(Protocol):
-    """Contract tối thiểu của structured model do LangChain tạo."""
-
-    async def ainvoke(self, messages: list[object]) -> BaseModel:
-        """Gọi mô hình với danh sách message."""
-        ...
 
 
 @dataclass(frozen=True, slots=True)
@@ -34,7 +26,7 @@ class RestoreContext:
 class StructuredLlmInvoker:
     """Thực hiện đúng một network invocation cho mỗi Agent operation."""
 
-    def __init__(self, chat_model: BaseChatModel, pii_guard: PiiGuard) -> None:
+    def __init__(self, chat_model: StructuredChatModel, pii_guard: PiiGuard) -> None:
         self._chat_model = chat_model
         self._pii_guard = pii_guard
 
@@ -67,47 +59,11 @@ async def _invoke_model(
         return await structured_model.ainvoke(
             [SystemMessage(content=system_prompt), HumanMessage(content=protected_prompt)]
         )
+    except InfrastructureException:
+        raise
     except Exception as exc:  # Provider SDK không có exception base chung.
-        logger.exception("Structured LLM invocation thất bại.")
-        raise _translate_llm_exception(exc) from exc
-
-
-def _translate_llm_exception(exc: Exception) -> InfrastructureException:
-    """Phân tích nguyên nhân ngoại lệ của provider thành ErrorCode chi tiết."""
-    message = str(exc)
-    code = _llm_error_code(message, type(exc).__name__)
-    return InfrastructureException(code, f"{_llm_error_prefix(code)}: {message}")
-
-
-def _llm_error_code(message: str, exception_type: str) -> ErrorCode:
-    normalized = message.casefold()
-    type_name = exception_type.casefold()
-    if "404" in message or "not found" in normalized or "not_found" in normalized:
-        return ErrorCode.LLM_MODEL_NOT_FOUND
-    if any(key in normalized for key in ("401", "403", "unauthorized", "authentication", "api_key", "api key")) or "authenticationerror" in type_name:
-        return ErrorCode.LLM_AUTHENTICATION_ERROR
-    if "quota" in normalized:
-        return ErrorCode.LLM_QUOTA_EXCEEDED
-    if any(key in normalized for key in ("429", "rate limit", "resourceexhausted")) or "ratelimiterror" in type_name:
-        return ErrorCode.LLM_RATE_LIMIT_ERROR
-    if any(key in normalized for key in ("timeout", "timed out", "connection")) or "timeouterror" in type_name:
-        return ErrorCode.LLM_TIMEOUT_ERROR
-    if "validation" in normalized or "outputparser" in type_name:
-        return ErrorCode.LLM_STRUCTURED_OUTPUT_ERROR
-    return ErrorCode.LLM_ERROR
-
-
-def _llm_error_prefix(code: ErrorCode) -> str:
-    prefixes = {
-        ErrorCode.LLM_MODEL_NOT_FOUND: "Mô hình LLM không tồn tại hoặc không được provider hỗ trợ",
-        ErrorCode.LLM_AUTHENTICATION_ERROR: "Xác thực API Key của LLM provider thất bại",
-        ErrorCode.LLM_QUOTA_EXCEEDED: "Tài khoản LLM đã hết hạn ngạch",
-        ErrorCode.LLM_RATE_LIMIT_ERROR: "Vượt quá giới hạn tần suất gọi LLM",
-        ErrorCode.LLM_TIMEOUT_ERROR: "Kết nối tới dịch vụ LLM bị quá thời gian chờ",
-        ErrorCode.LLM_STRUCTURED_OUTPUT_ERROR: "Structured output của LLM không hợp lệ",
-        ErrorCode.LLM_ERROR: "Lỗi khi gọi mô hình ngôn ngữ",
-    }
-    return prefixes[code]
+        decision = LlmFailureClassifier().classify(exc)
+        raise translate_llm_failure(decision) from exc
 
 
 def _ensure_no_residual_placeholder(result: BaseModel, pii_guard: PiiGuard) -> None:

@@ -78,7 +78,8 @@ def _build_table(data: _TableBuildInput) -> TableMetadata:
             zip(data.table.columns, data.decisions, strict=True)
         )
     )
-    return TableMetadata(data.table.table_name, columns)
+    row_count = max((column.total_rows for column in data.table.columns), default=0)
+    return TableMetadata(data.table.table_name, columns, row_count)
 
 
 def _build_column(data: _ColumnBuildInput) -> ColumnMetadata:

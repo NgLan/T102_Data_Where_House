@@ -1,9 +1,21 @@
 """Module quản lý Phiên Agent (Agent Session Domain)."""
 
+from src.domain.project_session.clarification import (
+    ClarificationAnswerMetadata,
+    ClarificationQuestionMetadata,
+)
+from src.domain.project_session.conversation_summary import (
+    ConversationSummary,
+    ConversationSummaryUpdate,
+    ResolvedClarification,
+    SummaryDecision,
+    SummaryItem,
+)
 from src.domain.project_session.entities import ProjectSession, SessionEvent
 from src.domain.project_session.enums import (
     AgentResultStatus,
     AgentType,
+    ClarificationAnswerKind,
     SessionEventRole,
     SessionEventType,
     SessionStatus,
@@ -33,10 +45,18 @@ __all__: list[str] = [
     "SessionEventRole",
     "SessionEventType",
     "AgentType",
+    "ClarificationAnswerKind",
     "AgentResultStatus",
     "ToolResultStatus",
     "SessionEventMetadata",
     "MessageMetadata",
+    "ClarificationQuestionMetadata",
+    "ClarificationAnswerMetadata",
+    "ConversationSummary",
+    "ConversationSummaryUpdate",
+    "SummaryItem",
+    "SummaryDecision",
+    "ResolvedClarification",
     "AgentCallMetadata",
     "AgentResultMetadata",
     "ToolCallMetadata",

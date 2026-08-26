@@ -1,6 +1,7 @@
 "use client";
 
 import { MainLayout } from "@/common/components/layout/MainLayout";
+import { DataModelStepGate } from "@/common/components/workflow/DataModelStepGate";
 import { ModelingWorkspace } from "./modeling-workspace/ModelingWorkspace";
 
 interface ModelingDashboardScreenProps {
@@ -16,9 +17,11 @@ export function ModelingDashboardScreen({
 }: ModelingDashboardScreenProps) {
   return (
     <MainLayout isFullWidth isFlush selectedProjectId={projectId}>
-      <div className="flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-300">
-        <ModelingWorkspace projectId={projectId} />
-      </div>
+      <DataModelStepGate projectId={projectId} currentStep="modeling">
+        <div className="flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <ModelingWorkspace projectId={projectId} />
+        </div>
+      </DataModelStepGate>
     </MainLayout>
   );
 }

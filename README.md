@@ -84,10 +84,16 @@ copy .env.example .env
 | **`POSTGRES_DB`** | `ai20k_db` | Tên cơ sở dữ liệu chính. |
 | **`DATABASE_URL`** | `postgresql+asyncpg://...` | Chuỗi kết nối Async Engine cho SQLAlchemy. |
 | **`LLM_PROVIDER`** | `openai` | Provider: `openai`, `openai_compatible` hoặc `google`. |
-| **`LLM_API_KEY`** | trống | API key dùng chung; có fallback sang biến provider cũ. |
+| **`LLM_API_KEYS`** | trống | JSON array các key theo slot, ví dụ `'["key_1","key_2"]'`; ưu tiên cao nhất. |
+| **`LLM_API_KEY`** | trống | Fallback migration một key khi `LLM_API_KEYS` không được khai báo. |
 | **`LLM_BASE_URL`** | trống | Base URL cho OpenAI-compatible/OpenRouter/local. |
 | **`MODEL_NAME`** | provider default | Tên model dùng cho Agent operation. |
 | **`LOG_LEVEL`** | `INFO` | Mức độ ghi log hệ thống (`DEBUG`, `INFO`, `WARNING`, `ERROR`). |
+
+LLM key rotation giữ trạng thái trong RAM của từng backend process. Log chỉ ghi slot 0-based và
+lý do (`authentication`, `quota_exhausted`, `rate_limit`), không ghi key hoặc fingerprint. Khi một
+slot bị disable, thay đúng phần tử tương ứng trong `LLM_API_KEYS` rồi restart/redeploy backend;
+ứng dụng không tự sửa file `.env`.
 
 ---
 

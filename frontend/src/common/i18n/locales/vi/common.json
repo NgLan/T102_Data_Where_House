@@ -51,5 +51,12 @@
   "TXT_DOMAIN_MANUFACTURING": "Sản xuất",
   "TXT_DOMAIN_TELECOMMUNICATIONS": "Viễn thông",
   "TXT_DOMAIN_TRAVEL_HOSPITALITY": "Du lịch và khách sạn",
-  "TXT_DOMAIN_CUSTOM": "Lĩnh vực tùy chỉnh"
+  "TXT_DOMAIN_CUSTOM": "Lĩnh vực tùy chỉnh",
+  "TXT_WORKFLOW_NAVIGATION": "Quy trình dự án",
+  "TXT_WORKFLOW_STEP_PROJECT_INIT": "Khởi tạo",
+  "TXT_WORKFLOW_STEP_MODELING": "Thiết kế",
+  "TXT_WORKFLOW_STEP_SANDBOX": "Xuất dữ liệu",
+  "TXT_DATA_MODEL_UNAVAILABLE_TITLE": "Chưa có Data Model",
+  "TXT_DATA_MODEL_UNAVAILABLE_DESCRIPTION": "Vui lòng quay lại Bước 1 và chạy Lưu và phân tích.",
+  "BTN_BACK_TO_PROJECT_INIT": "Quay lại Bước 1"
 }

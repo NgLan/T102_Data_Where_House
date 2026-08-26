@@ -16,6 +16,10 @@ export function mapProjectApiFieldErrors(
 ): number {
   let unmappedCount = 0;
   for (const detail of error.details) {
+    if (!("field" in detail)) {
+      unmappedCount += 1;
+      continue;
+    }
     const field = resolveProjectField(detail.field, domainSelection);
     if (!field) {
       unmappedCount += 1;

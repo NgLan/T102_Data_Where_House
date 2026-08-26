@@ -1,9 +1,9 @@
 import type { DiffLine } from "../utils/dbml-text-diff";
 
 const LINE_STYLES: Record<DiffLine["type"], string> = {
-  added: "bg-emerald-50 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-300",
-  removed: "bg-rose-50 text-rose-800 dark:bg-rose-500/10 dark:text-rose-300",
-  unchanged: "text-slate-700 dark:text-slate-400",
+  added: "bg-emerald-100/70 text-emerald-900 dark:bg-emerald-500/15 dark:text-emerald-300",
+  removed: "bg-rose-100/70 text-rose-900 dark:bg-rose-500/15 dark:text-rose-300",
+  unchanged: "text-slate-800 dark:text-slate-200",
 };
 
 const LINE_MARKERS: Record<DiffLine["type"], string> = {
@@ -43,7 +43,7 @@ export function SplitDbmlDiff(props: {
 }) {
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
-      <div className="flex shrink-0 border-b border-slate-200 bg-slate-100/90 text-[11px] font-semibold text-slate-700 dark:border-slate-800 dark:bg-slate-900/80 dark:text-slate-300">
+      <div className="flex shrink-0 border-b border-slate-200 bg-slate-100 text-[11px] font-semibold text-slate-700 dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-300">
         <div className="min-w-0 basis-1/2 truncate border-r border-slate-200 px-3.5 py-2 dark:border-slate-800">
           {props.currentLabel}
         </div>
@@ -74,7 +74,7 @@ function DiffSide({ line, side }: { line: DiffLine; side: "old" | "new" }) {
           : ""
       } ${
         isEmpty
-          ? "bg-slate-100/50 dark:bg-slate-900/30"
+          ? "bg-slate-100/60 dark:bg-slate-900/40"
           : LINE_STYLES[line.type]
       }`}
     >
@@ -88,7 +88,7 @@ function DiffSide({ line, side }: { line: DiffLine; side: "old" | "new" }) {
 
 function LineNumber({ value }: { value: number | null }) {
   return (
-    <span className="w-10 shrink-0 select-none pr-2 text-right text-slate-400 dark:text-slate-600">
+    <span className="w-10 shrink-0 select-none pr-2 text-right font-mono text-[11.5px] text-slate-400 dark:text-slate-500">
       {value ?? ""}
     </span>
   );

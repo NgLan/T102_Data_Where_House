@@ -8,6 +8,7 @@ from src.infrastructure.database.models.project import ProjectModel
 from src.infrastructure.database.models.project_member import ProjectMemberModel
 from src.infrastructure.database.models.project_session import ProjectSessionModel
 from src.infrastructure.database.models.requirement import RequirementModel
+from src.infrastructure.database.models.requirement_file import RequirementFileModel
 from src.infrastructure.database.models.revoked_token import RevokedTokenModel
 from src.infrastructure.database.models.sandbox_config import SandboxConfigModel
 from src.infrastructure.database.models.session_event import SessionEventModel
@@ -18,6 +19,7 @@ __all__: list[str] = [
     "ProjectModel",
     "ProjectMemberModel",
     "RequirementModel",
+    "RequirementFileModel",
     "RevokedTokenModel",
     "AnalyticalRequirementModel",
     "DataSourceModel",

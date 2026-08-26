@@ -1,5 +1,9 @@
 """Mapper giữa SessionEvent Domain entity và ORM model."""
 
+from src.domain.project_session.clarification import (
+    ClarificationAnswerMetadata,
+    ClarificationQuestionMetadata,
+)
 from src.domain.project_session.entities import SessionEvent
 from src.domain.project_session.enums import SessionEventRole, SessionEventType
 from src.domain.project_session.value_objects import (
@@ -18,6 +22,8 @@ from src.infrastructure.database.models.session_event import SessionEventModel
 
 _METADATA_TYPES: dict[SessionEventType, type[SessionEventMetadata]] = {
     SessionEventType.MESSAGE: MessageMetadata,
+    SessionEventType.QUESTION: ClarificationQuestionMetadata,
+    SessionEventType.ANSWER: ClarificationAnswerMetadata,
     SessionEventType.AGENT_CALL: AgentCallMetadata,
     SessionEventType.AGENT_RESULT: AgentResultMetadata,
     SessionEventType.TOOL_CALL: ToolCallMetadata,

@@ -18,6 +18,7 @@ if TYPE_CHECKING:
     from src.infrastructure.database.models.project_member import ProjectMemberModel
     from src.infrastructure.database.models.project_session import ProjectSessionModel
     from src.infrastructure.database.models.requirement import RequirementModel
+    from src.infrastructure.database.models.requirement_file import RequirementFileModel
     from src.infrastructure.database.models.user import UserModel
 
 
@@ -33,7 +34,12 @@ class ProjectModel(Base):
     requirement_revision: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     source_revision: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     analyzed_requirement_revision: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    confirmed_requirement_revision: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    derived_analytical_requirement_revision: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     analyzed_source_revision: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    covered_analytical_requirement_revision: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=0
+    )
     status: Mapped[str] = mapped_column(String(MAX_STATUS_LENGTH), nullable=False, default="ACTIVE", index=True)
     user_id: Mapped[UUID] = mapped_column(
         ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
@@ -50,6 +56,11 @@ class ProjectModel(Base):
     )
     requirements: Mapped[list["RequirementModel"]] = relationship(
         "RequirementModel", back_populates="project", cascade="all, delete-orphan"
+    )
+    requirement_files: Mapped[list["RequirementFileModel"]] = relationship(
+        "RequirementFileModel",
+        back_populates="project",
+        cascade="all, delete-orphan",
     )
     data_sources: Mapped[list["DataSourceModel"]] = relationship(
         "DataSourceModel", back_populates="project", cascade="all, delete-orphan"

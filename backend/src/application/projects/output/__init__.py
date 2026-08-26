@@ -3,9 +3,11 @@
 from src.application.projects.output.models import (
     ProjectOutput,
     ProjectSummaryOutput,
+    RawRequirementOutput,
 )
 
 __all__ = [
     "ProjectOutput",
     "ProjectSummaryOutput",
+    "RawRequirementOutput",
 ]

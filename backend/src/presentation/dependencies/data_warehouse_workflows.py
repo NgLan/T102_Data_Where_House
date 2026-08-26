@@ -16,9 +16,14 @@ from src.application.data_warehouse_workflows.i_data_warehouse_workflow_service 
 from src.application.data_warehouse_workflows.source_analysis_runner import (
     WorkflowSourceAnalysisRunner,
 )
+from src.infrastructure.agents.conversation_context_builder import (
+    ConversationContextBuilder,
+)
+from src.infrastructure.agents.conversation_token_policy import ConversationTokenPolicy
 from src.infrastructure.agents.data_warehouse_design_agent import DataWarehouseDesignAgent
 from src.infrastructure.agents.requirement_analysis_agent import RequirementAnalysisAgent
 from src.infrastructure.database.session import get_async_db_session
+from src.infrastructure.llm.approximate_token_estimator import ApproximateTokenEstimator
 from src.infrastructure.llm.column_type_classifier import ColumnTypeClassifier
 from src.infrastructure.llm.factory import get_cached_chat_model
 from src.infrastructure.repositories.postgres_analytical_requirement_repository import (
@@ -78,7 +83,11 @@ def get_data_warehouse_workflow(
         repositories.changes,
         RequirementAnalysisAgent(get_cached_chat_model, pii_guard),
         source_analysis,
-        DataWarehouseDesignAgent(get_cached_chat_model, pii_guard),
+        DataWarehouseDesignAgent(
+            get_cached_chat_model,
+            pii_guard,
+            _conversation_context_builder(),
+        ),
         get_validation_engine(),
         unit_of_work,
         access,
@@ -101,3 +110,17 @@ DataWarehouseWorkflowDependency = Annotated[
     IDataWarehouseWorkflowService,
     Depends(get_data_warehouse_workflow),
 ]
+
+
+def _conversation_context_builder() -> ConversationContextBuilder:
+    settings = get_settings()
+    return ConversationContextBuilder(
+        ConversationTokenPolicy(
+            settings.conversation_context_window_tokens,
+            settings.agent_max_output_tokens,
+            settings.conversation_project_context_soft_target,
+            settings.conversation_summary_soft_target,
+            settings.conversation_history_soft_target,
+        ),
+        ApproximateTokenEstimator(settings.conversation_token_chars_per_token),
+    )

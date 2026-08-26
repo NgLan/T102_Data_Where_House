@@ -5,7 +5,11 @@ from uuid import UUID
 
 from fastapi import Path
 from pydantic import BaseModel, ConfigDict, Field
-from src.application.projects.input import CreateProjectInput, UpdateProjectInput
+from src.application.projects.input import (
+    CreateProjectInput,
+    SaveRawRequirementInput,
+    UpdateProjectInput,
+)
 from src.domain.project.project_details_rules import (
     MAX_PROJECT_DOMAIN_LENGTH,
     MAX_PROJECT_NAME_LENGTH,
@@ -17,7 +21,7 @@ ProjectIdPath = Annotated[UUID, Path(description="ID của Project")]
 
 
 class ProjectMutationRequest(BaseModel):
-    """Các trường Project dùng chung giữa create và full update."""
+    """Các trường Project information dùng chung giữa create và update."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -25,11 +29,6 @@ class ProjectMutationRequest(BaseModel):
         min_length=MIN_PROJECT_NAME_LENGTH,
         max_length=MAX_PROJECT_NAME_LENGTH,
         description="Tên Project",
-    )
-    requirement: str | None = Field(
-        default=None,
-        min_length=MIN_PROJECT_REQUIREMENT_LENGTH,
-        description="Yêu cầu nghiệp vụ thô, có thể bổ sung sau khi tạo Project",
     )
     domain: str | None = Field(
         default=None,
@@ -41,6 +40,12 @@ class ProjectMutationRequest(BaseModel):
 
 class CreateProjectRequest(ProjectMutationRequest):
     """Payload tạo Project mới."""
+
+    requirement: str | None = Field(
+        default=None,
+        min_length=MIN_PROJECT_REQUIREMENT_LENGTH,
+        description="Yêu cầu nghiệp vụ thô, có thể bổ sung sau khi tạo Project",
+    )
 
     def to_application(self) -> CreateProjectInput:
         """Ánh xạ create request sang application input."""
@@ -60,7 +65,21 @@ class UpdateProjectRequest(ProjectMutationRequest):
         return UpdateProjectInput(
             project_id=project_id,
             name=self.name,
-            requirement=self.requirement,
             domain=self.domain,
             description=self.description,
+        )
+
+
+class SaveRawRequirementRequest(BaseModel):
+    """Payload lưu Raw Requirement độc lập Project information."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    requirement: str | None = Field(default=None, description="Raw Requirement Markdown")
+    expected_revision: int = Field(ge=0, description="Requirement revision phía client")
+
+    def to_application(self, project_id: UUID) -> SaveRawRequirementInput:
+        """Ánh xạ request sang application input."""
+        return SaveRawRequirementInput(
+            project_id, self.requirement, self.expected_revision
         )

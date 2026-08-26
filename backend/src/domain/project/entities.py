@@ -1,11 +1,11 @@
 """Các thực thể thuộc miền Dự án (Project Entities)."""
 
-from dataclasses import dataclass, field
-from datetime import datetime
+from dataclasses import dataclass
 
 from src.common.exceptions.error_codes import ErrorCode
-from src.common.utils.datetime import ensure_utc, utc_now
 from src.domain.project.enums import ProjectRole, ProjectStatus
+from src.domain.project.project_details_rules import normalize_project_requirement
+from src.domain.project.project_member import ProjectMember
 from src.domain.project.project_status_rules import validate_project_editable, validate_status_transition
 from src.domain.project.value_objects import ProjectDetails
 from src.domain.shared.entity import BaseEntity
@@ -23,7 +23,10 @@ class Project(BaseEntity):
     requirement_revision: int = 0
     source_revision: int = 0
     analyzed_requirement_revision: int = 0
+    confirmed_requirement_revision: int = 0
+    derived_analytical_requirement_revision: int = 0
     analyzed_source_revision: int = 0
+    covered_analytical_requirement_revision: int = 0
     description: str | None = None
     domain: str | None = None
     status: ProjectStatus = ProjectStatus.ACTIVE
@@ -31,11 +34,8 @@ class Project(BaseEntity):
     def __post_init__(self) -> None:
         """Thực thi kiểm tra dữ liệu đầu vào của Dự án."""
         super().__post_init__()
-        self.status = normalize_str_enum(
-            self.status,
-            ProjectStatus,
-            ErrorCode.INVALID_PROJECT_STATUS_TRANSITION,
-        )
+        status_error = ErrorCode.INVALID_PROJECT_STATUS_TRANSITION
+        self.status = normalize_str_enum(self.status, ProjectStatus, status_error)
         details = ProjectDetails(
             name=self.name,
             requirement=self.requirement,
@@ -47,14 +47,7 @@ class Project(BaseEntity):
             self.requirement_revision = 1
 
     def update_status(self, new_status: ProjectStatus) -> None:
-        """Chuyển trạng thái dự án và cập nhật timestamp.
-
-        Args:
-            new_status: Trạng thái đích.
-
-        Raises:
-            BusinessException: Khi transition không được phép.
-        """
+        """Chuyển trạng thái dự án nếu transition hợp lệ."""
         normalized_status = normalize_str_enum(
             new_status,
             ProjectStatus,
@@ -65,14 +58,7 @@ class Project(BaseEntity):
         self.mark_updated()
 
     def update_info(self, details: ProjectDetails) -> None:
-        """Cập nhật thông tin dự án khi trạng thái cho phép.
-
-        Args:
-            details: Thông tin dự án đã được chuẩn hóa.
-
-        Raises:
-            BusinessException: Khi dự án không còn được chỉnh sửa.
-        """
+        """Cập nhật thông tin dự án khi trạng thái cho phép."""
         validate_project_editable(self.status)
         previous_requirement = self.requirement
         self._apply_details(details)
@@ -103,9 +89,42 @@ class Project(BaseEntity):
         self.analyzed_requirement_revision = self.requirement_revision
         self.mark_updated()
 
+    def save_requirement(self, requirement: str | None) -> bool:
+        """Lưu Raw Requirement và chỉ tăng revision khi normalized value đổi."""
+        validate_project_editable(self.status)
+        normalized = normalize_project_requirement(requirement)
+        if normalized == self.requirement:
+            return False
+        self.requirement = normalized
+        self.increment_requirement_revision()
+        return True
+
+    def mark_analytical_requirements_derived(self, is_outdated: bool = False) -> None:
+        """Ghi trạng thái analytical output so với Structured Requirements hiện hành."""
+        self.derived_analytical_requirement_revision = self.analyzed_requirement_revision + int(is_outdated)
+        self.mark_updated()
+
+    def is_analytical_analysis_outdated(self) -> bool:
+        """Kiểm tra analytical semantics có khớp Structured Requirements hiện hành."""
+        return (
+            self.derived_analytical_requirement_revision
+            != self.analyzed_requirement_revision
+        )
+
+    def is_source_coverage_outdated(self) -> bool:
+        """Kiểm tra source coverage có khớp analytical và source revisions."""
+        return (
+            self.covered_analytical_requirement_revision
+            != self.derived_analytical_requirement_revision
+            or self.is_source_analysis_outdated()
+        )
+
     def mark_source_analysis_completed(self) -> None:
         """Ghi nhận Analytical Requirements đã dùng source revision hiện tại."""
         self.analyzed_source_revision = self.source_revision
+        self.covered_analytical_requirement_revision = (
+            self.derived_analytical_requirement_revision
+        )
         self.mark_updated()
 
     def _apply_details(self, details: ProjectDetails) -> None:
@@ -116,29 +135,5 @@ class Project(BaseEntity):
         self.description = details.description
 
     def create_owner_member(self) -> "ProjectMember":
-        """Tạo membership OWNER cho người tạo dự án.
-
-        Returns:
-            Membership liên kết project ID và user ID hiện tại.
-        """
-        return ProjectMember(
-            project_id=self.id,
-            user_id=self.user_id,
-            role=ProjectRole.OWNER,
-        )
-
-
-@dataclass(eq=False, kw_only=True)
-class ProjectMember(BaseEntity):
-    """Thực thể đại diện cho Thành viên tham gia Dự án."""
-
-    project_id: EntityID
-    user_id: EntityID
-    role: ProjectRole = ProjectRole.MEMBER
-    joined_at: datetime = field(default_factory=utc_now)
-
-    def __post_init__(self) -> None:
-        """Đảm bảo mốc thời gian joined_at có timezone UTC."""
-        super().__post_init__()
-        self.role = normalize_str_enum(self.role, ProjectRole, ErrorCode.VALIDATION_ERROR)
-        self.joined_at = ensure_utc(self.joined_at)
+        """Tạo membership OWNER cho người tạo dự án."""
+        return ProjectMember(project_id=self.id, user_id=self.user_id, role=ProjectRole.OWNER)

@@ -9,7 +9,7 @@ from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 # isort: split
-from src.common.exceptions.base import AppException, ExceptionDetail
+from src.common.exceptions.base import AppException, ExceptionDetailPayload, ExceptionDetailValue
 from src.common.exceptions.error_codes import ErrorCode
 from src.common.exceptions.error_status import (
     get_error_code_for_http_status,
@@ -24,8 +24,8 @@ PUBLIC_HTTP_MESSAGE = "HTTP request failed."
 
 
 def _serialize_details(
-    details: tuple[ExceptionDetail, ...] | None,
-) -> list[dict[str, str]] | None:
+    details: tuple[ExceptionDetailPayload, ...] | None,
+) -> list[dict[str, ExceptionDetailValue]] | None:
     """Chuyển exception details sang wire format chuẩn."""
     return [detail.to_dict() for detail in details] if details else None
 
@@ -38,10 +38,13 @@ def _public_app_message(exc: AppException, status: HTTPStatus) -> str:
 
 
 def _log_app_exception(request: Request, exc: AppException, status: HTTPStatus) -> None:
-    """Ghi log AppException theo mức độ mà không mất traceback."""
+    """Ghi log AppException; LLM traceback được giữ trong chain nhưng không xuất ra log."""
     log_args = (exc.code, status.value, request.url.path, exc.message)
     message = "app_exception code=%s status=%d path=%s message=%s"
     if status.value >= HTTPStatus.INTERNAL_SERVER_ERROR.value:
+        if exc.code.value.startswith("LLM_"):
+            logger.error(message, *log_args)
+            return
         logger.error(message, *log_args, exc_info=(type(exc), exc, exc.__traceback__))
         return
     logger.info(message, *log_args)

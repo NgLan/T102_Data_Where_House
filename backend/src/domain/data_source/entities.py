@@ -6,6 +6,7 @@ from src.common.exceptions.error_codes import ErrorCode
 from src.common.utils.string import safe_strip
 from src.domain.data_source.enums import DataSourceType
 from src.domain.data_source.rules import normalize_data_source_fields
+from src.domain.data_source.semantic_metadata import SourceSemanticAnnotation
 from src.domain.data_source.value_objects import ColumnUpdate, SchemaMetadata
 from src.domain.shared.entity import BaseEntity
 from src.domain.shared.enum_rules import normalize_str_enum
@@ -72,3 +73,47 @@ class DataSource(BaseEntity):
         self.schema_metadata = updated
         self.mark_updated()
         return True
+
+    def annotate_column(
+        self,
+        table_name: str,
+        column_name: str,
+        annotation: SourceSemanticAnnotation,
+    ) -> bool:
+        """Áp dụng semantic decision lên column hiện hữu."""
+        if self.schema_metadata is None:
+            return False
+        updated = self.schema_metadata.annotate_column(table_name, column_name, annotation)
+        return self._replace_annotated_schema(updated)
+
+    def annotate_relationship(
+        self,
+        from_column: str,
+        to_column: str,
+        annotation: SourceSemanticAnnotation,
+    ) -> bool:
+        """Áp dụng semantic decision lên relationship hiện hữu."""
+        if self.schema_metadata is None:
+            return False
+        updated = self.schema_metadata.annotate_relationship(
+            from_column, to_column, annotation
+        )
+        return self._replace_annotated_schema(updated)
+
+    def _replace_annotated_schema(self, updated: SchemaMetadata | None) -> bool:
+        if updated is None:
+            return False
+        self.schema_metadata = updated
+        self.mark_updated()
+        return True
+
+    def remove_user_annotation(
+        self, requirement_id: EntityID, concept_key: str
+    ) -> None:
+        """Xóa scoped USER semantic decision khỏi source hiện hành."""
+        if self.schema_metadata is None:
+            return
+        self.schema_metadata = self.schema_metadata.remove_user_annotation(
+            requirement_id, concept_key
+        )
+        self.mark_updated()

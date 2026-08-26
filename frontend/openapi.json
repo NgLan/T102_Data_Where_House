@@ -244,6 +244,9 @@
         "security": [
           {
             "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
           }
         ]
       }
@@ -283,6 +286,9 @@
         "security": [
           {
             "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
           }
         ]
       }
@@ -340,6 +346,9 @@
         "security": [
           {
             "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
           }
         ]
       },
@@ -405,6 +414,9 @@
         "security": [
           {
             "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
           }
         ]
       }
@@ -420,6 +432,9 @@
         "security": [
           {
             "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
           }
         ],
         "parameters": [
@@ -509,6 +524,9 @@
         "security": [
           {
             "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
           }
         ],
         "parameters": [
@@ -608,6 +626,9 @@
         "security": [
           {
             "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
           }
         ],
         "parameters": [
@@ -681,6 +702,120 @@
         }
       }
     },
+    "/api/v1/projects/{project_id}/requirement": {
+      "put": {
+        "tags": [
+          "Projects"
+        ],
+        "summary": "Save Project Raw Requirement",
+        "description": "Lưu Raw Requirement tách biệt Project information.",
+        "operationId": "saveProjectRawRequirement",
+        "security": [
+          {
+            "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID của Project",
+              "title": "Project Id"
+            },
+            "description": "ID của Project"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveRawRequirementRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_RawRequirementResponse_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/api/v1/projects/{project_id}/requirements": {
       "get": {
         "tags": [
@@ -692,6 +827,9 @@
         "security": [
           {
             "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
           }
         ],
         "parameters": [
@@ -772,6 +910,1017 @@
         }
       }
     },
+    "/api/v1/projects/{project_id}/requirements/{requirement_id}": {
+      "delete": {
+        "tags": [
+          "Requirements"
+        ],
+        "summary": "Delete Requirement",
+        "description": "Xóa một Structured Requirement sai khỏi kết quả hiện hành.",
+        "operationId": "deleteRequirement",
+        "security": [
+          {
+            "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID dự án chứa yêu cầu",
+              "title": "Project Id"
+            },
+            "description": "ID dự án chứa yêu cầu"
+          },
+          {
+            "name": "requirement_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID Structured Requirement",
+              "title": "Requirement Id"
+            },
+            "description": "ID Structured Requirement"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/requirement-files": {
+      "get": {
+        "tags": [
+          "Requirement Files"
+        ],
+        "summary": "List Requirement Files",
+        "description": "Liệt kê metadata documents cho Project member.",
+        "operationId": "listProjectRequirementFiles",
+        "security": [
+          {
+            "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID Project",
+              "title": "Project Id"
+            },
+            "description": "ID Project"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_RequirementFileListResponse_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/requirement-files/upload": {
+      "post": {
+        "tags": [
+          "Requirement Files"
+        ],
+        "summary": "Upload Requirement Files",
+        "description": "Parse và upload/replace một batch documents cho Project owner.",
+        "operationId": "uploadProjectRequirementFiles",
+        "security": [
+          {
+            "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID Project",
+              "title": "Project Id"
+            },
+            "description": "ID Project"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_uploadProjectRequirementFiles"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_UploadRequirementFilesResponse_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Content Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/requirement-files/{file_id}": {
+      "delete": {
+        "tags": [
+          "Requirement Files"
+        ],
+        "summary": "Delete Requirement File",
+        "description": "Xóa document và tăng shared Requirement revision.",
+        "operationId": "deleteProjectRequirementFile",
+        "security": [
+          {
+            "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID Project",
+              "title": "Project Id"
+            },
+            "description": "ID Project"
+          },
+          {
+            "name": "file_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID Requirement Document",
+              "title": "File Id"
+            },
+            "description": "ID Requirement Document"
+          },
+          {
+            "name": "expected_revision",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "title": "Expected Revision"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/requirement-clarification": {
+      "get": {
+        "tags": [
+          "Requirement Clarification"
+        ],
+        "summary": "Get Requirement Clarification",
+        "operationId": "getProjectRequirementClarification",
+        "security": [
+          {
+            "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID dự án chứa yêu cầu",
+              "title": "Project Id"
+            },
+            "description": "ID dự án chứa yêu cầu"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_RequirementClarificationResponse_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/requirement-clarification/analyze": {
+      "post": {
+        "tags": [
+          "Requirement Clarification"
+        ],
+        "summary": "Analyze Requirement Clarification",
+        "operationId": "analyzeProjectRequirementClarification",
+        "security": [
+          {
+            "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID dự án chứa yêu cầu",
+              "title": "Project Id"
+            },
+            "description": "ID dự án chứa yêu cầu"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnalyzeRequirementClarificationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_RequirementClarificationResponse_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/requirement-clarification/{session_id}/questions/{question_id}/answer": {
+      "post": {
+        "tags": [
+          "Requirement Clarification"
+        ],
+        "summary": "Answer Requirement Clarification",
+        "operationId": "answerProjectRequirementClarification",
+        "security": [
+          {
+            "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID dự án chứa yêu cầu",
+              "title": "Project Id"
+            },
+            "description": "ID dự án chứa yêu cầu"
+          },
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID Requirement session",
+              "title": "Session Id"
+            },
+            "description": "ID Requirement session"
+          },
+          {
+            "name": "question_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID pending question",
+              "title": "Question Id"
+            },
+            "description": "ID pending question"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnswerRequirementClarificationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_RequirementClarificationResponse_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/requirement-clarification/{session_id}/messages": {
+      "post": {
+        "tags": [
+          "Requirement Clarification"
+        ],
+        "summary": "Send Requirement Clarification Message",
+        "description": "Gửi follow-up message và cập nhật Structured Requirements ngay trong turn.",
+        "operationId": "sendProjectRequirementClarificationMessage",
+        "security": [
+          {
+            "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID dự án chứa yêu cầu",
+              "title": "Project Id"
+            },
+            "description": "ID dự án chứa yêu cầu"
+          },
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID Requirement session",
+              "title": "Session Id"
+            },
+            "description": "ID Requirement session"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendRequirementClarificationMessageRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_RequirementClarificationResponse_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/requirement-clarification/{session_id}/continuation": {
+      "post": {
+        "tags": [
+          "Requirement Clarification"
+        ],
+        "summary": "Choose Requirement Continuation",
+        "description": "Persist lựa chọn continuation trước khi Project Init được resume.",
+        "operationId": "chooseProjectRequirementContinuation",
+        "security": [
+          {
+            "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID dự án chứa yêu cầu",
+              "title": "Project Id"
+            },
+            "description": "ID dự án chứa yêu cầu"
+          },
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID Requirement session",
+              "title": "Session Id"
+            },
+            "description": "ID Requirement session"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChooseRequirementContinuationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_RequirementClarificationResponse_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/api/v1/projects/{project_id}/analysis-status": {
       "get": {
         "tags": [
@@ -783,6 +1932,9 @@
         "security": [
           {
             "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
           }
         ],
         "parameters": [
@@ -874,6 +2026,9 @@
         "security": [
           {
             "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
           }
         ],
         "parameters": [
@@ -974,6 +2129,492 @@
         }
       }
     },
+    "/api/v1/projects/{project_id}/source-coverage": {
+      "get": {
+        "tags": [
+          "Project Analysis"
+        ],
+        "summary": "Get Source Coverage",
+        "description": "Reload persisted Source Coverage and readiness state.",
+        "operationId": "getProjectSourceCoverage",
+        "security": [
+          {
+            "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID dự án chứa Data Model",
+              "title": "Project Id"
+            },
+            "description": "ID dự án chứa Data Model"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_AnalysisStatusResponse_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/source-coverage/{assessment_id}/resolution": {
+      "post": {
+        "tags": [
+          "Project Analysis"
+        ],
+        "summary": "Resolve Source Coverage",
+        "description": "Persist one owner-only Source Confirmation item without invoking an Agent.",
+        "operationId": "resolveProjectSourceCoverage",
+        "security": [
+          {
+            "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID dự án chứa Data Model",
+              "title": "Project Id"
+            },
+            "description": "ID dự án chứa Data Model"
+          },
+          {
+            "name": "assessment_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Assessment Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResolveSourceCoverageRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_AnalysisStatusResponse_"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Gateway"
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/source-coverage/recheck": {
+      "post": {
+        "tags": [
+          "Project Analysis"
+        ],
+        "summary": "Recheck Source Coverage",
+        "description": "Materialize a completed batch and invoke only Source Coverage once.",
+        "operationId": "recheckProjectSourceCoverage",
+        "security": [
+          {
+            "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID dự án chứa Data Model",
+              "title": "Project Id"
+            },
+            "description": "ID dự án chứa Data Model"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecheckSourceCoverageRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_AnalysisStatusResponse_"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Gateway"
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/initialize": {
+      "post": {
+        "tags": [
+          "Project Analysis"
+        ],
+        "summary": "Initialize Project",
+        "description": "Chạy Requirement → Source analysis → DBML và pause khi cần clarification.",
+        "operationId": "runProjectInitializationWorkflow",
+        "security": [
+          {
+            "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID dự án chứa Data Model",
+              "title": "Project Id"
+            },
+            "description": "ID dự án chứa Data Model"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_ProjectInitializationResponse_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Gateway"
+          }
+        }
+      }
+    },
     "/api/v1/projects/{project_id}/data-model": {
       "get": {
         "tags": [
@@ -985,6 +2626,9 @@
         "security": [
           {
             "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
           }
         ],
         "parameters": [
@@ -1074,6 +2718,9 @@
         "security": [
           {
             "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
           }
         ],
         "parameters": [
@@ -1185,6 +2832,9 @@
         "security": [
           {
             "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
           }
         ],
         "parameters": [
@@ -1276,6 +2926,9 @@
         "security": [
           {
             "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
           }
         ],
         "parameters": [
@@ -1377,6 +3030,9 @@
         "security": [
           {
             "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
           }
         ],
         "parameters": [
@@ -1477,6 +3133,9 @@
         "security": [
           {
             "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
           }
         ],
         "parameters": [
@@ -1588,6 +3247,9 @@
         "security": [
           {
             "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
           }
         ],
         "parameters": [
@@ -1699,6 +3361,9 @@
         "security": [
           {
             "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
           }
         ],
         "parameters": [
@@ -1819,6 +3484,9 @@
         "security": [
           {
             "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
           }
         ],
         "parameters": [
@@ -1910,6 +3578,9 @@
         "security": [
           {
             "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
           }
         ],
         "parameters": [
@@ -2013,6 +3684,9 @@
         "security": [
           {
             "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
           }
         ],
         "parameters": [
@@ -2114,6 +3788,9 @@
         "security": [
           {
             "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
           }
         ],
         "parameters": [
@@ -2205,6 +3882,9 @@
         "security": [
           {
             "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
           }
         ],
         "parameters": [
@@ -2296,6 +3976,9 @@
         "security": [
           {
             "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
           }
         ],
         "parameters": [
@@ -2397,6 +4080,9 @@
         "security": [
           {
             "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
           }
         ],
         "parameters": [
@@ -2518,6 +4204,9 @@
         "security": [
           {
             "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
           }
         ],
         "parameters": [
@@ -2657,6 +4346,9 @@
         "security": [
           {
             "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
           }
         ],
         "parameters": [
@@ -2753,6 +4445,9 @@
         "security": [
           {
             "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
           }
         ],
         "parameters": [
@@ -2842,6 +4537,9 @@
         "security": [
           {
             "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
           }
         ],
         "parameters": [
@@ -2933,6 +4631,9 @@
         "security": [
           {
             "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
           }
         ],
         "parameters": [
@@ -3044,6 +4745,9 @@
         "security": [
           {
             "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
           }
         ],
         "parameters": [
@@ -3144,6 +4848,9 @@
         "security": [
           {
             "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
           }
         ],
         "parameters": [
@@ -3242,6 +4949,9 @@
         "security": [
           {
             "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
           }
         ],
         "parameters": [
@@ -3256,6 +4966,16 @@
               "title": "Project Id"
             },
             "description": "ID dự án chứa Data Model"
+          },
+          {
+            "name": "purpose",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/SessionPurpose",
+              "description": "Session purpose"
+            },
+            "description": "Session purpose"
           }
         ],
         "responses": {
@@ -3332,6 +5052,9 @@
         "security": [
           {
             "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
           }
         ],
         "parameters": [
@@ -3420,6 +5143,9 @@
         "security": [
           {
             "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
           }
         ],
         "parameters": [
@@ -3520,6 +5246,9 @@
         "security": [
           {
             "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
           }
         ],
         "parameters": [
@@ -3562,6 +5291,16 @@
               "minimum": 1,
               "default": 50,
               "title": "Limit"
+            }
+          },
+          {
+            "name": "conversation_only",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Conversation Only"
             }
           }
         ],
@@ -3639,6 +5378,9 @@
         "security": [
           {
             "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
           }
         ],
         "parameters": [
@@ -3671,7 +5413,235 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ApiResponse_Annotated_Union_ClarificationTurnResponse__ProposalTurnResponse___FieldInfo_annotation_NoneType__required_True__discriminator__kind____"
+                  "$ref": "#/components/schemas/ApiResponse_Annotated_Union_ClarificationTurnResponse__NoChangeTurnResponse__ProposalTurnResponse___FieldInfo_annotation_NoneType__required_True__discriminator__kind____"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/v1/sessions/{session_id}/clarification": {
+      "get": {
+        "tags": [
+          "Project Sessions"
+        ],
+        "summary": "Get Pending Project Session Clarification",
+        "operationId": "getPendingProjectSessionClarification",
+        "security": [
+          {
+            "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID phiên Agent",
+              "title": "Session Id"
+            },
+            "description": "ID phiên Agent"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_Union_ClarificationQuestionResponse__NoneType__"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sessions/{session_id}/clarifications/{question_id}/answer": {
+      "post": {
+        "tags": [
+          "Project Sessions"
+        ],
+        "summary": "Answer Project Session Clarification",
+        "operationId": "answerProjectSessionClarification",
+        "security": [
+          {
+            "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID phiên Agent",
+              "title": "Session Id"
+            },
+            "description": "ID phiên Agent"
+          },
+          {
+            "name": "question_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID câu hỏi clarification",
+              "title": "Question Id"
+            },
+            "description": "ID câu hỏi clarification"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnswerClarificationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_Annotated_Union_ClarificationTurnResponse__NoChangeTurnResponse__ProposalTurnResponse___FieldInfo_annotation_NoneType__required_True__discriminator__kind____"
                 }
               }
             }
@@ -3749,6 +5719,9 @@
         "security": [
           {
             "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
           }
         ],
         "parameters": [
@@ -3879,9 +5852,28 @@
             "title": "Data Model Exists",
             "description": "Project đã có Data Model đầu tiên"
           },
+          "source_revision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Source Revision",
+            "description": "Revision dùng cho coverage resolution"
+          },
           "recommended_action": {
             "$ref": "#/components/schemas/RecommendedWorkflowAction",
             "description": "Action UI nên hiển thị tiếp theo"
+          },
+          "readiness_status": {
+            "$ref": "#/components/schemas/InputReadinessStatus"
+          },
+          "source_coverage_batch": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SourceCoverageBatchResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -3890,10 +5882,118 @@
           "source_analysis_outdated",
           "data_model_outdated",
           "data_model_exists",
-          "recommended_action"
+          "source_revision",
+          "recommended_action",
+          "readiness_status"
         ],
         "title": "AnalysisStatusResponse",
         "description": "Trạng thái outdated và action tiếp theo của workflow."
+      },
+      "AnalyzeRequirementClarificationRequest": {
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Revision"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_revision"
+        ],
+        "title": "AnalyzeRequirementClarificationRequest",
+        "description": "Analyze revision đã lưu, không nhận draft editor."
+      },
+      "AnswerClarificationRequest": {
+        "properties": {
+          "answer_type": {
+            "type": "string",
+            "enum": [
+              "option",
+              "custom"
+            ],
+            "title": "Answer Type"
+          },
+          "option_index": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 3.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Option Index"
+          },
+          "custom_answer": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Custom Answer"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "answer_type"
+        ],
+        "title": "AnswerClarificationRequest",
+        "description": "Chọn option có sẵn hoặc nhập câu trả lời tùy chỉnh."
+      },
+      "AnswerRequirementClarificationRequest": {
+        "properties": {
+          "answer_type": {
+            "type": "string",
+            "enum": [
+              "option",
+              "custom"
+            ],
+            "title": "Answer Type"
+          },
+          "option_index": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 3.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Option Index"
+          },
+          "custom_answer": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Custom Answer"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "answer_type"
+        ],
+        "title": "AnswerRequirementClarificationRequest",
+        "description": "Chọn grounded option hoặc gửi custom answer."
       },
       "ApiErrorResponse": {
         "properties": {
@@ -3979,7 +6079,7 @@
         "type": "object",
         "title": "ApiResponse[AnalysisStatusResponse]"
       },
-      "ApiResponse_Annotated_Union_ClarificationTurnResponse__ProposalTurnResponse___FieldInfo_annotation_NoneType__required_True__discriminator__kind____": {
+      "ApiResponse_Annotated_Union_ClarificationTurnResponse__NoChangeTurnResponse__ProposalTurnResponse___FieldInfo_annotation_NoneType__required_True__discriminator__kind____": {
         "properties": {
           "status": {
             "type": "string",
@@ -4010,6 +6110,9 @@
                     "$ref": "#/components/schemas/ClarificationTurnResponse"
                   },
                   {
+                    "$ref": "#/components/schemas/NoChangeTurnResponse"
+                  },
+                  {
                     "$ref": "#/components/schemas/ProposalTurnResponse"
                   }
                 ],
@@ -4017,6 +6120,7 @@
                   "propertyName": "kind",
                   "mapping": {
                     "clarification": "#/components/schemas/ClarificationTurnResponse",
+                    "no_change": "#/components/schemas/NoChangeTurnResponse",
                     "proposal": "#/components/schemas/ProposalTurnResponse"
                   }
                 }
@@ -4031,7 +6135,7 @@
         },
         "additionalProperties": false,
         "type": "object",
-        "title": "ApiResponse[Annotated[Union[ClarificationTurnResponse, ProposalTurnResponse], FieldInfo(annotation=NoneType, required=True, discriminator='kind')]]"
+        "title": "ApiResponse[Annotated[Union[ClarificationTurnResponse, NoChangeTurnResponse, ProposalTurnResponse], FieldInfo(annotation=NoneType, required=True, discriminator='kind')]]"
       },
       "ApiResponse_ChangeProposalDetailResponse_": {
         "properties": {
@@ -4462,6 +6566,45 @@
         "type": "object",
         "title": "ApiResponse[LivenessResponse]"
       },
+      "ApiResponse_ProjectInitializationResponse_": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "success",
+            "title": "Status",
+            "description": "Trạng thái phản hồi (luôn là 'success' đối với 2xx)",
+            "default": "success"
+          },
+          "code": {
+            "type": "integer",
+            "maximum": 299.0,
+            "minimum": 200.0,
+            "title": "Code",
+            "description": "HTTP Status Code (mặc định 200)",
+            "default": 200
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Thông điệp phản hồi cho người dùng",
+            "default": "Xử lý thành công"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProjectInitializationResponse"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Dữ liệu payload chính trả về"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "ApiResponse[ProjectInitializationResponse]"
+      },
       "ApiResponse_ProjectResponse_": {
         "properties": {
           "status": {
@@ -4540,6 +6683,45 @@
         "type": "object",
         "title": "ApiResponse[ProjectSessionResponse]"
       },
+      "ApiResponse_RawRequirementResponse_": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "success",
+            "title": "Status",
+            "description": "Trạng thái phản hồi (luôn là 'success' đối với 2xx)",
+            "default": "success"
+          },
+          "code": {
+            "type": "integer",
+            "maximum": 299.0,
+            "minimum": 200.0,
+            "title": "Code",
+            "description": "HTTP Status Code (mặc định 200)",
+            "default": 200
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Thông điệp phản hồi cho người dùng",
+            "default": "Xử lý thành công"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RawRequirementResponse"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Dữ liệu payload chính trả về"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "ApiResponse[RawRequirementResponse]"
+      },
       "ApiResponse_ReadinessResponse_": {
         "properties": {
           "status": {
@@ -4578,6 +6760,84 @@
         "additionalProperties": false,
         "type": "object",
         "title": "ApiResponse[ReadinessResponse]"
+      },
+      "ApiResponse_RequirementClarificationResponse_": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "success",
+            "title": "Status",
+            "description": "Trạng thái phản hồi (luôn là 'success' đối với 2xx)",
+            "default": "success"
+          },
+          "code": {
+            "type": "integer",
+            "maximum": 299.0,
+            "minimum": 200.0,
+            "title": "Code",
+            "description": "HTTP Status Code (mặc định 200)",
+            "default": 200
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Thông điệp phản hồi cho người dùng",
+            "default": "Xử lý thành công"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RequirementClarificationResponse"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Dữ liệu payload chính trả về"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "ApiResponse[RequirementClarificationResponse]"
+      },
+      "ApiResponse_RequirementFileListResponse_": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "success",
+            "title": "Status",
+            "description": "Trạng thái phản hồi (luôn là 'success' đối với 2xx)",
+            "default": "success"
+          },
+          "code": {
+            "type": "integer",
+            "maximum": 299.0,
+            "minimum": 200.0,
+            "title": "Code",
+            "description": "HTTP Status Code (mặc định 200)",
+            "default": 200
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Thông điệp phản hồi cho người dùng",
+            "default": "Xử lý thành công"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RequirementFileListResponse"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Dữ liệu payload chính trả về"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "ApiResponse[RequirementFileListResponse]"
       },
       "ApiResponse_SandboxConfigResponse_": {
         "properties": {
@@ -4696,6 +6956,45 @@
         "type": "object",
         "title": "ApiResponse[Union[ChangeProposalDetailResponse, NoneType]]"
       },
+      "ApiResponse_Union_ClarificationQuestionResponse__NoneType__": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "success",
+            "title": "Status",
+            "description": "Trạng thái phản hồi (luôn là 'success' đối với 2xx)",
+            "default": "success"
+          },
+          "code": {
+            "type": "integer",
+            "maximum": 299.0,
+            "minimum": 200.0,
+            "title": "Code",
+            "description": "HTTP Status Code (mặc định 200)",
+            "default": 200
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Thông điệp phản hồi cho người dùng",
+            "default": "Xử lý thành công"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ClarificationQuestionResponse"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Dữ liệu payload chính trả về"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "ApiResponse[Union[ClarificationQuestionResponse, NoneType]]"
+      },
       "ApiResponse_Union_SandboxConfigResponse__NoneType__": {
         "properties": {
           "status": {
@@ -4773,6 +7072,45 @@
         "additionalProperties": false,
         "type": "object",
         "title": "ApiResponse[UploadDataSourcesResponse]"
+      },
+      "ApiResponse_UploadRequirementFilesResponse_": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "success",
+            "title": "Status",
+            "description": "Trạng thái phản hồi (luôn là 'success' đối với 2xx)",
+            "default": "success"
+          },
+          "code": {
+            "type": "integer",
+            "maximum": 299.0,
+            "minimum": 200.0,
+            "title": "Code",
+            "description": "HTTP Status Code (mặc định 200)",
+            "default": 200
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Thông điệp phản hồi cho người dùng",
+            "default": "Xử lý thành công"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UploadRequirementFilesResponse"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Dữ liệu payload chính trả về"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "ApiResponse[UploadRequirementFilesResponse]"
       },
       "ApiResponse_list_DataModelValidationIssueResponse__": {
         "properties": {
@@ -5007,6 +7345,30 @@
         ],
         "title": "Body_uploadProjectDataSources"
       },
+      "Body_uploadProjectRequirementFiles": {
+        "properties": {
+          "files": {
+            "items": {
+              "type": "string",
+              "contentMediaType": "application/octet-stream"
+            },
+            "type": "array",
+            "title": "Files",
+            "description": "Tối đa 20 documents"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Revision"
+          }
+        },
+        "type": "object",
+        "required": [
+          "files",
+          "expected_revision"
+        ],
+        "title": "Body_uploadProjectRequirementFiles"
+      },
       "ChangeProposalDetailResponse": {
         "properties": {
           "id": {
@@ -5165,6 +7527,89 @@
         "title": "CheckConstraintDto",
         "description": "Constraint kiểm tra."
       },
+      "ChooseRequirementContinuationRequest": {
+        "properties": {
+          "action": {
+            "$ref": "#/components/schemas/RequirementContinuationAction"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Revision"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "action",
+          "expected_revision"
+        ],
+        "title": "ChooseRequirementContinuationRequest",
+        "description": "Action tại continuation gate của current Requirement revision."
+      },
+      "ClarificationQuestionResponse": {
+        "properties": {
+          "question_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Question Id"
+          },
+          "session_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Session Id"
+          },
+          "turn_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Turn Id"
+          },
+          "question": {
+            "type": "string",
+            "title": "Question"
+          },
+          "options": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Options"
+          },
+          "allow_custom_answer": {
+            "type": "boolean",
+            "title": "Allow Custom Answer"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "question_id",
+          "session_id",
+          "turn_id",
+          "question",
+          "options",
+          "allow_custom_answer",
+          "reason",
+          "created_at"
+        ],
+        "title": "ClarificationQuestionResponse",
+        "description": "Clarification hiện đang chờ người dùng trả lời."
+      },
       "ClarificationTurnResponse": {
         "properties": {
           "session_id": {
@@ -5182,9 +7627,36 @@
             "const": "clarification",
             "title": "Kind"
           },
+          "question_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Question Id"
+          },
           "question": {
             "type": "string",
             "title": "Question"
+          },
+          "options": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Options"
+          },
+          "allow_custom_answer": {
+            "type": "boolean",
+            "title": "Allow Custom Answer"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
           },
           "summary": {
             "anyOf": [
@@ -5203,7 +7675,10 @@
           "session_id",
           "turn_id",
           "kind",
-          "question"
+          "question_id",
+          "question",
+          "options",
+          "allow_custom_answer"
         ],
         "title": "ClarificationTurnResponse"
       },
@@ -5232,19 +7707,6 @@
             "title": "Name",
             "description": "Tên Project"
           },
-          "requirement": {
-            "anyOf": [
-              {
-                "type": "string",
-                "minLength": 10
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Requirement",
-            "description": "Yêu cầu nghiệp vụ thô, có thể bổ sung sau khi tạo Project"
-          },
           "domain": {
             "anyOf": [
               {
@@ -5269,6 +7731,19 @@
             ],
             "title": "Description",
             "description": "Mô tả Project"
+          },
+          "requirement": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 10
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requirement",
+            "description": "Yêu cầu nghiệp vụ thô, có thể bổ sung sau khi tạo Project"
           }
         },
         "additionalProperties": false,
@@ -5292,10 +7767,17 @@
               }
             ],
             "title": "Title"
+          },
+          "purpose": {
+            "$ref": "#/components/schemas/SessionPurpose",
+            "description": "Mục đích nghiệp vụ của session"
           }
         },
         "additionalProperties": false,
         "type": "object",
+        "required": [
+          "purpose"
+        ],
         "title": "CreateProjectSessionRequest",
         "description": "Payload tạo session do người dùng chủ động khởi tạo."
       },
@@ -6031,6 +8513,17 @@
         "title": "HealthResponse",
         "description": "Trạng thái hoạt động và môi trường hiện tại của Backend."
       },
+      "InputReadinessStatus": {
+        "type": "string",
+        "enum": [
+          "REQUIREMENT_CLARIFICATION_REQUIRED",
+          "SOURCE_CONFIRMATION_REQUIRED",
+          "SOURCE_DATA_REQUIRED",
+          "READY_FOR_DESIGN"
+        ],
+        "title": "InputReadinessStatus",
+        "description": "Gate quyết định workflow có được phép gọi DWDesignAgent hay không."
+      },
       "LivenessResponse": {
         "properties": {
           "status": {
@@ -6100,6 +8593,107 @@
           "password"
         ],
         "title": "LoginRequest"
+      },
+      "NoChangeTurnResponse": {
+        "properties": {
+          "session_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Session Id"
+          },
+          "turn_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Turn Id"
+          },
+          "kind": {
+            "type": "string",
+            "const": "no_change",
+            "title": "Kind"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary"
+          }
+        },
+        "type": "object",
+        "required": [
+          "session_id",
+          "turn_id",
+          "kind"
+        ],
+        "title": "NoChangeTurnResponse",
+        "description": "Lượt Agent hoàn tất mà không tạo thay đổi Data Model."
+      },
+      "ProjectInitializationResponse": {
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/ProjectInitializationStatus",
+            "description": "PAUSED hoặc COMPLETED"
+          },
+          "session_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session Id",
+            "description": "Session đang hỏi làm rõ"
+          },
+          "data_model_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data Model Id",
+            "description": "Data Model đã sẵn sàng"
+          },
+          "readiness_status": {
+            "$ref": "#/components/schemas/InputReadinessStatus"
+          },
+          "source_coverage_batch": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SourceCoverageBatchResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "readiness_status"
+        ],
+        "title": "ProjectInitializationResponse",
+        "description": "Trạng thái workflow cùng resource vừa sẵn sàng."
+      },
+      "ProjectInitializationStatus": {
+        "type": "string",
+        "enum": [
+          "PAUSED",
+          "COMPLETED"
+        ],
+        "title": "ProjectInitializationStatus",
+        "description": "Trạng thái dừng có chủ đích của workflow."
       },
       "ProjectRequirementResponse": {
         "properties": {
@@ -6211,6 +8805,24 @@
             "title": "Requirement",
             "description": "Yêu cầu nghiệp vụ thô"
           },
+          "requirement_revision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Requirement Revision",
+            "description": "Raw/document revision"
+          },
+          "analyzed_requirement_revision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Analyzed Requirement Revision",
+            "description": "Structured revision"
+          },
+          "derived_analytical_requirement_revision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Derived Analytical Requirement Revision",
+            "description": "Revision đã derive analytical requirements"
+          },
           "requirements": {
             "items": {
               "$ref": "#/components/schemas/ProjectRequirementResponse"
@@ -6240,6 +8852,9 @@
           "updated_at",
           "data_source_count",
           "requirement",
+          "requirement_revision",
+          "analyzed_requirement_revision",
+          "derived_analytical_requirement_revision",
           "requirements",
           "data_sources"
         ],
@@ -6265,6 +8880,20 @@
           "status": {
             "$ref": "#/components/schemas/SessionStatus"
           },
+          "purpose": {
+            "$ref": "#/components/schemas/SessionPurpose"
+          },
+          "base_requirement_revision": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base Requirement Revision"
+          },
           "is_running": {
             "type": "boolean",
             "title": "Is Running"
@@ -6286,6 +8915,8 @@
           "project_id",
           "title",
           "status",
+          "purpose",
+          "base_requirement_revision",
           "is_running",
           "created_at",
           "updated_at"
@@ -6432,6 +9063,35 @@
         ],
         "title": "ProposalTurnResponse"
       },
+      "RawRequirementResponse": {
+        "properties": {
+          "requirement": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requirement",
+            "description": "Raw Requirement đã normalize"
+          },
+          "requirement_revision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Requirement Revision",
+            "description": "Revision hiện hành"
+          }
+        },
+        "type": "object",
+        "required": [
+          "requirement",
+          "requirement_revision"
+        ],
+        "title": "RawRequirementResponse",
+        "description": "Payload sau khi lưu Raw Requirement."
+      },
       "ReadinessResponse": {
         "properties": {
           "status": {
@@ -6455,6 +9115,27 @@
           "database"
         ],
         "title": "ReadinessResponse"
+      },
+      "RecheckSourceCoverageRequest": {
+        "properties": {
+          "batch_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Batch Id"
+          },
+          "expected_source_revision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Source Revision"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "batch_id",
+          "expected_source_revision"
+        ],
+        "title": "RecheckSourceCoverageRequest"
       },
       "RecommendedWorkflowAction": {
         "type": "string",
@@ -6524,6 +9205,181 @@
           "title"
         ],
         "title": "RenameProjectSessionRequest"
+      },
+      "RequirementClarificationResponse": {
+        "properties": {
+          "session": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProjectSessionResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "$ref": "#/components/schemas/RequirementClarificationStatus"
+          },
+          "pending_question": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ClarificationQuestionResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "requirements": {
+            "items": {
+              "$ref": "#/components/schemas/RequirementResponse"
+            },
+            "type": "array",
+            "title": "Requirements"
+          },
+          "requirement_revision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Requirement Revision"
+          },
+          "analyzed_requirement_revision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Analyzed Requirement Revision"
+          },
+          "is_outdated": {
+            "type": "boolean",
+            "title": "Is Outdated"
+          },
+          "continuation_state": {
+            "$ref": "#/components/schemas/RequirementContinuationState"
+          }
+        },
+        "type": "object",
+        "required": [
+          "session",
+          "status",
+          "pending_question",
+          "requirements",
+          "requirement_revision",
+          "analyzed_requirement_revision",
+          "is_outdated",
+          "continuation_state"
+        ],
+        "title": "RequirementClarificationResponse",
+        "description": "Canonical structured state và derived UI status của current cycle."
+      },
+      "RequirementClarificationStatus": {
+        "type": "string",
+        "enum": [
+          "IDLE",
+          "PROCESSING",
+          "NEEDS_CLARIFICATION",
+          "READY"
+        ],
+        "title": "RequirementClarificationStatus",
+        "description": "Trạng thái hiển thị của Requirement clarification cycle."
+      },
+      "RequirementContinuationAction": {
+        "type": "string",
+        "enum": [
+          "CONTINUE_EDITING",
+          "CONTINUE_ANALYSIS"
+        ],
+        "title": "RequirementContinuationAction",
+        "description": "Action công khai mà owner được chọn tại continuation gate."
+      },
+      "RequirementContinuationState": {
+        "type": "string",
+        "enum": [
+          "NOT_REQUIRED",
+          "AWAITING_DECISION",
+          "CONTINUE_EDITING",
+          "CONTINUE_ANALYSIS"
+        ],
+        "title": "RequirementContinuationState",
+        "description": "Quyết định tiếp tục workflow sau một clarification turn READY."
+      },
+      "RequirementFileListResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/RequirementFileResponse"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "can_edit": {
+            "type": "boolean",
+            "title": "Can Edit"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "can_edit"
+        ],
+        "title": "RequirementFileListResponse",
+        "description": "Danh sách document cùng quyền chỉnh sửa."
+      },
+      "RequirementFileResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id",
+            "description": "ID document"
+          },
+          "project_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Project Id",
+            "description": "ID Project"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Filename"
+          },
+          "file_type": {
+            "$ref": "#/components/schemas/RequirementFileType",
+            "description": "Định dạng document"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "description": "Thời điểm tạo"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At",
+            "description": "Thời điểm cập nhật"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "project_id",
+          "name",
+          "file_type",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "RequirementFileResponse",
+        "description": "Metadata an toàn của một Requirement Document."
+      },
+      "RequirementFileType": {
+        "type": "string",
+        "enum": [
+          "DOCX",
+          "TXT",
+          "MD"
+        ],
+        "title": "RequirementFileType",
+        "description": "Định dạng Requirement Document hỗ trợ trong MVP."
       },
       "RequirementPriority": {
         "type": "string",
@@ -6603,6 +9459,49 @@
         ],
         "title": "RequirementType",
         "description": "Phân loại Yêu cầu (Requirement Type)."
+      },
+      "ResolveSourceCoverageRequest": {
+        "properties": {
+          "batch_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Batch Id"
+          },
+          "expected_source_revision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Source Revision"
+          },
+          "expected_resolution_revision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Resolution Revision"
+          },
+          "action": {
+            "$ref": "#/components/schemas/SourceCoverageResolutionAction"
+          },
+          "candidate_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Candidate Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "batch_id",
+          "expected_source_revision",
+          "expected_resolution_revision",
+          "action"
+        ],
+        "title": "ResolveSourceCoverageRequest"
       },
       "ReviseDataModelRequest": {
         "properties": {
@@ -6784,6 +9683,58 @@
         "title": "SandboxDbType",
         "description": "Loại cơ sở dữ liệu Sandbox."
       },
+      "SaveRawRequirementRequest": {
+        "properties": {
+          "requirement": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requirement",
+            "description": "Raw Requirement Markdown"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Revision",
+            "description": "Requirement revision phía client"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_revision"
+        ],
+        "title": "SaveRawRequirementRequest",
+        "description": "Payload lưu Raw Requirement độc lập Project information."
+      },
+      "SendRequirementClarificationMessageRequest": {
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Revision"
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Message"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_revision",
+          "message"
+        ],
+        "title": "SendRequirementClarificationMessageRequest",
+        "description": "Tin nhắn follow-up không phụ thuộc pending question."
+      },
       "SendSessionMessageRequest": {
         "properties": {
           "content": {
@@ -6864,6 +9815,29 @@
             ],
             "title": "Proposal Change Id"
           },
+          "question_options": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Question Options"
+          },
+          "allow_custom_answer": {
+            "type": "boolean",
+            "title": "Allow Custom Answer"
+          },
+          "answer_to_question_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Answer To Question Id"
+          },
           "created_at": {
             "type": "string",
             "format": "date-time",
@@ -6880,6 +9854,9 @@
           "content",
           "status",
           "proposal_change_id",
+          "question_options",
+          "allow_custom_answer",
+          "answer_to_question_id",
           "created_at"
         ],
         "title": "SessionEventResponse"
@@ -6908,6 +9885,15 @@
         "title": "SessionEventType",
         "description": "Loại sự kiện diễn ra trong phiên."
       },
+      "SessionPurpose": {
+        "type": "string",
+        "enum": [
+          "REQUIREMENT_CLARIFICATION",
+          "DATA_MODELING"
+        ],
+        "title": "SessionPurpose",
+        "description": "Mục đích nghiệp vụ của Project Session."
+      },
       "SessionStatus": {
         "type": "string",
         "enum": [
@@ -6917,6 +9903,259 @@
         ],
         "title": "SessionStatus",
         "description": "Trạng thái phiên làm việc (Project Session Status)."
+      },
+      "SourceCandidateKind": {
+        "type": "string",
+        "enum": [
+          "COLUMN",
+          "RELATIONSHIP"
+        ],
+        "title": "SourceCandidateKind",
+        "description": "Loại bằng chứng source có thể ánh xạ tới một business concept."
+      },
+      "SourceConfirmationStatus": {
+        "type": "string",
+        "enum": [
+          "PENDING",
+          "CONFIRMED",
+          "REJECTED"
+        ],
+        "title": "SourceConfirmationStatus",
+        "description": "Trạng thái câu trả lời của một confirmation item trong batch hiện hành."
+      },
+      "SourceCoverageAssessmentResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "analytical_requirement_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Analytical Requirement Id"
+          },
+          "requirement_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Requirement Id"
+          },
+          "requirement_title": {
+            "type": "string",
+            "title": "Requirement Title"
+          },
+          "coverage_status": {
+            "$ref": "#/components/schemas/SourceCoverageStatus"
+          },
+          "required_concept_key": {
+            "type": "string",
+            "title": "Required Concept Key"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "explanation": {
+            "type": "string",
+            "title": "Explanation"
+          },
+          "question": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Question"
+          },
+          "confirmation_status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SourceConfirmationStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "selected_candidate_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Selected Candidate Id"
+          },
+          "resolution_revision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Resolution Revision"
+          },
+          "candidates": {
+            "items": {
+              "$ref": "#/components/schemas/SourceCoverageCandidateResponse"
+            },
+            "type": "array",
+            "title": "Candidates"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "analytical_requirement_id",
+          "requirement_id",
+          "requirement_title",
+          "coverage_status",
+          "required_concept_key",
+          "title",
+          "explanation",
+          "resolution_revision",
+          "candidates"
+        ],
+        "title": "SourceCoverageAssessmentResponse"
+      },
+      "SourceCoverageBatchResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "evaluated_source_revision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Evaluated Source Revision"
+          },
+          "confirmation_total": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Confirmation Total"
+          },
+          "confirmation_resolved": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Confirmation Resolved"
+          },
+          "can_recheck": {
+            "type": "boolean",
+            "title": "Can Recheck"
+          },
+          "assessments": {
+            "items": {
+              "$ref": "#/components/schemas/SourceCoverageAssessmentResponse"
+            },
+            "type": "array",
+            "title": "Assessments"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "evaluated_source_revision",
+          "confirmation_total",
+          "confirmation_resolved",
+          "can_recheck",
+          "assessments"
+        ],
+        "title": "SourceCoverageBatchResponse"
+      },
+      "SourceCoverageCandidateResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/SourceCandidateKind"
+          },
+          "source_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Source Id"
+          },
+          "source_name": {
+            "type": "string",
+            "title": "Source Name"
+          },
+          "table_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Table Name"
+          },
+          "column_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Column Name"
+          },
+          "from_column": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From Column"
+          },
+          "to_column": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "To Column"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "source_id",
+          "source_name"
+        ],
+        "title": "SourceCoverageCandidateResponse"
+      },
+      "SourceCoverageResolutionAction": {
+        "type": "string",
+        "enum": [
+          "CONFIRM_CANDIDATE",
+          "REJECT_ALL_CANDIDATES"
+        ],
+        "title": "SourceCoverageResolutionAction",
+        "description": "Hành động có cấu trúc để resolve một coverage assessment."
+      },
+      "SourceCoverageStatus": {
+        "type": "string",
+        "enum": [
+          "SUPPORTED",
+          "NEEDS_SOURCE_CONFIRMATION",
+          "MISSING_SOURCE"
+        ],
+        "title": "SourceCoverageStatus",
+        "description": "Mức sẵn sàng của một khái niệm nghiệp vụ so với source hiện tại."
       },
       "StatementLogResponse": {
         "properties": {
@@ -7212,19 +10451,6 @@
             "title": "Name",
             "description": "Tên Project"
           },
-          "requirement": {
-            "anyOf": [
-              {
-                "type": "string",
-                "minLength": 10
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Requirement",
-            "description": "Yêu cầu nghiệp vụ thô, có thể bổ sung sau khi tạo Project"
-          },
           "domain": {
             "anyOf": [
               {
@@ -7283,6 +10509,29 @@
         ],
         "title": "UploadDataSourcesResponse",
         "description": "Kết quả một batch upload CSV."
+      },
+      "UploadRequirementFilesResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/RequirementFileResponse"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "requirement_revision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Requirement Revision"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "requirement_revision"
+        ],
+        "title": "UploadRequirementFilesResponse",
+        "description": "Kết quả upload/replace một batch documents."
       },
       "ValidateDataModelRequest": {
         "properties": {
@@ -7369,6 +10618,10 @@
         "type": "apiKey",
         "in": "cookie",
         "name": "p102_access_token"
+      },
+      "HTTPBearer": {
+        "type": "http",
+        "scheme": "bearer"
       }
     }
   }

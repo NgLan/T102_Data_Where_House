@@ -1,5 +1,6 @@
 {
   "MSG_PROJECT_DETAILS_SAVED": "Đã lưu thông tin dự án.",
+  "MSG_RAW_REQUIREMENT_SAVED": "Đã lưu yêu cầu.",
   "MSG_DATA_SOURCES_UPLOADED": "Đã tải lên {{count}} file dữ liệu nguồn.",
   "MSG_DATA_SOURCE_DELETED": "Đã xóa dữ liệu nguồn.",
   "TXT_SUCCESS_TITLE": "Thành công",
@@ -10,7 +11,7 @@
   "MSG_PROJECT_UPLOAD_FAILED": "Tải file lên thất bại. Vui lòng kiểm tra định dạng hoặc thử lại.",
   "MSG_PROJECT_FILE_DELETED": "Đã xóa file {{fileName}} thành công.",
   "MSG_PROJECT_ANALYSIS_STARTED": "Đã bắt đầu phân tích file tài liệu bằng AI Agent...",
-  "MSG_PROJECT_ANALYSIS_COMPLETED": "Phân tích tài liệu thành công. Hảy chuyển sang bước tiếp theo.",
+  "MSG_PROJECT_ANALYSIS_COMPLETED": "Phân tích tài liệu thành công. Hãy chuyển sang bước tiếp theo.",
   "MSG_PROJECT_CREATED": "Đã tạo dự án thành công.",
   "MSG_PROJECT_DELETED": "Đã xóa dự án thành công.",
   "MSG_SANDBOX_EXECUTION_SUCCESS": "Thực thi kịch bản DDL thành công.",
@@ -36,5 +37,9 @@
   "MSG_SYSTEM_ERROR": "Hệ thống gặp lỗi. Vui lòng thử lại sau.",
   "MSG_VALIDATION_ERROR": "Một số trường gửi lên chưa hợp lệ.",
   "TXT_RUNTIME_ERROR_TITLE": "Đã xảy ra lỗi",
-  "TXT_RUNTIME_ERROR_DESCRIPTION": "Không thể hiển thị trang. Hãy thử lại để khôi phục."
+  "TXT_RUNTIME_ERROR_DESCRIPTION": "Không thể hiển thị trang. Hãy thử lại để khôi phục.",
+  "MSG_SOURCE_COVERAGE_BLOCKED": "Hãy xử lý các mục dữ liệu nguồn trước khi tiếp tục.",
+  "MSG_SOURCE_CONFIRMATION_SAVED": "Đã lưu lựa chọn.",
+  "MSG_SOURCE_COVERAGE_RECHECKED": "Đã kiểm tra lại dữ liệu nguồn.",
+  "MSG_PROJECT_DRAFT_SAVED": "Đã lưu nháp Project thành công."
 }
