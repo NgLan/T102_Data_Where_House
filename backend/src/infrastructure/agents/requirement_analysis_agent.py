@@ -22,7 +22,7 @@ from src.infrastructure.agents.transport_references import (
     SourceCoverageReferenceBoundary,
     TransportReferenceMap,
 )
-from src.infrastructure.llm.lazy_chat_model import ChatModelSource, LazyChatModel
+from src.infrastructure.llm.lazy_chat_model import LazyLlmGateway, LlmGatewaySource
 from src.infrastructure.llm.structured_llm_invoker import StructuredLlmInvoker
 from src.infrastructure.security.pii_guard import PiiGuard
 from typing_extensions import override
@@ -33,11 +33,11 @@ class RequirementAnalysisAgent(IRequirementAnalysisAgent):
 
     def __init__(
         self,
-        chat_model: ChatModelSource,
+        gateway: LlmGatewaySource,
         pii_guard: PiiGuard,
         max_attempts: int = 3,
     ) -> None:
-        self._model = LazyChatModel(chat_model)
+        self._gateway = LazyLlmGateway(gateway)
         self._pii_guard = pii_guard
         self._max_attempts = max_attempts
 
@@ -76,4 +76,4 @@ class RequirementAnalysisAgent(IRequirementAnalysisAgent):
 
     def _invoker(self) -> StructuredLlmInvoker:
         """Dựng invoker nhẹ trên model đã lazy-cache."""
-        return StructuredLlmInvoker(self._model.get(), self._pii_guard)
+        return StructuredLlmInvoker(self._gateway.get(), self._pii_guard)

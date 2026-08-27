@@ -69,21 +69,23 @@ class ProjectService(IProjectService):
 
     @override
     async def list_projects(self) -> tuple[ProjectSummaryOutput, ...]:
-        """Liệt kê Project actor hiện tại được truy cập."""
+        """Liệt kê Project actor hiện tại được truy cập, sắp xếp theo hoạt động gần nhất."""
         projects = await self._projects.list_accessible_by_user(self._access.actor_id)
         project_ids = tuple(project.id for project in projects)
-        counts = await self._data_sources.count_by_project_ids(
-            project_ids
-        )
+        counts = await self._data_sources.count_by_project_ids(project_ids)
         data_models = await self._data_models.list_by_project_ids(project_ids)
-        return tuple(
+        activities = await self._projects.get_latest_activity_by_project_ids(project_ids)
+        summaries = [
             ProjectSummaryOutput.from_domain(
                 project,
                 counts.get(project.id, 0),
                 _is_data_model_outdated(project, data_models.get(project.id)),
+                activities.get(project.id, project.updated_at),
             )
             for project in projects
-        )
+        ]
+        summaries.sort(key=lambda item: item.updated_at, reverse=True)
+        return tuple(summaries)
 
     @override
     async def get_project(self, data: ProjectIdInput) -> ProjectOutput:

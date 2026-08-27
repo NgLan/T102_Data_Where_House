@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from src.common.exceptions.infrastructure import InfrastructureException
 from src.infrastructure.llm.exception_translator import translate_llm_failure
 from src.infrastructure.llm.failure_classifier import LlmFailureClassifier
-from src.infrastructure.llm.lazy_chat_model import StructuredChatModel, StructuredModel
+from src.infrastructure.llm.lazy_chat_model import ILLMGateway, StructuredModel
 from src.infrastructure.llm.structured_output_decoder import is_truncated_finish
 from src.infrastructure.llm.structured_output_models import (
     StructuredOutputFailureCategory as Category,
@@ -28,8 +28,8 @@ StructuredOutput = TypeVar("StructuredOutput", bound=BaseModel)
 class StructuredLlmInvoker:
     """Thực hiện đúng một network invocation cho mỗi Agent operation."""
 
-    def __init__(self, chat_model: StructuredChatModel, pii_guard: PiiGuard) -> None:
-        self._chat_model = chat_model
+    def __init__(self, gateway: ILLMGateway, pii_guard: PiiGuard) -> None:
+        self._gateway = gateway
         self._pii_guard = pii_guard
 
     async def invoke(
@@ -45,7 +45,7 @@ class StructuredLlmInvoker:
         """
         masked = self._pii_guard.mask_identifiers(user_prompt)
         protected_prompt = self._pii_guard.mask_free_text(masked.text)
-        structured_model = self._chat_model.with_structured_output(output_type)
+        structured_model = self._gateway.with_structured_output(output_type)
         result = await _invoke_model(structured_model, system_prompt, protected_prompt)
         context = RestoreContext(masked.mapping, self._pii_guard)
         restored = restore_model(result, output_type, context)
@@ -61,7 +61,7 @@ class StructuredLlmInvoker:
         """Gọi native schema và trả payload phục hồi kèm diagnostics an toàn."""
         masked = self._pii_guard.mask_identifiers(user_prompt)
         protected = self._pii_guard.mask_free_text(masked.text)
-        model = self._chat_model.with_structured_output(output_type, include_raw=True)
+        model = self._gateway.with_structured_output(output_type, include_raw=True)
         result = await _invoke_raw_model(model, system_prompt, protected)
         raw, parsed = result.get("raw"), result.get("parsed")
         metadata = extract_metadata(raw)

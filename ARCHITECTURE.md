@@ -55,23 +55,29 @@ Infrastructure dùng một structured invoker chung để che PII, gọi provide
 hoàn nguyên placeholder và dịch lỗi thành `InfrastructureException`. Mỗi logical invocation có thể
 failover tối đa một lần trên từng configured key slot; việc này độc lập với Agent retry.
 
-## LLM provider registry
+## Multi-provider LLM Gateway
 
-Agent chỉ nhận structured chat-model protocol lazy; không biết provider hoặc key pool cụ thể. Registry tích hợp sẵn:
+Agent chỉ nhận `ILLMGateway` structured protocol lazy; không biết provider, SDK, routing policy hoặc
+credential pool. Gateway tách riêng hai quyết định: `ProviderRoutingPolicy` duyệt provider/model theo
+`LLM_PROVIDER_PRIORITY`, còn `CredentialPool` chọn key round-robin trong provider đã chọn.
 
-- `openai`: OpenAI API.
-- `openai_compatible`: OpenRouter hoặc endpoint local tương thích OpenAI.
-- `google`: Gemini qua `langchain-google-genai`.
+Registry tích hợp adapter riêng cho OpenAI/OpenRouter/OpenAI-compatible, Gemini và Anthropic. SDK
+chỉ xuất hiện trong adapter và automatic retry bị tắt; gateway sở hữu rotation/fallback policy. Main
+và summary profile có model riêng theo provider nhưng chia sẻ credential/health state trong process.
 
-Provider mới được thêm bằng builder đăng ký trong registry. Mỗi key có một client được cache và
-reuse; model chính và summary model dùng chung một async-safe key pool theo process. SDK automatic
-retry bị tắt cho Agent. Endpoint không dùng AI không yêu cầu API key; Data Model validation luôn
-deterministic và không gọi LLM.
+Provider-specific `*_API_KEYS` luôn thắng prefix detection. Generic `LLM_API_KEYS` được detector
+ánh xạ bằng pattern tập trung; unknown/ambiguous prefix làm startup fail. 429 đưa key vào cooldown,
+authentication/quota-invalid disable key, timeout/connection/5xx fallback provider và cập nhật
+provider health. JSON/Pydantic/semantic/business validation tuyệt đối không đổi key/provider state.
 
-`LLM_API_KEYS` là JSON array được ưu tiên. `LLM_API_KEY`, rồi biến OpenAI/Google cũ, chỉ là fallback
-tương thích khi key list mới không được khai báo. Key lỗi xác thực/quota bị disable trong RAM; rate
-limit chỉ bị bỏ qua trong invocation hiện tại. Log dùng slot 0-based và không chứa secret. Backend
-không tự sửa `.env`; thay key rồi restart/redeploy để dựng pool mới.
+Gateway log provider, model, anonymous `key_id`, safe reason và latency; không log hoặc persist raw/
+partial secret. Thay environment rồi restart/redeploy để dựng pool mới; backend không sửa `.env`.
+Endpoint không dùng AI và Data Model validation deterministic không gọi LLM.
+
+Extension point của provider gồm canonical `LlmProvider`, typed settings/model resolver,
+`ILLMProvider` adapter và một lần registration trong default registry. Prefix mới chỉ được
+thêm vào injected `ProviderKeyPattern` khi cần detect generic key; explicit `*_API_KEYS` không
+phụ thuộc detector. Các extension này không đổi gateway contract của Agent.
 
 ## Revision và outdated state
 

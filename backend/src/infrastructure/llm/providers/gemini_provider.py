@@ -18,17 +18,17 @@ class GeminiLlmProvider:
         """Dựng Gemini client hoặc dịch lỗi thiếu dependency."""
         try:
             from langchain_google_genai import ChatGoogleGenerativeAI
-        except ImportError as exc:
+
+            return ChatGoogleGenerativeAI(
+                model=configuration.model_name,
+                google_api_key=configuration.api_key.get_secret_value(),
+                temperature=configuration.temperature,
+                max_output_tokens=configuration.max_tokens,
+                timeout=configuration.timeout_seconds,
+                max_retries=0,
+            )
+        except Exception as exc:
             raise InfrastructureException(
                 ErrorCode.LLM_ERROR,
-                "Thiếu dependency LLM provider được yêu cầu.",
+                "Không thể khởi tạo Gemini LLM provider.",
             ) from exc
-        return ChatGoogleGenerativeAI(
-            model=configuration.model_name,
-            google_api_key=configuration.api_key.get_secret_value(),
-            temperature=configuration.temperature,
-            max_output_tokens=configuration.max_tokens,
-            timeout=configuration.timeout_seconds,
-            max_retries=0,
-        )
-

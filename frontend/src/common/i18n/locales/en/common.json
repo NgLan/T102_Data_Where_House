@@ -58,5 +58,12 @@
   "TXT_WORKFLOW_STEP_SANDBOX": "Results / Export",
   "TXT_DATA_MODEL_UNAVAILABLE_TITLE": "No Data Model yet",
   "TXT_DATA_MODEL_UNAVAILABLE_DESCRIPTION": "Return to Step 1 and run Save and Analyze.",
-  "BTN_BACK_TO_PROJECT_INIT": "Back to Step 1"
+  "BTN_BACK_TO_PROJECT_INIT": "Back to Step 1",
+  "TIME_JUST_NOW": "Just now",
+  "TIME_MINUTES_AGO": "{{count}}m ago",
+  "TIME_HOURS_AGO": "{{count}}h ago",
+  "TIME_YESTERDAY": "Yesterday",
+  "TIME_DAYS_AGO": "{{count}}d ago",
+  "TXT_UPDATED_AT": "Updated {{time}}",
+  "TXT_CREATED_AT": "Created on {{date}}"
 }

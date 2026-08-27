@@ -83,17 +83,27 @@ copy .env.example .env
 | **`POSTGRES_PORT`** | `5432` / `5434` | Port lắng nghe kết nối CSDL PostgreSQL. |
 | **`POSTGRES_DB`** | `ai20k_db` | Tên cơ sở dữ liệu chính. |
 | **`DATABASE_URL`** | `postgresql+asyncpg://...` | Chuỗi kết nối Async Engine cho SQLAlchemy. |
-| **`LLM_PROVIDER`** | `openai` | Provider: `openai`, `openai_compatible` hoặc `google`. |
-| **`LLM_API_KEYS`** | trống | JSON array các key theo slot, ví dụ `'["key_1","key_2"]'`; ưu tiên cao nhất. |
-| **`LLM_API_KEY`** | trống | Fallback migration một key khi `LLM_API_KEYS` không được khai báo. |
+| **`LLM_PROVIDER_PRIORITY`** | `OPENAI` | Ordered providers, ví dụ `GEMINI,OPENAI,ANTHROPIC`. |
+| **`OPENAI_API_KEYS`** | trống | CSV/JSON array credential được gán tường minh cho OpenAI/OpenRouter/local. |
+| **`GEMINI_API_KEYS`** | trống | CSV/JSON array credential được gán tường minh cho Gemini. |
+| **`ANTHROPIC_API_KEYS`** | trống | CSV/JSON array credential được gán tường minh cho Anthropic. |
+| **`LLM_API_KEYS`** | trống | Generic credentials; gateway auto-detect provider theo prefix. |
+| **`OPENAI_MODEL`** | trống | Model OpenAI/OpenAI-compatible; các provider khác dùng biến `*_MODEL` tương ứng. |
 | **`LLM_BASE_URL`** | trống | Base URL cho OpenAI-compatible/OpenRouter/local. |
-| **`MODEL_NAME`** | provider default | Tên model dùng cho Agent operation. |
 | **`LOG_LEVEL`** | `INFO` | Mức độ ghi log hệ thống (`DEBUG`, `INFO`, `WARNING`, `ERROR`). |
 
-LLM key rotation giữ trạng thái trong RAM của từng backend process. Log chỉ ghi slot 0-based và
-lý do (`authentication`, `quota_exhausted`, `rate_limit`), không ghi key hoặc fingerprint. Khi một
-slot bị disable, thay đúng phần tử tương ứng trong `LLM_API_KEYS` rồi restart/redeploy backend;
-ứng dụng không tự sửa file `.env`.
+LLM Gateway duyệt provider đúng thứ tự cấu hình. Mỗi provider có credential pool round-robin riêng:
+429 đưa credential vào cooldown, authentication/quota-invalid disable credential, còn timeout/5xx
+fallback ngay sang provider kế tiếp. Structured-output/business validation không rotate key hoặc
+provider. Trạng thái chỉ nằm trong RAM của từng backend process; log dùng anonymous `key_id`, không
+ghi key/fingerprint. Thêm hoặc bớt key chỉ cần đổi environment rồi restart/redeploy backend; ứng
+dụng không tự sửa `.env`.
+
+Generic detector ưu tiên pattern dài/cụ thể: `sk-ant-` → Anthropic, `sk-or-v1-` →
+OpenAI/OpenRouter, `AIza` → Gemini, `sk-` → OpenAI. Key trong biến provider-specific không
+chạy detector. Để thêm provider mới, khai báo canonical enum/settings/model resolver, implement
+`ILLMProvider`, register adapter tại composition registry, rồi thêm `ProviderKeyPattern` nếu generic
+key có prefix nhận diện ổn định. Agent/Application không cần thay đổi.
 
 ---
 

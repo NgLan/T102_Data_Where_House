@@ -25,6 +25,15 @@ def _google_rate_limit_error() -> Exception:
         return ResourceExhausted("request rate reached")
 
 
+class AnthropicUnavailableError(Exception):
+    """Fake typed Anthropic SDK outage."""
+
+    status_code = 503
+
+
+AnthropicUnavailableError.__module__ = "anthropic._exceptions"
+
+
 def test_openai_authentication_disables_key() -> None:
     exc = AuthenticationError("raw", response=_response(401), body={})
 
@@ -63,6 +72,13 @@ def test_google_resource_exhausted_rotates_without_permanent_disable() -> None:
     assert decision.code is ErrorCode.LLM_RATE_LIMIT_ERROR
 
 
+def test_anthropic_5xx_falls_back_provider() -> None:
+    decision = LlmFailureClassifier().classify(AnthropicUnavailableError())
+
+    assert decision.action is LlmFailureAction.FALLBACK_PROVIDER
+    assert decision.code is ErrorCode.LLM_ERROR
+
+
 @pytest.mark.parametrize(
     ("exc", "code"),
     [
@@ -74,5 +90,10 @@ def test_google_resource_exhausted_rotates_without_permanent_disable() -> None:
 def test_non_key_failure_does_not_rotate(exc: Exception, code: ErrorCode) -> None:
     decision = LlmFailureClassifier().classify(exc)
 
-    assert decision.action is LlmFailureAction.FAIL
+    expected = (
+        LlmFailureAction.FALLBACK_PROVIDER
+        if isinstance(exc, TimeoutError)
+        else LlmFailureAction.FAIL
+    )
+    assert decision.action is expected
     assert decision.code is code

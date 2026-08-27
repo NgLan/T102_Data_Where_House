@@ -23,7 +23,6 @@ from src.application.project_sessions.project_session_service import (
 )
 from src.infrastructure.agents.conversation_summary_agent import ConversationSummaryAgent
 from src.infrastructure.database.session import get_async_db_session
-from src.infrastructure.llm.factory import get_cached_summary_chat_model
 from src.infrastructure.repositories.postgres_analytical_requirement_repository import (
     PostgresAnalyticalRequirementRepository,
 )
@@ -42,6 +41,7 @@ from src.infrastructure.security.pii_guard import PiiGuard
 from src.infrastructure.transaction.sqlalchemy_unit_of_work import SqlAlchemyUnitOfWork
 from src.presentation.dependencies.data_model_resources import get_pii_guard
 from src.presentation.dependencies.data_warehouse_workflows import DataWarehouseWorkflowDependency
+from src.presentation.dependencies.llm import get_summary_llm_gateway
 from src.presentation.dependencies.project_access import ProjectAccessDependency
 
 
@@ -89,7 +89,7 @@ def build_conversation_context(
         SummaryCompactorDependencies(
             sessions,
             events,
-            ConversationSummaryAgent(get_cached_summary_chat_model, pii_guard),
+            ConversationSummaryAgent(get_summary_llm_gateway, pii_guard),
             canonical,
             unit_of_work,
             ConversationContextPolicy(

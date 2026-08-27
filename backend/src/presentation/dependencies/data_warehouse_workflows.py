@@ -25,7 +25,6 @@ from src.infrastructure.agents.requirement_analysis_agent import RequirementAnal
 from src.infrastructure.database.session import get_async_db_session
 from src.infrastructure.llm.approximate_token_estimator import ApproximateTokenEstimator
 from src.infrastructure.llm.column_type_classifier import ColumnTypeClassifier
-from src.infrastructure.llm.factory import get_cached_chat_model
 from src.infrastructure.repositories.postgres_analytical_requirement_repository import (
     PostgresAnalyticalRequirementRepository,
 )
@@ -41,6 +40,7 @@ from src.infrastructure.storage.local_storage import LocalFileStorage
 from src.infrastructure.storage.source_file_inspector import SourceFileInspector
 from src.infrastructure.transaction.sqlalchemy_unit_of_work import SqlAlchemyUnitOfWork
 from src.presentation.dependencies.data_model_resources import get_pii_guard, get_validation_engine
+from src.presentation.dependencies.llm import get_llm_gateway
 from src.presentation.dependencies.project_access import ProjectAccessDependency
 
 
@@ -70,7 +70,7 @@ def get_data_warehouse_workflow(
         LocalFileStorage(settings.upload_dir),
         SourceAnalysisRunner(
             SourceFileInspector(),
-            ColumnTypeClassifier(get_cached_chat_model, pii_guard),
+            ColumnTypeClassifier(get_llm_gateway, pii_guard),
         ),
         unit_of_work,
         access,
@@ -83,13 +83,13 @@ def get_data_warehouse_workflow(
         repositories.models,
         repositories.changes,
         RequirementAnalysisAgent(
-            get_cached_chat_model,
+            get_llm_gateway,
             pii_guard,
             settings.structured_output_max_attempts,
         ),
         source_analysis,
         DataWarehouseDesignAgent(
-            get_cached_chat_model,
+            get_llm_gateway,
             pii_guard,
             _conversation_context_builder(),
         ),

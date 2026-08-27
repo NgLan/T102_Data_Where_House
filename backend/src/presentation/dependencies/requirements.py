@@ -22,7 +22,6 @@ from src.application.requirements.requirement_continuation_coordinator import (
 from src.application.requirements.requirement_service import RequirementService
 from src.infrastructure.agents.requirement_analysis_agent import RequirementAnalysisAgent
 from src.infrastructure.database.session import get_async_db_session
-from src.infrastructure.llm.factory import get_cached_chat_model
 from src.infrastructure.repositories.postgres_project_repository import (
     PostgresProjectRepository,
 )
@@ -41,6 +40,7 @@ from src.infrastructure.repositories.postgres_session_event_repository import (
 from src.infrastructure.security.pii_guard import PiiGuard
 from src.infrastructure.transaction.sqlalchemy_unit_of_work import SqlAlchemyUnitOfWork
 from src.presentation.dependencies.data_model_resources import get_pii_guard
+from src.presentation.dependencies.llm import get_llm_gateway
 from src.presentation.dependencies.project_access import ProjectAccessDependency
 from src.presentation.dependencies.project_sessions import build_conversation_context
 
@@ -66,7 +66,7 @@ def get_requirement_service(
         sessions,
         events,
         RequirementAnalysisAgent(
-            get_cached_chat_model,
+            get_llm_gateway,
             pii_guard,
             settings.structured_output_max_attempts,
         ),

@@ -16,9 +16,9 @@ from src.common.middleware import (
 )
 from src.infrastructure.database.config import dispose_async_db_engine
 from src.infrastructure.database.init_db import init_db
-from src.infrastructure.llm.factory import validate_llm_gateway_startup
 from src.presentation.api.operational import router as operational_router
 from src.presentation.api.router import router as api_router
+from src.presentation.dependencies.llm import initialize_llm_gateway
 from src.presentation.routing import ApiResponseRoute
 
 logger = get_logger(__name__)
@@ -29,7 +29,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Quản lý vòng đời khởi chạy và dừng ứng dụng."""
     settings: Settings = get_settings()
     logger.info("Starting %s in %s mode", settings.app_name, settings.app_env)
-    validate_llm_gateway_startup(settings)
+    initialize_llm_gateway()
 
     # 1. Gọi hàm init_db() để khởi tạo CSDL.
     # Vẫn cho ứng dụng lên khi CSDL chưa sẵn sàng (tiện lúc phát triển), nhưng log ở mức

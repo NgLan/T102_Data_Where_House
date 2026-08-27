@@ -33,6 +33,7 @@ class ProjectSummaryOutput:
         project: Project,
         data_source_count: int,
         is_data_model_outdated: bool = False,
+        updated_at: datetime | None = None,
     ) -> "ProjectSummaryOutput":
         """Ánh xạ Project và source count sang summary output."""
         return cls(
@@ -43,7 +44,7 @@ class ProjectSummaryOutput:
             domain=project.domain,
             description=project.description,
             created_at=project.created_at,
-            updated_at=project.updated_at,
+            updated_at=updated_at or project.updated_at,
             data_source_count=data_source_count,
             is_data_model_outdated=is_data_model_outdated,
         )

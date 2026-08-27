@@ -16,13 +16,6 @@ class AnthropicLlmProvider:
 
     def build(self, configuration: ChatModelConfiguration) -> BaseChatModel:
         """Dựng Anthropic client hoặc dịch lỗi thiếu dependency."""
-        try:
-            from langchain_anthropic import ChatAnthropic
-        except ImportError as exc:
-            raise InfrastructureException(
-                ErrorCode.LLM_ERROR,
-                "Thiếu dependency LLM provider được yêu cầu.",
-            ) from exc
         options: dict[str, object] = {
             "model": configuration.model_name,
             "api_key": configuration.api_key.get_secret_value(),
@@ -33,5 +26,12 @@ class AnthropicLlmProvider:
         }
         if configuration.base_url:
             options["base_url"] = configuration.base_url
-        return ChatAnthropic(**options)
+        try:
+            from langchain_anthropic import ChatAnthropic
 
+            return ChatAnthropic(**options)
+        except Exception as exc:
+            raise InfrastructureException(
+                ErrorCode.LLM_ERROR,
+                "Không thể khởi tạo Anthropic LLM provider.",
+            ) from exc

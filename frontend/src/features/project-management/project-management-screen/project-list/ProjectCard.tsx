@@ -1,9 +1,14 @@
 import Link from "next/link";
-import { AlertTriangle, Calendar, FileSpreadsheet } from "lucide-react";
+import { AlertTriangle, Calendar, Clock, FileSpreadsheet } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { ProjectSummaryResponse } from "@/api";
 import { Badge } from "@/common/components/ui/badge";
 import { PROJECT_DOMAIN_OPTIONS } from "@/common/projects/project-domain-options";
+import {
+  formatCalendarDate,
+  formatFullDateTime,
+  formatRelativeTime,
+} from "@/common/utils/format-relative-time";
 import { ProjectDeleteAction } from "./ProjectDeleteAction";
 
 interface ProjectCardProps {
@@ -23,10 +28,11 @@ export function ProjectCard({
 }: ProjectCardProps) {
   const { t, i18n } = useTranslation("project-management");
   const { t: tCommon } = useTranslation("common");
-  const formattedUpdatedAt = formatProjectDate(
-    project.updated_at,
-    i18n.resolvedLanguage,
-  );
+  const locale = i18n.resolvedLanguage;
+  const relativeTime = formatRelativeTime(project.updated_at, tCommon, locale);
+  const updatedLabel = tCommon("TXT_UPDATED_AT", { time: relativeTime });
+  const createdDate = formatCalendarDate(project.created_at, locale);
+  const createdLabel = tCommon("TXT_CREATED_AT", { date: createdDate });
   const domainOption = PROJECT_DOMAIN_OPTIONS.find(
     ({ value }) => value === project.domain,
   );
@@ -39,9 +45,12 @@ export function ProjectCard({
         <Badge variant="secondary">
           {domainLabel || t("TXT_CUSTOM_DOMAIN")}
         </Badge>
-        <span className="flex shrink-0 items-center gap-1">
-          <Calendar className="size-3" />
-          {formattedUpdatedAt}
+        <span
+          className="flex shrink-0 items-center gap-1 cursor-default"
+          title={formatFullDateTime(project.updated_at, locale)}
+        >
+          <Clock className="size-3" aria-hidden />
+          <span>{updatedLabel}</span>
         </span>
       </div>
       <Link
@@ -64,10 +73,19 @@ export function ProjectCard({
         </Badge>
       )}
       <div className="mt-auto flex items-center justify-between border-t pt-3 text-xs text-muted-foreground">
-        <span className="flex items-center gap-1">
-          <FileSpreadsheet className="size-4" />
-          {t("TXT_SOURCE_COUNT", { count: project.data_source_count })}
-        </span>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          <span className="flex items-center gap-1">
+            <FileSpreadsheet className="size-3.5" />
+            {t("TXT_SOURCE_COUNT", { count: project.data_source_count })}
+          </span>
+          <span
+            className="flex items-center gap-1 cursor-default"
+            title={formatFullDateTime(project.created_at, locale)}
+          >
+            <Calendar className="size-3.5" />
+            {createdLabel}
+          </span>
+        </div>
         <ProjectDeleteAction
           projectId={project.id}
           projectName={project.name}
@@ -77,12 +95,4 @@ export function ProjectCard({
       </div>
     </article>
   );
-}
-
-function formatProjectDate(updatedAt: string, locale?: string): string {
-  return new Intl.DateTimeFormat(locale, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  }).format(new Date(updatedAt));
 }

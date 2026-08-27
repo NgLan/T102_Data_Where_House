@@ -23,14 +23,19 @@ class CredentialProviderDetector:
     def detect(self, credential: SecretStr) -> LlmProvider:
         """Trả provider duy nhất hoặc báo lỗi cấu hình an toàn."""
         raw = credential.get_secret_value()
-        matches = {
-            pattern.provider
+        matches = [
+            (len(prefix), pattern.provider)
             for pattern in self._patterns
-            if any(raw.startswith(prefix) for prefix in pattern.prefixes)
-        }
-        if len(matches) != 1:
+            for prefix in pattern.prefixes
+            if raw.startswith(prefix)
+        ]
+        if not matches:
             raise ValueError("Generic LLM credential không xác định được provider duy nhất.")
-        return matches.pop()
+        longest = max(length for length, _provider in matches)
+        providers = {provider for length, provider in matches if length == longest}
+        if len(providers) != 1:
+            raise ValueError("Generic LLM credential không xác định được provider duy nhất.")
+        return providers.pop()
 
 
 def create_default_credential_detector() -> CredentialProviderDetector:
@@ -42,4 +47,3 @@ def create_default_credential_detector() -> CredentialProviderDetector:
         ProviderKeyPattern(LlmProvider.OPENAI, ("sk-",)),
     )
     return CredentialProviderDetector(patterns)
-

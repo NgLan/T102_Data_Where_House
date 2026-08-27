@@ -8,7 +8,7 @@ from src.application.data_sources.source_analysis_ports import IColumnTypeClassi
 from src.common.utils.json import safe_json_dumps
 from src.infrastructure.agents.prompts.grounding import PROJECT_EVIDENCE_POLICY
 from src.infrastructure.llm.column_type_outputs import ColumnTypeClassificationResult
-from src.infrastructure.llm.lazy_chat_model import ChatModelSource, LazyChatModel
+from src.infrastructure.llm.lazy_chat_model import LazyLlmGateway, LlmGatewaySource
 from src.infrastructure.llm.structured_llm_invoker import StructuredLlmInvoker
 from src.infrastructure.security.pii_guard import PiiGuard
 from typing_extensions import override
@@ -28,8 +28,8 @@ MAX_SAMPLES_PER_COLUMN = 10
 class ColumnTypeClassifier(IColumnTypeClassifier):
     """Adapter provider-neutral, không phải một Agent workflow mới."""
 
-    def __init__(self, chat_model: ChatModelSource, pii_guard: PiiGuard) -> None:
-        self._model = LazyChatModel(chat_model)
+    def __init__(self, gateway: LlmGatewaySource, pii_guard: PiiGuard) -> None:
+        self._gateway = LazyLlmGateway(gateway)
         self._pii_guard = pii_guard
 
     @override
@@ -50,7 +50,7 @@ class ColumnTypeClassifier(IColumnTypeClassifier):
         )
 
     def _invoker(self) -> StructuredLlmInvoker:
-        return StructuredLlmInvoker(self._model.get(), self._pii_guard)
+        return StructuredLlmInvoker(self._gateway.get(), self._pii_guard)
 
 
 def _prompt_payload(

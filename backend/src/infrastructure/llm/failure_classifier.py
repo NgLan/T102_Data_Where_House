@@ -4,39 +4,13 @@ from dataclasses import dataclass
 from enum import StrEnum
 
 import httpx
-from openai import (
-    APIConnectionError,
-    APIStatusError,
-    APITimeoutError,
-    AuthenticationError,
-    NotFoundError,
-    PermissionDeniedError,
-    RateLimitError,
-)
 from pydantic import ValidationError
 from src.common.exceptions.error_codes import ErrorCode
-
-GOOGLE_ERROR_TYPES: tuple[type[Exception], ...]
-
-
-def _google_error_types() -> tuple[type[Exception], ...]:
-    types: list[type[Exception]] = []
-    try:
-        from google.genai.errors import APIError as GoogleGenAiError
-
-        types.append(GoogleGenAiError)
-    except ImportError:
-        pass
-    try:
-        from google.api_core.exceptions import GoogleAPICallError
-
-        types.append(GoogleAPICallError)
-    except ImportError:
-        pass
-    return tuple(types)
-
-
-GOOGLE_ERROR_TYPES = _google_error_types()
+from src.infrastructure.llm.failure_details import (
+    contains_any,
+    contains_quota_marker,
+    google_status_code,
+)
 
 
 class LlmFailureAction(StrEnum):
@@ -62,17 +36,19 @@ class LlmFailureClassifier:
 
     def classify(self, exc: Exception) -> LlmFailureDecision:
         """Phân loại một exception provider hoặc structured parser."""
-        if isinstance(exc, (AuthenticationError, PermissionDeniedError)):
+        if _sdk_type(exc, "openai", ("AuthenticationError", "PermissionDeniedError")):
             return _disable(ErrorCode.LLM_AUTHENTICATION_ERROR, "authentication")
-        if isinstance(exc, RateLimitError):
-            return self._rate_limit_decision(exc.body)
-        if isinstance(exc, NotFoundError):
+        if _sdk_type(exc, "openai", ("RateLimitError",)):
+            return self._rate_limit_decision(getattr(exc, "body", None))
+        if _sdk_type(exc, "openai", ("NotFoundError",)):
             return _fail(ErrorCode.LLM_MODEL_NOT_FOUND, "model_not_found")
-        if isinstance(exc, APIStatusError) and exc.status_code >= 500:
+        if _sdk_module(exc, "openai") and _status_code(exc) >= 500:
             return _fallback(ErrorCode.LLM_ERROR, "provider_unavailable")
-        if isinstance(exc, GOOGLE_ERROR_TYPES):
-            return self._google_decision(exc)
-        if isinstance(exc, (APITimeoutError, APIConnectionError, httpx.TransportError)):
+        if _sdk_module(exc, "google") or _sdk_module(exc, "anthropic"):
+            return self._provider_status_decision(exc)
+        if _sdk_type(exc, "openai", ("APITimeoutError", "APIConnectionError")):
+            return _fallback(ErrorCode.LLM_TIMEOUT_ERROR, "transient_network")
+        if isinstance(exc, httpx.TransportError):
             return _fallback(ErrorCode.LLM_TIMEOUT_ERROR, "transient_network")
         if isinstance(exc, (TimeoutError, ConnectionError)):
             return _fallback(ErrorCode.LLM_TIMEOUT_ERROR, "transient_network")
@@ -80,8 +56,8 @@ class LlmFailureClassifier:
             return _fail(ErrorCode.LLM_STRUCTURED_OUTPUT_ERROR, "structured_output")
         return self._fallback_decision(exc)
 
-    def _google_decision(self, exc: Exception) -> LlmFailureDecision:
-        status_code = _google_status_code(exc)
+    def _provider_status_decision(self, exc: Exception) -> LlmFailureDecision:
+        status_code = _status_code(exc) or google_status_code(exc)
         if status_code in {401, 403}:
             return _disable(ErrorCode.LLM_AUTHENTICATION_ERROR, "authentication")
         if status_code == 404:
@@ -95,58 +71,25 @@ class LlmFailureClassifier:
         return _fail(ErrorCode.LLM_ERROR, "provider_error")
 
     def _rate_limit_decision(self, detail: object) -> LlmFailureDecision:
-        if _contains_quota_marker(detail):
+        if contains_quota_marker(detail):
             return _disable(ErrorCode.LLM_QUOTA_EXCEEDED, "quota_exhausted")
         return LlmFailureDecision(LlmFailureAction.ROTATE, ErrorCode.LLM_RATE_LIMIT_ERROR, "rate_limit")
 
     def _fallback_decision(self, exc: Exception) -> LlmFailureDecision:
         message = str(exc).casefold()
-        if _contains_any(message, ("invalid api key", "api key expired", "revoked", "unauthorized")):
+        if contains_any(message, ("invalid api key", "api key expired", "revoked", "unauthorized")):
             return _disable(ErrorCode.LLM_AUTHENTICATION_ERROR, "authentication")
-        if _contains_quota_marker(message):
+        if contains_quota_marker(message):
             return _disable(ErrorCode.LLM_QUOTA_EXCEEDED, "quota_exhausted")
-        if _contains_any(message, ("rate limit", "resource_exhausted", "resourceexhausted")):
+        if contains_any(message, ("rate limit", "resource_exhausted", "resourceexhausted")):
             return LlmFailureDecision(LlmFailureAction.ROTATE, ErrorCode.LLM_RATE_LIMIT_ERROR, "rate_limit")
-        if _contains_any(message, ("404", "not found", "not_found")):
+        if contains_any(message, ("404", "not found", "not_found")):
             return _fail(ErrorCode.LLM_MODEL_NOT_FOUND, "model_not_found")
-        if _contains_any(message, ("timeout", "timed out", "connection reset")):
+        if contains_any(message, ("timeout", "timed out", "connection reset")):
             return _fallback(ErrorCode.LLM_TIMEOUT_ERROR, "transient_network")
-        if _contains_any(message, ("service unavailable", "server error", "internal error")):
+        if contains_any(message, ("service unavailable", "server error", "internal error")):
             return _fallback(ErrorCode.LLM_ERROR, "provider_unavailable")
         return _fail(ErrorCode.LLM_ERROR, "provider_error")
-
-
-def _contains_quota_marker(detail: object) -> bool:
-    markers = (
-        "insufficient_quota",
-        "quota_exceeded",
-        "quota exceeded",
-        "quota exhausted",
-        "billing_hard_limit",
-    )
-    return _contains_any(str(detail).casefold(), markers)
-
-
-def _google_status_code(exc: Exception) -> int | None:
-    code = getattr(exc, "code", None)
-    if isinstance(code, int):
-        return code
-    response = getattr(exc, "response", None)
-    response_code = getattr(response, "status_code", None)
-    if isinstance(response_code, int):
-        return response_code
-    names = {
-        "unauthenticated": 401,
-        "permissiondenied": 403,
-        "notfound": 404,
-        "resourceexhausted": 429,
-        "deadlineexceeded": 408,
-    }
-    return names.get(type(exc).__name__.casefold())
-
-
-def _contains_any(value: str, markers: tuple[str, ...]) -> bool:
-    return any(marker in value for marker in markers)
 
 
 def _disable(code: ErrorCode, reason: str) -> LlmFailureDecision:
@@ -159,3 +102,17 @@ def _fail(code: ErrorCode, reason: str) -> LlmFailureDecision:
 
 def _fallback(code: ErrorCode, reason: str) -> LlmFailureDecision:
     return LlmFailureDecision(LlmFailureAction.FALLBACK_PROVIDER, code, reason)
+
+
+def _sdk_module(exc: Exception, provider: str) -> bool:
+    module = type(exc).__module__.casefold()
+    return module == provider or module.startswith(f"{provider}.")
+
+
+def _sdk_type(exc: Exception, provider: str, names: tuple[str, ...]) -> bool:
+    return _sdk_module(exc, provider) and type(exc).__name__ in names
+
+
+def _status_code(exc: Exception) -> int:
+    value = getattr(exc, "status_code", 0)
+    return value if isinstance(value, int) else 0

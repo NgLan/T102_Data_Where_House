@@ -4,7 +4,7 @@ from src.common.exceptions.error_codes import ErrorCode
 from src.common.exceptions.infrastructure import InfrastructureException
 from src.common.logging import get_logger
 from src.infrastructure.llm.agent_structured_outputs import DwConversationResult
-from src.infrastructure.llm.lazy_chat_model import StructuredChatModel
+from src.infrastructure.llm.lazy_chat_model import ILLMGateway
 from src.infrastructure.llm.structured_llm_invoker import StructuredLlmInvoker
 from src.infrastructure.security.pii_guard import PiiGuard
 
@@ -22,8 +22,8 @@ summary to one or two sentences."""
 class ConversationOutputInvoker:
     """Gọi structured conversation và retry đúng một lần khi output sai schema."""
 
-    def __init__(self, chat_model: StructuredChatModel, pii_guard: PiiGuard) -> None:
-        self._invoker = StructuredLlmInvoker(chat_model, pii_guard)
+    def __init__(self, gateway: ILLMGateway, pii_guard: PiiGuard) -> None:
+        self._invoker = StructuredLlmInvoker(gateway, pii_guard)
 
     async def invoke(self, system_prompt: str, user_prompt: str) -> DwConversationResult:
         """Retry với contract sửa lỗi mà không đưa raw response hỏng vào prompt."""

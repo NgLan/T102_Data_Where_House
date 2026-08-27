@@ -19,11 +19,26 @@ def extract_metadata(raw: object) -> StructuredInvocationMetadata:
     finish = metadata.get("finish_reason") or metadata.get("stop_reason")
     provider = metadata.get("model_provider") or metadata.get("provider")
     model = metadata.get("model_name") or metadata.get("model")
+    usage = _usage_metadata(raw, metadata)
     return StructuredInvocationMetadata(
         str(finish) if finish is not None else None,
         str(provider) if provider is not None else None,
         str(model) if model is not None else None,
+        _integer(usage.get("input_tokens") or usage.get("prompt_tokens")),
+        _integer(usage.get("output_tokens") or usage.get("completion_tokens")),
+        _integer(usage.get("total_tokens")),
     )
+
+
+def _usage_metadata(raw: object, response_metadata: dict[str, object]) -> dict[str, object]:
+    usage = getattr(raw, "usage_metadata", None)
+    if not isinstance(usage, dict):
+        usage = response_metadata.get("token_usage") or response_metadata.get("usage")
+    return usage if isinstance(usage, dict) else {}
+
+
+def _integer(value: object) -> int | None:
+    return value if isinstance(value, int) and not isinstance(value, bool) else None
 
 
 def _content_candidates(raw: object) -> list[str]:

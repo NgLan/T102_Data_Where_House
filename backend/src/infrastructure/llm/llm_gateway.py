@@ -7,15 +7,19 @@ from langchain_core.language_models import BaseChatModel
 from pydantic import BaseModel
 from src.common.exceptions.error_codes import ErrorCode
 from src.common.exceptions.infrastructure import InfrastructureException
-from src.common.logging import get_logger
 from src.infrastructure.llm.credential_pool import CredentialPool
-from src.infrastructure.llm.exception_translator import translate_llm_failure
-from src.infrastructure.llm.failure_classifier import LlmFailureAction, LlmFailureClassifier
+from src.infrastructure.llm.gateway_failure_handler import GatewayFailureHandler
+from src.infrastructure.llm.gateway_observability import (
+    GatewayLogContext,
+    log_call_completed,
+    log_fallback,
+    log_selected,
+)
 from src.infrastructure.llm.lazy_chat_model import StructuredModel
 from src.infrastructure.llm.provider_health import ProviderHealthRegistry
+from src.infrastructure.llm.provider_routing_policy import ProviderRoutingPolicy
 from src.infrastructure.llm.runtime_configuration import ProviderRuntimeConfiguration
-
-logger = get_logger(__name__)
+from src.infrastructure.llm.structured_raw_response import extract_metadata
 
 
 @dataclass(frozen=True, slots=True)
@@ -31,7 +35,7 @@ class ProviderGatewayRoute:
 class LlmGatewayResources:
     """Process resources dùng bởi một logical model profile."""
 
-    routes: tuple[ProviderGatewayRoute, ...]
+    routing_policy: ProviderRoutingPolicy[ProviderGatewayRoute]
     health: ProviderHealthRegistry
 
 
@@ -63,20 +67,20 @@ class GatewayStructuredModel:
         self._resources = resources
         self._schema = schema
         self._include_raw = include_raw
-        self._classifier = LlmFailureClassifier()
+        self._failure_handler = GatewayFailureHandler(resources.health)
 
     async def ainvoke(self, messages: list[object]) -> BaseModel | dict[str, object]:
         """Duyệt ordered providers và chỉ fallback với lỗi hạ tầng phù hợp."""
         last_exc: Exception | None = None
-        for route_index, route in enumerate(self._resources.routes):
+        for route_index, route in enumerate(self._resources.routing_policy.ordered()):
             provider = route.configuration.provider
             if not await self._resources.health.is_available(provider):
-                self._log_fallback(route, route_index, "provider_cooldown")
+                log_fallback(_log_context(route), route_index, "provider_cooldown")
                 continue
             result, last_exc = await self._invoke_provider(route, messages)
             if result is not None:
                 return result
-            self._log_fallback(route, route_index, "provider_unavailable")
+            log_fallback(_log_context(route), route_index, "provider_unavailable")
         self._raise_exhausted(last_exc)
 
     async def _invoke_provider(
@@ -85,30 +89,42 @@ class GatewayStructuredModel:
         messages: list[object],
     ) -> tuple[BaseModel | dict[str, object] | None, Exception | None]:
         attempted: set[str] = set()
+        provider_exc: Exception | None = None
         while len(attempted) < route.credential_pool.configured_count:
             lease = await route.credential_pool.acquire(frozenset(attempted))
             if lease is None:
                 break
             attempted.add(lease.key_id)
-            self._log_selected(route, lease.key_id, len(attempted))
-            try:
-                result = await self._invoke_client(route.clients[lease.key_id], messages)
-            except InfrastructureException:
-                raise
-            except Exception as exc:
-                should_fallback = await self._handle_failure(route, lease.key_id, exc)
-                if should_fallback:
-                    return None, exc
-                continue
-            await route.credential_pool.mark_succeeded(lease.key_id)
-            await self._resources.health.mark_succeeded(route.configuration.provider)
-            return result, None
-        return None, None
+            log_selected(_log_context(route), lease.key_id, len(attempted))
+            result, provider_exc, fallback = await self._try_credential(route, lease.key_id, messages)
+            if result is not None:
+                return result, None
+            if fallback:
+                return None, provider_exc
+        return None, provider_exc
+
+    async def _try_credential(
+        self,
+        route: ProviderGatewayRoute,
+        key_id: str,
+        messages: list[object],
+    ) -> tuple[BaseModel | dict[str, object] | None, Exception | None, bool]:
+        try:
+            result = await self._invoke_client(route.clients[key_id], messages, _log_context(route))
+        except InfrastructureException:
+            raise
+        except Exception as exc:
+            fallback = await self._failure_handler.handle(route, key_id, exc)
+            return None, exc, fallback
+        await route.credential_pool.mark_succeeded(key_id)
+        await self._resources.health.mark_succeeded(route.configuration.provider)
+        return result, None, False
 
     async def _invoke_client(
         self,
         client: BaseChatModel,
         messages: list[object],
+        context: GatewayLogContext,
     ) -> BaseModel | dict[str, object]:
         started = perf_counter()
         structured = (
@@ -117,67 +133,17 @@ class GatewayStructuredModel:
             else client.with_structured_output(self._schema)
         )
         result = await structured.ainvoke(messages)
-        logger.info(
-            "LLM call completed.",
-            extra={"event": "llm_call_completed", "latency_ms": (perf_counter() - started) * 1000},
-        )
+        raw = result.get("raw") if isinstance(result, dict) else result
+        log_call_completed(context, extract_metadata(raw), (perf_counter() - started) * 1000)
         return result
-
-    async def _handle_failure(
-        self,
-        route: ProviderGatewayRoute,
-        key_id: str,
-        exc: Exception,
-    ) -> bool:
-        decision = self._classifier.classify(exc)
-        self._log_failure(route, key_id, decision.reason)
-        if decision.action is LlmFailureAction.FAIL:
-            raise translate_llm_failure(decision) from exc
-        if decision.action is LlmFailureAction.ROTATE:
-            await route.credential_pool.mark_rate_limited(key_id)
-            self._log_rotated(route, key_id, decision.reason)
-            return False
-        if decision.action is LlmFailureAction.DISABLE_AND_ROTATE:
-            await route.credential_pool.disable(key_id)
-            self._log_rotated(route, key_id, decision.reason)
-            return False
-        cooled = await self._resources.health.mark_failed(route.configuration.provider)
-        if cooled:
-            self._log_provider_cooldown(route, decision.reason)
-        return True
-
-    def _log_selected(self, route: ProviderGatewayRoute, key_id: str, attempt: int) -> None:
-        metadata = self._metadata(route) | {"key_id": key_id, "attempt": attempt}
-        logger.info("LLM provider selected.", extra={"event": "llm_provider_selected"} | metadata)
-        logger.info("LLM model selected.", extra={"event": "llm_model_selected"} | metadata)
-
-    def _log_rotated(self, route: ProviderGatewayRoute, key_id: str, reason: str) -> None:
-        metadata = self._metadata(route) | {"key_id": key_id, "reason": reason}
-        logger.warning("LLM key rotated.", extra={"event": "llm_key_rotated"} | metadata)
-
-    def _log_fallback(self, route: ProviderGatewayRoute, index: int, reason: str) -> None:
-        metadata = self._metadata(route) | {"provider_index": index, "reason": reason}
-        logger.warning("LLM provider fallback.", extra={"event": "llm_provider_fallback"} | metadata)
-
-    def _log_failure(self, route: ProviderGatewayRoute, key_id: str, reason: str) -> None:
-        metadata = self._metadata(route) | {"key_id": key_id, "reason": reason}
-        logger.warning("LLM call failed.", extra={"event": "llm_call_failed"} | metadata)
-
-    def _log_provider_cooldown(self, route: ProviderGatewayRoute, reason: str) -> None:
-        metadata = self._metadata(route) | {"reason": reason}
-        logger.warning("LLM provider cooldown.", extra={"event": "llm_provider_cooldown"} | metadata)
-
-    @staticmethod
-    def _metadata(route: ProviderGatewayRoute) -> dict[str, object]:
-        return {
-            "provider": route.configuration.provider.value,
-            "model": route.configuration.model_name,
-        }
 
     @staticmethod
     def _raise_exhausted(last_exc: Exception | None) -> None:
         error = InfrastructureException(
-            ErrorCode.LLM_CREDENTIALS_EXHAUSTED,
-            "Không còn LLM provider hoặc credential khả dụng trong process.",
+            ErrorCode.LLM_CREDENTIALS_EXHAUSTED, "Không còn LLM provider hoặc credential khả dụng trong process."
         )
         raise error from last_exc
+
+
+def _log_context(route: ProviderGatewayRoute) -> GatewayLogContext:
+    return GatewayLogContext(route.configuration.provider.value, route.configuration.model_name)

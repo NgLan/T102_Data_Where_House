@@ -2,6 +2,8 @@
 
 from langchain_core.language_models import BaseChatModel
 from langchain_openai import ChatOpenAI
+from src.common.exceptions.error_codes import ErrorCode
+from src.common.exceptions.infrastructure import InfrastructureException
 from src.infrastructure.llm.provider_registry_types import ChatModelConfiguration
 
 
@@ -25,5 +27,10 @@ class OpenAILlmProvider:
         }
         if configuration.base_url:
             options["base_url"] = configuration.base_url
-        return ChatOpenAI(**options)
-
+        try:
+            return ChatOpenAI(**options)
+        except Exception as exc:
+            raise InfrastructureException(
+                ErrorCode.LLM_ERROR,
+                "Không thể khởi tạo OpenAI LLM provider.",
+            ) from exc

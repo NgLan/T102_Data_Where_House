@@ -33,7 +33,7 @@ from src.infrastructure.llm.agent_structured_outputs import (
     DbmlRevisionResult,
 )
 from src.infrastructure.llm.approximate_token_estimator import ApproximateTokenEstimator
-from src.infrastructure.llm.lazy_chat_model import ChatModelSource, LazyChatModel
+from src.infrastructure.llm.lazy_chat_model import LazyLlmGateway, LlmGatewaySource
 from src.infrastructure.llm.structured_llm_invoker import StructuredLlmInvoker
 from src.infrastructure.security.pii_guard import PiiGuard
 from typing_extensions import override
@@ -46,11 +46,11 @@ class DataWarehouseDesignAgent(IDataWarehouseDesignAgent):
 
     def __init__(
         self,
-        chat_model: ChatModelSource,
+        gateway: LlmGatewaySource,
         pii_guard: PiiGuard,
         context_builder: ConversationContextBuilder | None = None,
     ) -> None:
-        self._model = LazyChatModel(chat_model)
+        self._gateway = LazyLlmGateway(gateway)
         self._pii_guard = pii_guard
         self._context_builder = context_builder or ConversationContextBuilder(
             ConversationTokenPolicy(32768, 8000), ApproximateTokenEstimator()
@@ -95,14 +95,14 @@ class DataWarehouseDesignAgent(IDataWarehouseDesignAgent):
             built.dropped_turns,
             built.projection_tier,
         )
-        result = await ConversationOutputInvoker(self._model.get(), self._pii_guard).invoke(
+        result = await ConversationOutputInvoker(self._gateway.get(), self._pii_guard).invoke(
             DW_CONVERSATION_SYSTEM_PROMPT, built.user_prompt
         )
         return to_conversation_result(result)
 
     async def _invoke(self, system_prompt: str, user_prompt: str) -> GeneratedDbml:
         """Gọi LLM một lần, unmask rồi chuẩn hóa DBML deterministic."""
-        invoker = StructuredLlmInvoker(self._model.get(), self._pii_guard)
+        invoker = StructuredLlmInvoker(self._gateway.get(), self._pii_guard)
         result = await invoker.invoke(system_prompt, user_prompt, DbmlRevisionResult)
         return GeneratedDbml(normalize_agent_dbml(result.dbml))
 

@@ -78,6 +78,12 @@ class CredentialPool:
             self._restore_cooled_down()
             return self._find(key_id).status
 
+    async def has_available(self) -> bool:
+        """Kiểm tra credential usable mà không thay đổi round-robin cursor."""
+        async with self._lock:
+            self._restore_cooled_down()
+            return any(item.status is CredentialStatus.AVAILABLE for item in self._credentials)
+
     def _restore_cooled_down(self) -> None:
         now = self._clock()
         for credential in self._credentials:
@@ -91,4 +97,3 @@ class CredentialPool:
     @staticmethod
     def _can_acquire(credential: ApiCredential, attempted: frozenset[str]) -> bool:
         return credential.key_id not in attempted and credential.status is CredentialStatus.AVAILABLE
-

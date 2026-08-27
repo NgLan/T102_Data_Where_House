@@ -5,7 +5,7 @@ from collections.abc import Mapping
 import pytest
 from config import Settings
 from pydantic import ValidationError
-from src.infrastructure.llm.runtime_configuration import effective_api_keys
+from src.infrastructure.llm.runtime_configuration import effective_api_keys, resolve_runtime_configuration
 
 
 def _settings(overrides: Mapping[str, object] | None = None) -> Settings:
@@ -95,3 +95,66 @@ def test_settings_representation_masks_new_keys() -> None:
     rendered = repr(_settings({"llm_api_keys": ["never-print-this"]}))
 
     assert "never-print-this" not in rendered
+
+
+def test_multi_provider_priority_and_models_follow_configuration() -> None:
+    settings = _settings(
+        {
+            "llm_provider_priority": ["GEMINI", "OPENAI"],
+            "gemini_api_keys": ["explicit-gemini"],
+            "openai_api_keys": ["explicit-openai"],
+            "gemini_model": "gemini-test",
+            "openai_model": "openai-test",
+        }
+    )
+
+    runtime = resolve_runtime_configuration(settings)
+
+    assert [item.provider.value for item in runtime.candidates] == ["GEMINI", "OPENAI"]
+    assert [item.model_name for item in runtime.candidates] == ["gemini-test", "openai-test"]
+
+
+def test_generic_credentials_are_detected_by_longest_prefix() -> None:
+    settings = _settings(
+        {
+            "llm_provider_priority": ["ANTHROPIC", "OPENAI", "GEMINI"],
+            "llm_api_keys": ["sk-ant-test", "sk-or-v1-test", "AIza-test"],
+            "anthropic_model": "claude-test",
+            "openai_model": "openai/test",
+            "gemini_model": "gemini-test",
+        }
+    )
+
+    runtime = resolve_runtime_configuration(settings)
+
+    counts = {item.provider.value: len(item.api_keys) for item in runtime.candidates}
+    assert counts == {"ANTHROPIC": 1, "OPENAI": 1, "GEMINI": 1}
+
+
+def test_explicit_provider_binding_overrides_key_prefix() -> None:
+    settings = _settings(
+        {
+            "llm_provider_priority": ["GEMINI"],
+            "gemini_api_keys": ["sk-prefix-must-not-win"],
+            "gemini_model": "gemini-test",
+        }
+    )
+
+    runtime = resolve_runtime_configuration(settings)
+
+    assert runtime.candidates[0].provider.value == "GEMINI"
+
+
+def test_unknown_generic_credential_fails_without_exposing_value() -> None:
+    settings = _settings(
+        {
+            "llm_provider_priority": ["OPENAI"],
+            "llm_api_keys": ["unknown-never-expose"],
+            "openai_model": "openai-test",
+        }
+    )
+
+    with pytest.raises(ValueError) as raised:
+        resolve_runtime_configuration(settings)
+
+    assert "unknown-never-expose" not in str(raised.value)

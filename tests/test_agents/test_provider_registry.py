@@ -3,19 +3,21 @@
 from typing import cast
 
 import pytest
+from langchain_anthropic import ChatAnthropic
 from langchain_core.language_models import BaseChatModel
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_openai import ChatOpenAI
 from pydantic import SecretStr
 from src.common.exceptions.infrastructure import InfrastructureException
 from src.infrastructure.llm import factory
-from src.infrastructure.llm.api_key_pool import LlmApiKeyPool
-from src.infrastructure.llm.lazy_chat_model import LazyChatModel
+from src.infrastructure.llm.gateway_builder import GatewaySharedState
+from src.infrastructure.llm.lazy_chat_model import LazyLlmGateway
 from src.infrastructure.llm.provider_registry import (
     ChatModelConfiguration,
     ChatModelProviderRegistry,
     create_default_provider_registry,
 )
+from src.presentation.dependencies import llm as llm_dependencies
 
 
 def _configuration(provider: str, base_url: str = "") -> ChatModelConfiguration:
@@ -44,6 +46,14 @@ def test_google_provider_builds_async_capable_chat_model() -> None:
     assert model.max_retries == 0
 
 
+def test_anthropic_provider_builds_async_capable_chat_model() -> None:
+    """Anthropic registry tạo integration chính thức và tắt retry."""
+    model = create_default_provider_registry().build(_configuration("anthropic"))
+
+    assert isinstance(model, ChatAnthropic)
+    assert model.max_retries == 0
+
+
 def test_custom_provider_registration_requires_no_core_change() -> None:
     """Builder tùy chỉnh được resolve chỉ bằng registry registration."""
     registry = ChatModelProviderRegistry()
@@ -64,12 +74,12 @@ def test_lazy_chat_model_builds_once_per_process_resource() -> None:
     calls = 0
     sentinel = cast(BaseChatModel, object())
 
-    def builder(**_kwargs: object) -> BaseChatModel:
+    def builder(_settings: object = None, **_kwargs: object) -> BaseChatModel:
         nonlocal calls
         calls += 1
         return sentinel
 
-    lazy = LazyChatModel(builder)
+    lazy = LazyLlmGateway(builder)
 
     assert lazy.get() is sentinel
     assert lazy.get() is sentinel
@@ -81,23 +91,24 @@ def test_default_model_factory_is_cached_per_process(monkeypatch: pytest.MonkeyP
     calls = 0
     sentinel = cast(BaseChatModel, object())
 
-    def builder(**_kwargs: object) -> BaseChatModel:
+    def builder(_settings: object = None, **_kwargs: object) -> BaseChatModel:
         nonlocal calls
         calls += 1
         return sentinel
 
-    factory.get_cached_chat_model.cache_clear()
-    monkeypatch.setattr(factory, "build_chat_model", builder)
+    llm_dependencies.get_llm_gateway.cache_clear()
+    monkeypatch.setattr(llm_dependencies, "build_chat_model", builder)
+    monkeypatch.setattr(llm_dependencies, "get_settings", lambda: object())
     monkeypatch.setattr(
-        factory,
-        "get_cached_api_key_pool",
-        lambda: LlmApiKeyPool((SecretStr("test-key"),)),
+        llm_dependencies,
+        "get_gateway_state",
+        lambda: cast(GatewaySharedState, object()),
     )
 
-    assert factory.get_cached_chat_model() is sentinel
-    assert factory.get_cached_chat_model() is sentinel
+    assert llm_dependencies.get_llm_gateway() is sentinel
+    assert llm_dependencies.get_llm_gateway() is sentinel
     assert calls == 1
-    factory.get_cached_chat_model.cache_clear()
+    llm_dependencies.get_llm_gateway.cache_clear()
 
 
 def test_auto_provider_is_rejected_instead_of_guessing_from_model() -> None:

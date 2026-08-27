@@ -1,17 +1,26 @@
 import { useTranslation } from "react-i18next";
+import { FolderKanban } from "lucide-react";
 
-/** Hiển thị phần giới thiệu của Project Management.
- * @returns Hero có eyebrow, tiêu đề và mô tả đã i18n.
+/** Hiển thị phần giới thiệu tinh gọn của Project Management theo phong cách Modern SaaS.
+ * @returns Header có icon, tiêu đề và mô tả gọn gàng, không chiếm dụng không gian.
  */
 export function ProjectManagementHero() {
   const { t } = useTranslation("project-management");
   return (
-    <header className="rounded-2xl bg-primary p-8 text-primary-foreground shadow-sm">
-      <p className="text-xs font-semibold uppercase tracking-wider opacity-75">
-        {t("TXT_EYEBROW")}
+    <header className="flex flex-col gap-1 border-b pb-4">
+      <div className="flex items-center gap-2.5">
+        <div className="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+          <FolderKanban className="size-5" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            {t("TXT_TITLE")}
+          </h1>
+        </div>
+      </div>
+      <p className="mt-1 text-sm text-muted-foreground">
+        {t("TXT_SUBTITLE")}
       </p>
-      <h1 className="mt-2 text-2xl font-bold">{t("TXT_TITLE")}</h1>
-      <p className="mt-2 max-w-2xl text-sm opacity-75">{t("TXT_SUBTITLE")}</p>
     </header>
   );
 }

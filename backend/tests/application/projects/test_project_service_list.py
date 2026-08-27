@@ -1,3 +1,4 @@
+from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock
 from uuid import uuid4
 
@@ -31,6 +32,7 @@ async def test_list_projects_batches_models_and_computes_outdated_flag() -> None
     }
     projects = MagicMock()
     projects.list_accessible_by_user = AsyncMock(return_value=[current, stale, missing])
+    projects.get_latest_activity_by_project_ids = AsyncMock(return_value={})
     data_sources = MagicMock()
     data_sources.count_by_project_ids = AsyncMock(return_value={})
     data_models = MagicMock()
@@ -45,4 +47,34 @@ async def test_list_projects_batches_models_and_computes_outdated_flag() -> None
 
     project_ids = (current.id, stale.id, missing.id)
     data_models.list_by_project_ids.assert_awaited_once_with(project_ids)
+    projects.get_latest_activity_by_project_ids.assert_awaited_once_with(project_ids)
     assert [item.is_data_model_outdated for item in result] == [False, True, False]
+
+
+@pytest.mark.asyncio
+async def test_list_projects_sorts_by_latest_activity_descending() -> None:
+    actor_id = uuid4()
+    p1 = Project(name="Project Alpha", user_id=actor_id, updated_at=datetime(2026, 1, 1, tzinfo=UTC))
+    p2 = Project(name="Project Beta", user_id=actor_id, updated_at=datetime(2026, 1, 2, tzinfo=UTC))
+
+    latest_activities = {
+        p1.id: datetime(2026, 8, 28, 12, 0, tzinfo=UTC),
+        p2.id: datetime(2026, 1, 2, tzinfo=UTC),
+    }
+    projects = MagicMock()
+    projects.list_accessible_by_user = AsyncMock(return_value=[p2, p1])
+    projects.get_latest_activity_by_project_ids = AsyncMock(return_value=latest_activities)
+    data_sources = MagicMock()
+    data_sources.count_by_project_ids = AsyncMock(return_value={})
+    data_models = MagicMock()
+    data_models.list_by_project_ids = AsyncMock(return_value={})
+    access = MagicMock(actor_id=actor_id)
+    service = ProjectService(
+        projects, MagicMock(), data_sources, MagicMock(), data_models,
+        MagicMock(), MagicMock(), access,
+    )
+
+    result = await service.list_projects()
+
+    assert [item.name for item in result] == ["Project Alpha", "Project Beta"]
+    assert result[0].updated_at == datetime(2026, 8, 28, 12, 0, tzinfo=UTC)

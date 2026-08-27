@@ -30,7 +30,7 @@ from src.infrastructure.llm.conversation_summary_output import (
     SummaryDecisionOutput,
     SummaryItemOutput,
 )
-from src.infrastructure.llm.lazy_chat_model import ChatModelSource, LazyChatModel
+from src.infrastructure.llm.lazy_chat_model import LazyLlmGateway, LlmGatewaySource
 from src.infrastructure.llm.structured_llm_invoker import StructuredLlmInvoker
 from src.infrastructure.security.pii_guard import PiiGuard
 from typing_extensions import override
@@ -39,14 +39,14 @@ from typing_extensions import override
 class ConversationSummaryAgent(IConversationSummaryAgent):
     """Compact đúng một batch thành toàn bộ structured current state."""
 
-    def __init__(self, chat_model: ChatModelSource, pii_guard: PiiGuard) -> None:
-        self._model = LazyChatModel(chat_model)
+    def __init__(self, gateway: LlmGatewaySource, pii_guard: PiiGuard) -> None:
+        self._gateway = LazyLlmGateway(gateway)
         self._pii_guard = pii_guard
 
     @override
     async def summarize(self, data: ConversationSummaryInput) -> ConversationSummary:
         prompt = _render_prompt(data)
-        result = await StructuredLlmInvoker(self._model.get(), self._pii_guard).invoke(
+        result = await StructuredLlmInvoker(self._gateway.get(), self._pii_guard).invoke(
             CONVERSATION_SUMMARY_SYSTEM_PROMPT,
             prompt,
             ConversationSummaryOutput,

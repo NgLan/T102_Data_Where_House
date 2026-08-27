@@ -58,5 +58,12 @@
   "TXT_WORKFLOW_STEP_SANDBOX": "Xuất dữ liệu",
   "TXT_DATA_MODEL_UNAVAILABLE_TITLE": "Chưa có Data Model",
   "TXT_DATA_MODEL_UNAVAILABLE_DESCRIPTION": "Vui lòng quay lại Bước 1 và chạy Lưu và phân tích.",
-  "BTN_BACK_TO_PROJECT_INIT": "Quay lại Bước 1"
+  "BTN_BACK_TO_PROJECT_INIT": "Quay lại Bước 1",
+  "TIME_JUST_NOW": "Vừa xong",
+  "TIME_MINUTES_AGO": "{{count}} phút trước",
+  "TIME_HOURS_AGO": "{{count}} giờ trước",
+  "TIME_YESTERDAY": "Hôm qua",
+  "TIME_DAYS_AGO": "{{count}} ngày trước",
+  "TXT_UPDATED_AT": "Chỉnh sửa {{time}}",
+  "TXT_CREATED_AT": "Tạo ngày {{date}}"
 }

@@ -9,10 +9,11 @@ from pydantic import SecretStr
 from src.common.exceptions.error_codes import ErrorCode
 from src.common.exceptions.infrastructure import InfrastructureException
 from src.infrastructure.llm import factory
-from src.infrastructure.llm.api_key_pool import LlmApiKeyPool
-from src.infrastructure.llm.lazy_chat_model import StructuredChatModel
+from src.infrastructure.llm.gateway_builder import GatewaySharedState
+from src.infrastructure.llm.lazy_chat_model import ILLMGateway
 from src.infrastructure.llm.provider_registry import ChatModelConfiguration, ChatModelProviderRegistry
 from src.infrastructure.llm.runtime_configuration import LlmRuntimeConfiguration
+from src.presentation.dependencies import llm as llm_dependencies
 
 
 def _settings() -> Settings:
@@ -50,7 +51,7 @@ def test_factory_builds_and_reuses_one_client_per_key() -> None:
     assert len(clients) == 2
 
 
-def test_local_endpoint_preserves_keyless_compatibility() -> None:
+def test_local_endpoint_requires_explicit_placeholder_credential() -> None:
     settings = _settings().model_copy(
         update={"llm_api_keys": None, "llm_base_url": "http://localhost:11434/v1"}
     )
@@ -63,9 +64,10 @@ def test_local_endpoint_preserves_keyless_compatibility() -> None:
 
     registry.register("openai", build)
 
-    factory.build_chat_model(settings, registry)
+    with pytest.raises(InfrastructureException):
+        factory.build_chat_model(settings, registry)
 
-    assert configured_keys == ["local"]
+    assert configured_keys == []
 
 
 def test_cloud_provider_without_any_key_fails_clearly() -> None:
@@ -77,29 +79,47 @@ def test_cloud_provider_without_any_key_fails_clearly() -> None:
     assert raised.value.code is ErrorCode.LLM_ERROR
 
 
+def test_startup_rejects_configured_provider_without_registered_adapter() -> None:
+    settings = _settings().model_copy(
+        update={
+            "llm_provider_priority": ("ANTHROPIC",),
+            "llm_api_keys": None,
+            "anthropic_api_keys": (SecretStr("sk-ant-test"),),
+            "anthropic_model_name": "claude-test",
+        }
+    )
+    registry = ChatModelProviderRegistry()
+    registry.register("openai", lambda _configuration: cast(BaseChatModel, object()))
+
+    with pytest.raises(InfrastructureException) as raised:
+        factory.build_chat_model(settings, registry)
+
+    assert raised.value.code is ErrorCode.LLM_ERROR
+
+
 def test_main_and_summary_models_share_process_key_pool(monkeypatch: pytest.MonkeyPatch) -> None:
     settings = _settings()
-    pools: list[LlmApiKeyPool] = []
-    sentinel = cast(StructuredChatModel, object())
+    pools: list[GatewaySharedState] = []
+    sentinel = cast(ILLMGateway, object())
 
     def build(
         _runtime: LlmRuntimeConfiguration,
         _registry: ChatModelProviderRegistry,
-        pool: LlmApiKeyPool,
-    ) -> StructuredChatModel:
+        pool: GatewaySharedState,
+    ) -> ILLMGateway:
         pools.append(pool)
         return sentinel
 
-    monkeypatch.setattr(factory, "get_settings", lambda: settings)
-    monkeypatch.setattr(factory, "_build_rotating_model", build)
-    factory.get_cached_api_key_pool.cache_clear()
-    factory.get_cached_chat_model.cache_clear()
-    factory.get_cached_summary_chat_model.cache_clear()
+    monkeypatch.setattr(llm_dependencies, "get_settings", lambda: settings)
+    monkeypatch.setattr(factory, "_build_gateway", build)
+    llm_dependencies.get_gateway_state.cache_clear()
+    llm_dependencies.get_llm_gateway.cache_clear()
+    llm_dependencies.get_summary_llm_gateway.cache_clear()
 
-    factory.get_cached_chat_model()
-    factory.get_cached_summary_chat_model()
+    llm_dependencies.get_llm_gateway()
+    llm_dependencies.get_summary_llm_gateway()
 
     assert pools[0] is pools[1]
-    factory.get_cached_api_key_pool.cache_clear()
-    factory.get_cached_chat_model.cache_clear()
-    factory.get_cached_summary_chat_model.cache_clear()
+    llm_dependencies.get_gateway_state.cache_clear()
+    llm_dependencies.get_llm_gateway.cache_clear()
+    llm_dependencies.get_summary_llm_gateway.cache_clear()

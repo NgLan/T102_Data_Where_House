@@ -64,7 +64,7 @@ class Settings(BaseSettings):
     openai_api_key: str = ""
     openai_base_url: str = ""
     google_api_key: str = ""
-    llm_provider: str = "google"
+    llm_provider: str = ""
     llm_provider_priority: StringListSetting = ()
     llm_api_keys: SecretListSetting | None = None
     llm_api_key: str = ""
