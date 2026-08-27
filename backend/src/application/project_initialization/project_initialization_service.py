@@ -41,35 +41,36 @@ class ProjectInitializationService(IProjectInitializationService):
 
     @override
     async def run(self, data: ProjectInitializationInput) -> ProjectInitializationOutput:
+        state = await self._requirement_state(data)
+        if _requires_requirement_pause(state):
+            return _requirement_pause(state)
+        return await self._continue_initialization(data, state)
+
+    async def _requirement_state(
+        self,
+        data: ProjectInitializationInput,
+    ) -> RequirementClarificationStateOutput:
         state = await self._requirements.get_clarification(GetRequirementClarificationInput(data.project_id))
         if state.is_outdated:
-            state = await self._requirements.analyze_clarification(
+            return await self._requirements.analyze_clarification(
                 AnalyzeRequirementClarificationInput(data.project_id, state.requirement_revision)
             )
-        paused_statuses = {
-            RequirementClarificationStatus.NEEDS_CLARIFICATION,
-            RequirementClarificationStatus.PROCESSING,
-        }
-        if state.status in paused_statuses:
-            return _requirement_pause(state)
-        if state.continuation_state in {
-            RequirementContinuationState.AWAITING_DECISION,
-            RequirementContinuationState.CONTINUE_EDITING,
-        }:
-            return _requirement_pause(state)
+        return state
+
+    async def _continue_initialization(
+        self,
+        data: ProjectInitializationInput,
+        state: RequirementClarificationStateOutput,
+    ) -> ProjectInitializationOutput:
         try:
-            analysis = await self._data_warehouse.reanalyze(
-                ReanalyzeProjectInput(data.project_id)
-            )
+            analysis = await self._data_warehouse.reanalyze(ReanalyzeProjectInput(data.project_id))
             if analysis.readiness_status is not InputReadinessStatus.READY_FOR_DESIGN:
                 return ProjectInitializationOutput(
                     ProjectInitializationStatus.PAUSED,
                     readiness_status=analysis.readiness_status,
                     source_coverage_batch=analysis.source_coverage_batch,
                 )
-            model = await self._data_warehouse.synchronize_data_model(
-                GenerateDataModelInput(data.project_id)
-            )
+            model = await self._data_warehouse.synchronize_data_model(GenerateDataModelInput(data.project_id))
         except BusinessException as error:
             return await self._route_downstream_gap(data, state, error)
         return ProjectInitializationOutput(
@@ -106,3 +107,15 @@ def _requirement_pause(
         session_id=session_id,
         readiness_status=InputReadinessStatus.REQUIREMENT_CLARIFICATION_REQUIRED,
     )
+
+
+def _requires_requirement_pause(state: RequirementClarificationStateOutput) -> bool:
+    statuses = {
+        RequirementClarificationStatus.NEEDS_CLARIFICATION,
+        RequirementClarificationStatus.PROCESSING,
+    }
+    continuation = {
+        RequirementContinuationState.AWAITING_DECISION,
+        RequirementContinuationState.CONTINUE_EDITING,
+    }
+    return state.status in statuses or state.continuation_state in continuation

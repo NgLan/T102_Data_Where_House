@@ -46,7 +46,7 @@ Application không giữ transaction database trong lúc gọi LLM. Input revisi
 
 - `IRequirementAnalysisAgent.clarify_requirements`: raw text/documents/conversation thành BUSINESS/ANALYTICAL/TECHNICAL Requirements và hỏi khi business semantics chưa rõ.
 - `IRequirementAnalysisAgent.derive_analytical_requirements`: Requirements đã rõ thành AnalyticalRequirements, không nhận source và không làm yếu Requirement.
-- `IRequirementAnalysisAgent.evaluate_source_coverage`: đối chiếu AnalyticalRequirements với SchemaMetadata thành `SUPPORTED`, `NEEDS_SOURCE_CONFIRMATION` hoặc `MISSING_SOURCE`; candidate reference được hậu kiểm deterministic.
+- `IRequirementAnalysisAgent.evaluate_source_coverage`: đối chiếu AnalyticalRequirements với SchemaMetadata thành `SUPPORTED`, `NEEDS_SOURCE_CONFIRMATION` hoặc `MISSING_SOURCE`; confirmation được phân loại theo typed question contract và mọi reference trong candidate mapping được hậu kiểm deterministic.
 - `IDataWarehouseDesignAgent.generate`: thiết kế snapshot đầu tiên từ toàn bộ context.
 - `IDataWarehouseDesignAgent.revise`: tạo revision từ Requirements, AnalyticalRequirements, SchemaMetadata, Current DBML, optional user prompt và lỗi validation của attempt trước.
 - `IDataModelValidationEngine.validate`: parse DBML và chạy registry rule xác định.
@@ -75,7 +75,7 @@ không tự sửa `.env`; thay key rồi restart/redeploy để dựng pool mớ
 
 ## Revision và outdated state
 
-Analytical derivation chỉ outdated khi Requirement đổi. Source Coverage outdated khi Requirement/Analytical Requirement hoặc `source_revision` đổi; `covered_analytical_requirement_revision` phân biệt hai trục này. Coverage bị block vẫn được persist và có thể current. Các câu trả lời Source Confirmation được persist độc lập trong một stable batch; chỉ thao tác recheck mới materialize scoped USER annotations, tăng `source_revision` đúng một lần cho cả batch và chạy lại Source Coverage.
+Analytical derivation chỉ outdated khi Requirement đổi. Source Coverage outdated khi Requirement/Analytical Requirement hoặc `source_revision` đổi; `covered_analytical_requirement_revision` phân biệt hai trục này. Coverage bị block vẫn được persist và có thể current. Mỗi candidate là một mapping hoàn chỉnh gồm business label và một hoặc nhiều exact source references có role khi cần. Các câu trả lời Source Confirmation được persist độc lập trong một stable batch; chỉ thao tác recheck mới materialize toàn bộ mapping thành scoped USER annotations, tăng `source_revision` đúng một lần cho cả batch và chạy lại Source Coverage.
 
 Data Model giữ hai generated revisions. Model là outdated khi chúng không khớp analyzed revisions hiện tại. Proposal chỉ giữ model `base_revision`; proposal chỉ `CONFLICTED` khi revision này lệch snapshot hiện hành. Tất cả cờ outdated là derived output, không được persist.
 

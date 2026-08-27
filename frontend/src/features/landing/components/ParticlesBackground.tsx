@@ -12,10 +12,14 @@ const initParticles = async (engine: Engine): Promise<void> => {
 
 const subscribeToClient = () => () => undefined;
 
+interface ParticlesBackgroundProps {
+  id?: string;
+}
+
 /** Nền hiệu ứng hạt tương tác chuột sử dụng thư viện @tsparticles/react & @tsparticles/slim.
  * Tự động chuyển đổi màu tương phản rõ nét theo Dark/Light theme và kết nối tia sáng khi rê chuột.
  */
-export function ParticlesBackground() {
+export function ParticlesBackground({ id = "tsparticles-landing" }: ParticlesBackgroundProps = {}) {
   const { resolvedTheme } = useTheme();
   const mounted = useSyncExternalStore(
     subscribeToClient,
@@ -101,8 +105,8 @@ export function ParticlesBackground() {
     <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
       <ParticlesProvider init={initParticles}>
         <Particles
-          key={currentThemeKey}
-          id={`tsparticles-landing-${currentThemeKey}`}
+          key={`${id}-${currentThemeKey}`}
+          id={`${id}-${currentThemeKey}`}
           options={options}
           className="size-full"
         />

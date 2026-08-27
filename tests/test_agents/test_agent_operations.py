@@ -4,6 +4,7 @@ from typing import Any
 from uuid import uuid4
 
 import pytest
+from langchain_core.messages import AIMessage
 from pydantic import ValidationError
 from src.application.data_warehouse_workflows.input import (
     ConversationDesignInput,
@@ -17,10 +18,12 @@ from src.application.project_sessions.conversation_context import (
 from src.application.requirements.input import (
     ClarifyRequirementsInput,
     DeriveAnalyticalRequirementsInput,
+    EvaluateSourceCoverageInput,
     RequirementContext,
 )
 from src.common.exceptions.error_codes import ErrorCode
 from src.common.exceptions.infrastructure import InfrastructureException
+from src.domain.analytical_requirement.entities import AnalyticalRequirement
 from src.domain.data_source.entities import DataSource
 from src.domain.data_source.value_objects import ColumnMetadata, SchemaMetadata, TableMetadata
 from src.domain.requirement.entities import Requirement
@@ -36,9 +39,14 @@ from src.infrastructure.llm.agent_structured_outputs import (
     GeneratedRequirementItem,
     RequirementClarificationResult,
 )
+from src.infrastructure.llm.source_coverage_structured_outputs import SourceCoverageLlmResult
 from src.infrastructure.security.pii_guard import PiiGuard
 
 DBML = "Table Fact_Rides {\n  ride_key int [pk]\n}"
+
+
+class OutputParserError(ValueError):
+    """Mô phỏng lỗi parser chính thức thay vì ValueError message fallback."""
 
 
 def _conversation_input(revision: RevisionDesignInput) -> ConversationDesignInput:
@@ -107,6 +115,27 @@ def test_clarification_rejects_more_than_four_options() -> None:
             dbml=None,
             summary="Cần làm rõ grain.",
         )
+
+
+def test_requirement_clarification_summary_defaults_to_empty_string() -> None:
+    result = RequirementClarificationResult(
+        requirements=[
+            GeneratedRequirementItem(
+                title="Revenue",
+                description="Monthly revenue.",
+                requirement_type="ANALYTICAL",
+                priority="HIGH",
+                existing_requirement_ref=None,
+            )
+        ],
+        status="NEEDS_CLARIFICATION",
+        question="Which metric?",
+        options=["Revenue", "Orders"],
+        allow_custom_answer=True,
+        reason="Metric is unclear.",
+    )
+
+    assert result.summary == ""
 
 
 def test_prompt_asks_only_for_material_design_ambiguity() -> None:
@@ -181,9 +210,10 @@ async def test_clear_requirement_continues_without_question() -> None:
 class FakeStructuredModel:
     """Runnable ghi nhận đúng một ainvoke cho schema được chọn."""
 
-    def __init__(self, owner: "FakeChatModel", schema: type) -> None:
+    def __init__(self, owner: "FakeChatModel", schema: type, include_raw: bool) -> None:
         self._owner = owner
         self._schema = schema
+        self._include_raw = include_raw
 
     async def ainvoke(self, messages: Any) -> Any:
         """Trả fixture và ghi prompt."""
@@ -194,6 +224,14 @@ class FakeStructuredModel:
             result = result.pop(0)
         if isinstance(result, Exception):
             raise result
+        if self._include_raw:
+            if isinstance(result, AIMessage):
+                return {"raw": result, "parsed": None, "parsing_error": "invalid item"}
+            raw = AIMessage(
+                content=result.model_dump_json(),
+                response_metadata={"finish_reason": "stop", "model_name": "fake"},
+            )
+            return {"raw": raw, "parsed": result, "parsing_error": None}
         return result
 
 
@@ -205,14 +243,18 @@ class FakeChatModel:
         self.calls: list[type] = []
         self.prompts: list[str] = []
 
-    def with_structured_output(self, schema: type) -> FakeStructuredModel:
+    def with_structured_output(
+        self,
+        schema: type,
+        *,
+        include_raw: bool = False,
+    ) -> FakeStructuredModel:
         """Trả runnable cho output schema."""
-        return FakeStructuredModel(self, schema)
+        return FakeStructuredModel(self, schema, include_raw)
 
 
 def _model() -> FakeChatModel:
     """Dựng model có fixture cho mọi Agent operation."""
-    requirement_id = str(uuid4())
     return FakeChatModel(
         {
             RequirementClarificationResult: RequirementClarificationResult(
@@ -222,7 +264,7 @@ def _model() -> FakeChatModel:
                         description="Phân tích doanh thu theo tháng.",
                         requirement_type="ANALYTICAL",
                         priority="HIGH",
-                        existing_requirement_id=None,
+                        existing_requirement_ref=None,
                     )
                 ],
                 status="READY",
@@ -231,11 +273,10 @@ def _model() -> FakeChatModel:
             AnalyticalRequirementResult: AnalyticalRequirementResult(
                 outcomes=[
                     AnalyticalDerivationOutcome(
-                        source_requirement_id=requirement_id,
+                        requirement_ref="R1",
                         status="READY",
                         analytical_requirements=[
                             AnalyticalRequirementItem(
-                                source_requirement_id=requirement_id,
                                 metric="doanh thu",
                                 dimension="tháng",
                                 time_granularity="MONTH",
@@ -263,31 +304,197 @@ async def test_each_requirement_operation_invokes_llm_once() -> None:
         ConversationInputKind.USER_MESSAGE,
     )
     await agent.clarify_requirements(ClarifyRequirementsInput("Theo dõi doanh thu", (), (), memory))
-    outcome = model.results[AnalyticalRequirementResult].outcomes[0]
-    source_id = outcome.source_requirement_id
     requirement = RequirementContext(uuid4(), "Theo dõi doanh thu", "Theo tháng", "ANALYTICAL", "HIGH")
-    outcome.source_requirement_id = str(requirement.id)
-    outcome.analytical_requirements[0].source_requirement_id = str(requirement.id)
-    await agent.derive_analytical_requirements(DeriveAnalyticalRequirementsInput((requirement,), ()))
-    assert source_id != str(requirement.id)
+    result = await agent.derive_analytical_requirements(DeriveAnalyticalRequirementsInput((requirement,)))
+    assert result.outcomes[0].source_requirement_id == requirement.id
+    assert str(requirement.id) not in model.prompts[-1]
     assert model.calls == [RequirementClarificationResult, AnalyticalRequirementResult]
+
+
+@pytest.mark.asyncio
+async def test_markdown_clarification_is_recovered_without_retry() -> None:
+    model = _model()
+    typed = model.results[RequirementClarificationResult]
+    assert isinstance(typed, RequirementClarificationResult)
+    model.results[RequirementClarificationResult] = AIMessage(
+        content=f"```json\n{typed.model_dump_json()}\n```",
+        response_metadata={"finish_reason": "stop", "model_name": "fake"},
+    )
+    memory = ConversationMemory(
+        None, (), "Analyze requirement.", ConversationInputKind.USER_MESSAGE
+    )
+    agent = RequirementAnalysisAgent(model, PiiGuard(enabled=False))
+
+    result = await agent.clarify_requirements(
+        ClarifyRequirementsInput("Monthly revenue", (), (), memory)
+    )
+
+    assert result.summary == "Requirements are ready."
+    assert model.calls == [RequirementClarificationResult]
+
+
+@pytest.mark.asyncio
+async def test_provider_failure_does_not_consume_structured_retries() -> None:
+    model = _model()
+    model.results[AnalyticalRequirementResult] = RuntimeError("network unavailable")
+    requirement = RequirementContext(
+        uuid4(), "Revenue", "Monthly revenue", "ANALYTICAL", "HIGH"
+    )
+    agent = RequirementAnalysisAgent(model, PiiGuard(enabled=False))
+
+    with pytest.raises(InfrastructureException) as raised:
+        await agent.derive_analytical_requirements(
+            DeriveAnalyticalRequirementsInput((requirement,))
+        )
+
+    assert raised.value.code is ErrorCode.LLM_ERROR
+    assert model.calls == [AnalyticalRequirementResult]
 
 
 @pytest.mark.asyncio
 async def test_analytical_agent_rejects_missing_requirement_outcome() -> None:
     """Adapter bắt buộc output bao phủ đúng toàn bộ input IDs."""
     model = _model()
-    outcome = model.results[AnalyticalRequirementResult].outcomes[0]
     first = RequirementContext(uuid4(), "Revenue", "Sum revenue", "ANALYTICAL", "HIGH")
     second = RequirementContext(uuid4(), "Privacy", "Mask sensitive data", "TECHNICAL", "HIGH")
-    outcome.source_requirement_id = str(first.id)
-    outcome.analytical_requirements[0].source_requirement_id = str(first.id)
     agent = RequirementAnalysisAgent(model, PiiGuard(enabled=False))
 
     with pytest.raises(InfrastructureException) as raised:
-        await agent.derive_analytical_requirements(DeriveAnalyticalRequirementsInput((first, second), ()))
+        await agent.derive_analytical_requirements(DeriveAnalyticalRequirementsInput((first, second)))
 
     assert raised.value.code is ErrorCode.LLM_STRUCTURED_OUTPUT_ERROR
+
+
+@pytest.mark.asyncio
+async def test_analytical_retry_reuses_valid_outcomes() -> None:
+    """Attempt sau chỉ nhận Requirement lỗi và merge theo input order."""
+    model = _model()
+    raw = AIMessage(
+        content="""{"outcomes": [
+            {"requirement_ref": "R1", "status": "NOT_ANALYTICAL",
+             "analytical_requirements": [], "reason": "No analytical intent."},
+            {"requirement_ref": "R2", "analytical_requirements": [], "reason": null}
+        ]}""",
+        response_metadata={"finish_reason": "stop", "model_name": "fake"},
+    )
+    corrected = AnalyticalRequirementResult(
+        outcomes=[
+            AnalyticalDerivationOutcome(
+                requirement_ref="R2",
+                status="NOT_ANALYTICAL",
+                analytical_requirements=[],
+                reason="No analytical intent.",
+            )
+        ]
+    )
+    model.results[AnalyticalRequirementResult] = [raw, corrected]
+    requirements = (
+        RequirementContext(uuid4(), "Privacy", "Mask data", "TECHNICAL", "HIGH"),
+        RequirementContext(uuid4(), "Audit", "Track access", "TECHNICAL", "HIGH"),
+    )
+    agent = RequirementAnalysisAgent(model, PiiGuard(enabled=False))
+
+    result = await agent.derive_analytical_requirements(DeriveAnalyticalRequirementsInput(requirements))
+
+    assert tuple(item.source_requirement_id for item in result.outcomes) == tuple(item.id for item in requirements)
+    assert '"requirement_ref": "R1"' not in model.prompts[1]
+    assert '"requirement_ref": "R2"' in model.prompts[1]
+    assert model.calls == [AnalyticalRequirementResult, AnalyticalRequirementResult]
+
+
+@pytest.mark.asyncio
+async def test_source_coverage_retry_reuses_grounded_outcomes() -> None:
+    """Outcome đã grounded không xuất hiện trong attempt sửa column kế tiếp."""
+    model = _model()
+    model.results[SourceCoverageLlmResult] = [
+        AIMessage(
+            content=_source_coverage_json("invented_column", include_a1=True),
+            response_metadata={"finish_reason": "stop", "model_name": "fake"},
+        ),
+        SourceCoverageLlmResult.model_validate(_source_coverage_payload("amount", include_a1=False)),
+    ]
+    project_id = uuid4()
+    requirements = (
+        RequirementContext(uuid4(), "Privacy", "Mask data", "TECHNICAL", "HIGH"),
+        RequirementContext(uuid4(), "Revenue", "Sum amount", "ANALYTICAL", "HIGH"),
+    )
+    analytical = (
+        AnalyticalRequirement(requirement_id=requirements[0].id, dimension="privacy"),
+        AnalyticalRequirement(requirement_id=requirements[1].id, metric="revenue"),
+    )
+    source = DataSource(
+        project_id=project_id,
+        name="sales",
+        location="sales.csv",
+        schema_metadata=SchemaMetadata(tables=(TableMetadata("sales", (ColumnMetadata("amount", "DECIMAL"),)),)),
+    )
+    agent = RequirementAnalysisAgent(model, PiiGuard(enabled=False))
+
+    result = await agent.evaluate_source_coverage(EvaluateSourceCoverageInput(requirements, analytical, (source,)))
+
+    assert tuple(item.analytical_requirement_id for item in result.outcomes) == tuple(item.id for item in analytical)
+    assert '"analytical_requirement_ref": "A1"' not in model.prompts[1]
+    assert '"analytical_requirement_ref": "A2"' in model.prompts[1]
+
+
+def _source_coverage_json(column_name: str, *, include_a1: bool) -> str:
+    import json
+
+    return json.dumps(_source_coverage_payload(column_name, include_a1=include_a1))
+
+
+def _source_coverage_payload(
+    column_name: str,
+    *,
+    include_a1: bool,
+) -> dict[str, object]:
+    outcomes: list[dict[str, object]] = []
+    if include_a1:
+        outcomes.append(
+            {
+                "analytical_requirement_ref": "A1",
+                "assessments": [
+                    {
+                        "status": "MISSING_SOURCE",
+                        "required_concept_key": "PRIVACY_POLICY",
+                        "title": "Privacy policy",
+                        "explanation": "No source evidence exists.",
+                        "question": None,
+                        "question_type": None,
+                        "candidates": [],
+                    }
+                ],
+            }
+        )
+    outcomes.append(
+        {
+            "analytical_requirement_ref": "A2",
+            "assessments": [
+                {
+                    "status": "NEEDS_SOURCE_CONFIRMATION",
+                    "required_concept_key": "REVENUE_AMOUNT",
+                    "title": "Revenue amount",
+                    "explanation": "Confirm the amount field.",
+                    "question": "Does this field represent revenue?",
+                    "question_type": "SINGLE_CANDIDATE_CONFIRMATION",
+                    "candidates": [
+                        {
+                            "label": "Amount",
+                            "references": [
+                                {
+                                    "kind": "COLUMN",
+                                    "source_ref": "S1",
+                                    "table_name": "sales",
+                                    "column_name": column_name,
+                                }
+                            ],
+                        }
+                    ],
+                }
+            ],
+        }
+    )
+    return {"outcomes": outcomes}
 
 
 @pytest.mark.asyncio
@@ -313,7 +520,7 @@ async def test_conversation_retries_once_after_invalid_structured_output() -> No
     """Chat tự sửa một lần khi provider bỏ sót DBML của proposal."""
     model = _model()
     model.results[DwConversationResult] = [
-        ValueError("validation error: proposal requires dbml"),
+        OutputParserError("proposal requires dbml"),
         DwConversationResult(
             kind="proposal",
             question=None,

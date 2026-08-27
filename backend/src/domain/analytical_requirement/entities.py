@@ -37,9 +37,7 @@ class AnalyticalRequirement(BaseEntity):
         validate_analytical_requirement(self.requirement_id)
         self.source_coverage = tuple(self.source_coverage)
 
-    def replace_source_coverage(
-        self, assessments: tuple[SourceCoverageAssessment, ...]
-    ) -> None:
+    def replace_source_coverage(self, assessments: tuple[SourceCoverageAssessment, ...]) -> None:
         """Thay derived coverage của Analytical Requirement."""
         self.source_coverage = tuple(assessments)
         self.mark_updated()

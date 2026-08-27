@@ -34,16 +34,16 @@ from src.application.requirements.i_requirement_service import IRequirementAnaly
 from src.application.requirements.input import (
     ClarifyRequirementsInput,
     DeriveAnalyticalRequirementsInput,
+    EvaluateSourceCoverageInput,
 )
 from src.application.requirements.output import (
     AnalyticalDerivationOutcome,
     AnalyticalDerivationResult,
     AnalyticalDerivationStatus,
-    AnalyticalSourceGap,
     GeneratedAnalyticalRequirement,
     RequirementClarificationResult,
-    SourceGapKind,
-    SuggestedSourceAction,
+    SourceCoverageOutcome,
+    SourceCoverageResult,
 )
 from src.common.exceptions.business import BusinessException
 from src.common.exceptions.error_codes import ErrorCode
@@ -73,6 +73,7 @@ class RecordingRequirementAgent(IRequirementAnalysisAgent):
     def __init__(self) -> None:
         self.clarification_calls = 0
         self.analytical_calls = 0
+        self.source_coverage_calls = 0
 
     @override
     async def clarify_requirements(self, data: ClarifyRequirementsInput) -> RequirementClarificationResult:
@@ -96,6 +97,17 @@ class RecordingRequirementAgent(IRequirementAnalysisAgent):
                 ),
             )
         )
+
+    @override
+    async def evaluate_source_coverage(
+        self, data: EvaluateSourceCoverageInput
+    ) -> SourceCoverageResult:
+        self.source_coverage_calls += 1
+        outcomes = tuple(
+            SourceCoverageOutcome(item.id, ())
+            for item in data.analytical_requirements
+        )
+        return SourceCoverageResult(outcomes)
 
 
 class RecordingDesignAgent(IDataWarehouseDesignAgent):
@@ -134,7 +146,7 @@ class FailingAnalyticalAgent(RecordingRequirementAgent):
 
 
 class BlockingAnalyticalAgent(RecordingRequirementAgent):
-    """Fake trả semantic gap hoặc source gap có truy vết."""
+    """Fake trả semantic gap có truy vết."""
 
     def __init__(self, status: AnalyticalDerivationStatus) -> None:
         super().__init__()
@@ -145,22 +157,11 @@ class BlockingAnalyticalAgent(RecordingRequirementAgent):
         self, data: DeriveAnalyticalRequirementsInput
     ) -> AnalyticalDerivationResult:
         self.analytical_calls += 1
-        source_gap = None
         reason = "Thiếu quyết định hoặc nguồn bắt buộc."
-        if self.status is AnalyticalDerivationStatus.SOURCE_GAP:
-            reason = None
-            source_gap = AnalyticalSourceGap(
-                SourceGapKind.MISSING_DATA,
-                ("doanh thu",),
-                "Nguồn chưa có dữ liệu doanh thu.",
-                ("giá trị giao dịch",),
-                SuggestedSourceAction.ADD_OR_REPLACE_SOURCE,
-            )
         outcome = AnalyticalDerivationOutcome(
             data.requirements[0].id,
             self.status,
             reason=reason,
-            source_gap=source_gap,
         )
         return AnalyticalDerivationResult((outcome,))
 
@@ -237,12 +238,13 @@ async def test_initial_flow_derives_analytical_then_designs_once() -> None:
     assert output.dbml == VALID_DBML
     assert requirement_agent.clarification_calls == 0
     assert requirement_agent.analytical_calls == 1
+    assert requirement_agent.source_coverage_calls == 1
     assert len(design_agent.calls) == 1
     assert models._items[0].generated_from_requirement_revision == 1
     assert models._items[0].generated_from_source_revision == 0
     assert project.analyzed_requirement_revision == project.requirement_revision
     assert project.analyzed_source_revision == project.source_revision
-    assert unit_of_work.rollback_count == 2
+    assert unit_of_work.rollback_count == 3
 
 
 @pytest.mark.asyncio
@@ -293,7 +295,8 @@ async def test_source_change_only_repeats_analytical_operation() -> None:
     await workflow.reanalyze(ReanalyzeProjectInput(project.id))
 
     assert requirement_agent.clarification_calls == 0
-    assert requirement_agent.analytical_calls == 2
+    assert requirement_agent.analytical_calls == 1
+    assert requirement_agent.source_coverage_calls == 2
 
 
 @pytest.mark.asyncio
@@ -311,28 +314,17 @@ async def test_failed_analysis_does_not_advance_analyzed_revisions() -> None:
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    ("status", "error_code"),
-    [
-        (
-            AnalyticalDerivationStatus.NEEDS_REQUIREMENT_CLARIFICATION,
-            ErrorCode.REQUIREMENT_SEMANTIC_CLARIFICATION_REQUIRED,
-        ),
-        (AnalyticalDerivationStatus.SOURCE_GAP, ErrorCode.ANALYTICAL_SOURCE_GAP),
-    ],
-)
-async def test_derivation_gap_blocks_data_model_generation(
-    status: AnalyticalDerivationStatus, error_code: ErrorCode
-) -> None:
-    """Semantic/source gap không được đi tiếp sang DWDesignAgent."""
+async def test_semantic_gap_blocks_data_model_generation() -> None:
+    """Semantic gap không được đi tiếp sang DWDesignAgent."""
     project = Project(name="Demo", requirement="Track revenue", user_id=uuid4())
     design_agent = RecordingDesignAgent()
-    workflow, models, _, _ = _build_workflow(project, BlockingAnalyticalAgent(status), design_agent)
+    agent = BlockingAnalyticalAgent(AnalyticalDerivationStatus.NEEDS_REQUIREMENT_CLARIFICATION)
+    workflow, models, _, _ = _build_workflow(project, agent, design_agent)
 
     with pytest.raises(BusinessException) as raised:
         await workflow.generate_data_model(GenerateDataModelInput(project.id))
 
-    assert raised.value.code == error_code
+    assert raised.value.code == ErrorCode.REQUIREMENT_SEMANTIC_CLARIFICATION_REQUIRED
     assert raised.value.details
     assert design_agent.calls == []
     assert models._items == []
@@ -433,7 +425,7 @@ async def test_regenerate_rejects_persistence_revision_race() -> None:
         await workflow.regenerate_data_model(RegenerateDataModelInput(project.id))
 
     assert raised.value.code == ErrorCode.DATA_MODEL_REVISION_CONFLICT
-    assert unit_of_work.commit_count == 2
+    assert unit_of_work.commit_count == 3
 
 
 @pytest.mark.asyncio

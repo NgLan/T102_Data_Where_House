@@ -68,7 +68,7 @@ def test_google_resource_exhausted_rotates_without_permanent_disable() -> None:
     [
         (ValueError("invalid request"), ErrorCode.LLM_ERROR),
         (TimeoutError("secret detail"), ErrorCode.LLM_TIMEOUT_ERROR),
-        (ValueError("validation error"), ErrorCode.LLM_STRUCTURED_OUTPUT_ERROR),
+        (ValueError("validation error"), ErrorCode.LLM_ERROR),
     ],
 )
 def test_non_key_failure_does_not_rotate(exc: Exception, code: ErrorCode) -> None:

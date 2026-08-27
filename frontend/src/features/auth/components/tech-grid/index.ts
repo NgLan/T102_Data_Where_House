@@ -1,0 +1,1 @@
+export { TechGridBackground } from "./TechGridBackground";

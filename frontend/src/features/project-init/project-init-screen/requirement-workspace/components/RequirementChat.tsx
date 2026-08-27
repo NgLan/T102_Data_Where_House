@@ -94,7 +94,26 @@ export function RequirementChat(props: RequirementChatProps) {
                 </Button>
               </div>
             )}
-            {props.continuationState === "AWAITING_DECISION" ? null : props.pending ? (
+            {props.continuationState === "CONTINUE_ANALYSIS" && (
+              <div className="space-y-2.5 rounded-lg border border-primary/20 bg-muted/40 p-3 text-xs">
+                <p className="leading-relaxed text-muted-foreground">
+                  {t("TXT_REQUIREMENT_ANALYSIS_CONFIRMED")}
+                </p>
+                {props.canAnswer && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="w-full cursor-pointer"
+                    disabled={props.isSending}
+                    onClick={() => void props.onContinueEditing()}
+                  >
+                    {t("BTN_REOPEN_EDITING")}
+                  </Button>
+                )}
+              </div>
+            )}
+            {props.continuationState === "AWAITING_DECISION" || props.continuationState === "CONTINUE_ANALYSIS" ? null : props.pending ? (
               <RequirementClarificationQuestion
                 key={props.pending.question}
                 pending={props.pending}

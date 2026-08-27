@@ -18,6 +18,8 @@ from src.application.data_warehouse_workflows.output.source_coverage import (
     SourceCoverageAssessmentOutput,
     SourceCoverageBatchOutput,
     SourceCoverageCandidateOutput,
+    SourceCoverageOutputContext,
+    SourceCoverageReferenceOutput,
 )
 
 __all__ = [
@@ -36,4 +38,6 @@ __all__ = [
     "SourceCoverageAssessmentOutput",
     "SourceCoverageBatchOutput",
     "SourceCoverageCandidateOutput",
+    "SourceCoverageReferenceOutput",
+    "SourceCoverageOutputContext",
 ]

@@ -29,15 +29,16 @@ def set_continuation_state(
 def choose_requirement_continuation(
     target: RequirementContinuationTarget, action: RequirementContinuationAction
 ) -> None:
-    """Áp dụng transition idempotent và cấm đảo ngược workflow đã resume."""
+    """Áp dụng transition idempotent và cho phép linh hoạt giữa editing và analysis."""
     desired = RequirementContinuationState(action.value)
     current = target.requirement_continuation_state
     if current is desired:
         return
-    can_apply = current is RequirementContinuationState.AWAITING_DECISION or (
-        current is RequirementContinuationState.CONTINUE_EDITING
-        and desired is RequirementContinuationState.CONTINUE_ANALYSIS
-    )
+    can_apply = current in {
+        RequirementContinuationState.AWAITING_DECISION,
+        RequirementContinuationState.CONTINUE_EDITING,
+        RequirementContinuationState.CONTINUE_ANALYSIS,
+    }
     if not can_apply:
         raise BusinessException(
             ErrorCode.REQUIREMENT_CONTINUATION_INVALID,

@@ -91,7 +91,7 @@
   "REQUIREMENT_FILE_NOT_FOUND": "The requirement document was not found.",
   "REQUIREMENT_REVISION_CONFLICT": "Requirements changed elsewhere. Reload and try again.",
   "REQUIREMENT_CONTEXT_EMPTY": "Add a raw requirement or at least one requirement document.",
-  "REQUIREMENT_CONTINUATION_INVALID": "This workflow continuation choice is no longer available.",
+  "REQUIREMENT_CONTINUATION_INVALID": "Please select the next step or click 'Continue editing' before sending a message.",
   "SESSION_PURPOSE_MISMATCH": "This Agent session belongs to a different workflow.",
   "REQUIREMENT_SEMANTIC_CLARIFICATION_REQUIRED": "A business decision is still ambiguous. Continue in the Requirement Agent chat before generating the Data Model.",
   "ANALYTICAL_SOURCE_GAP": "The current data sources cannot support every requirement. Add or update a data source before continuing."

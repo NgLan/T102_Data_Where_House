@@ -1,5 +1,6 @@
 """Đọc đúng dữ liệu cần cho DWDesignAgent và trạng thái analysis."""
 
+from dataclasses import dataclass
 from typing import TypeVar
 
 from src.application.data_warehouse_workflows.input import DataWarehouseDesignInput
@@ -8,6 +9,7 @@ from src.application.data_warehouse_workflows.output import (
     InputReadinessStatus,
     RecommendedWorkflowAction,
     SourceCoverageBatchOutput,
+    SourceCoverageOutputContext,
 )
 from src.application.data_warehouse_workflows.output.source_coverage import source_coverage_batch_output
 from src.domain.analytical_requirement.enums import SourceCoverageStatus
@@ -29,9 +31,11 @@ class WorkflowDataReader:
     """Đọc Agent input và tính trạng thái workflow từ repositories."""
 
     def __init__(
-        self, requirements: IRequirementRepository,
+        self,
+        requirements: IRequirementRepository,
         analytical: IAnalyticalRequirementRepository,
-        data_sources: IDataSourceRepository, models: IDataModelRepository,
+        data_sources: IDataSourceRepository,
+        models: IDataModelRepository,
     ) -> None:
         self._requirements = requirements
         self._analytical = analytical
@@ -54,12 +58,19 @@ class WorkflowDataReader:
         model_outdated = _is_model_outdated(model, project)
         action = _recommended_action(requirement_outdated, source_outdated, model_outdated)
         coverage = source_coverage_batch_output(
-            project, data.requirements, data.analytical_requirements, data.data_sources
+            project,
+            SourceCoverageOutputContext(data.requirements, data.analytical_requirements, data.data_sources),
         )
-        readiness = _readiness(project, requirement_outdated, source_outdated, coverage)
+        readiness = _readiness(_ReadinessContext(project, requirement_outdated, source_outdated, coverage))
         return AnalysisStatusOutput(
-            requirement_outdated, source_outdated, model_outdated,
-            model is not None, project.source_revision, action, readiness, coverage,
+            requirement_outdated,
+            source_outdated,
+            model_outdated,
+            model is not None,
+            project.source_revision,
+            action,
+            readiness,
+            coverage,
         )
 
 
@@ -82,19 +93,20 @@ def _recommended_action(
     return RecommendedWorkflowAction.NONE
 
 
-def _readiness(
-    project: Project,
-    requirement_outdated: bool,
-    source_outdated: bool,
-    coverage: SourceCoverageBatchOutput | None,
-) -> InputReadinessStatus:
-    if requirement_outdated or project.is_analytical_analysis_outdated():
+@dataclass(frozen=True, slots=True)
+class _ReadinessContext:
+    project: Project
+    requirement_outdated: bool
+    source_outdated: bool
+    coverage: SourceCoverageBatchOutput | None
+
+
+def _readiness(context: _ReadinessContext) -> InputReadinessStatus:
+    if context.requirement_outdated or context.project.is_analytical_analysis_outdated():
         return InputReadinessStatus.REQUIREMENT_CLARIFICATION_REQUIRED
-    if source_outdated:
+    if context.source_outdated:
         return InputReadinessStatus.SOURCE_DATA_REQUIRED
-    statuses = {
-        item.coverage_status for item in coverage.assessments
-    } if coverage else set()
+    statuses = {item.coverage_status for item in context.coverage.assessments} if context.coverage else set()
     if SourceCoverageStatus.MISSING_SOURCE in statuses:
         return InputReadinessStatus.SOURCE_DATA_REQUIRED
     if SourceCoverageStatus.NEEDS_SOURCE_CONFIRMATION in statuses:

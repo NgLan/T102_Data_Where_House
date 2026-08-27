@@ -576,6 +576,8 @@ export const zApiResponseReadinessResponse = z.object({
 
 /**
  * RecheckSourceCoverageRequest
+ *
+ * Yêu cầu materialize một batch hoàn chỉnh và đánh giá lại.
  */
 export const zRecheckSourceCoverageRequest = z.object({
     batch_id: z.uuid(),
@@ -1033,6 +1035,19 @@ export const zApiResponseRequirementClarificationResponse = z.object({
 export const zSourceCandidateKind = z.enum(['COLUMN', 'RELATIONSHIP']);
 
 /**
+ * SourceConfirmationQuestionType
+ *
+ * Hợp đồng câu hỏi và cấu trúc câu trả lời Source Confirmation.
+ */
+export const zSourceConfirmationQuestionType = z.enum([
+    'SINGLE_FIELD_SELECTION',
+    'FIELD_SET_CONFIRMATION',
+    'BUSINESS_SEMANTIC_CHOICE',
+    'SINGLE_CANDIDATE_CONFIRMATION',
+    'RELATIONSHIP_CONFIRMATION'
+]);
+
+/**
  * SourceConfirmationStatus
  *
  * Trạng thái câu trả lời của một confirmation item trong batch hiện hành.
@@ -1044,17 +1059,31 @@ export const zSourceConfirmationStatus = z.enum([
 ]);
 
 /**
- * SourceCoverageCandidateResponse
+ * SourceCoverageReferenceResponse
+ *
+ * Exact source evidence thuộc một candidate mapping.
  */
-export const zSourceCoverageCandidateResponse = z.object({
-    id: z.uuid(),
+export const zSourceCoverageReferenceResponse = z.object({
     kind: zSourceCandidateKind,
     source_id: z.uuid(),
     source_name: z.string(),
+    role_key: z.string().nullish(),
+    role_label: z.string().nullish(),
     table_name: z.string().nullish(),
     column_name: z.string().nullish(),
     from_column: z.string().nullish(),
     to_column: z.string().nullish()
+});
+
+/**
+ * SourceCoverageCandidateResponse
+ *
+ * Một selectable business mapping và toàn bộ evidence của nó.
+ */
+export const zSourceCoverageCandidateResponse = z.object({
+    id: z.uuid(),
+    label: z.string(),
+    references: z.array(zSourceCoverageReferenceResponse)
 });
 
 /**
@@ -1066,6 +1095,8 @@ export const zSourceCoverageResolutionAction = z.enum(['CONFIRM_CANDIDATE', 'REJ
 
 /**
  * ResolveSourceCoverageRequest
+ *
+ * Structured resolution của đúng một confirmation item.
  */
 export const zResolveSourceCoverageRequest = z.object({
     batch_id: z.uuid(),
@@ -1088,6 +1119,8 @@ export const zSourceCoverageStatus = z.enum([
 
 /**
  * SourceCoverageAssessmentResponse
+ *
+ * Coverage assessment cùng typed question contract nếu cần xác nhận.
  */
 export const zSourceCoverageAssessmentResponse = z.object({
     id: z.uuid(),
@@ -1099,6 +1132,7 @@ export const zSourceCoverageAssessmentResponse = z.object({
     title: z.string(),
     explanation: z.string(),
     question: z.string().nullish(),
+    question_type: zSourceConfirmationQuestionType.nullish(),
     confirmation_status: zSourceConfirmationStatus.nullish(),
     selected_candidate_id: z.uuid().nullish(),
     resolution_revision: z.int().gte(0),
@@ -1107,6 +1141,8 @@ export const zSourceCoverageAssessmentResponse = z.object({
 
 /**
  * SourceCoverageBatchResponse
+ *
+ * Stable Source Confirmation batch của project revision hiện hành.
  */
 export const zSourceCoverageBatchResponse = z.object({
     id: z.uuid(),

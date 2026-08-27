@@ -7,6 +7,7 @@ from uuid import UUID
 
 from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from src.infrastructure.llm.settings_types import SecretListSetting, StringListSetting
 
 
 class Settings(BaseSettings):
@@ -64,13 +65,27 @@ class Settings(BaseSettings):
     openai_base_url: str = ""
     google_api_key: str = ""
     llm_provider: str = "google"
-    llm_api_keys: tuple[SecretStr, ...] | None = None
+    llm_provider_priority: StringListSetting = ()
+    llm_api_keys: SecretListSetting | None = None
     llm_api_key: str = ""
     llm_base_url: str = ""
     model_name: str
+    gemini_api_keys: SecretListSetting = ()
+    openai_api_keys: SecretListSetting = ()
+    anthropic_api_keys: SecretListSetting = ()
+    gemini_model: str = ""
+    openai_model: str = ""
+    anthropic_model: str = ""
+    gemini_summary_model: str = ""
+    openai_summary_model: str = ""
+    anthropic_summary_model: str = ""
+    anthropic_base_url: str = ""
     llm_temperature: float = Field(ge=0.0, le=2.0)
     # Thời gian chờ tối đa một lời gọi LLM (giây) — NFR2 giới hạn 45 giây cho cả pipeline
     llm_request_timeout_seconds: float = Field(default=60.0, gt=0)
+    llm_credential_cooldown_seconds: float = Field(default=60.0, gt=0)
+    llm_provider_failure_threshold: int = Field(default=2, ge=1)
+    llm_provider_cooldown_seconds: float = Field(default=30.0, gt=0)
 
     # =========================================================================
     # 6. Agent Configuration
@@ -79,6 +94,7 @@ class Settings(BaseSettings):
     # dạng JSON/DBML: chạm trần giữa chừng là structured output vỡ và cả pipeline hỏng
     # với lỗi `LengthFinishReasonError`.
     agent_max_output_tokens: int = Field(default=8000, ge=1024)
+    structured_output_max_attempts: int = Field(default=3, ge=1, le=5)
     conversation_context_window_tokens: int = Field(default=32768, ge=4096)
     conversation_recent_turns: int = Field(default=6, ge=1)
     conversation_summary_batch_size: int = Field(default=4, ge=1)

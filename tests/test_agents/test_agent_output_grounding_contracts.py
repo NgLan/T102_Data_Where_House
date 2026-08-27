@@ -23,6 +23,7 @@ from src.domain.project_session.conversation_summary import (
 from src.infrastructure.agents.requirement_context_renderer import (
     render_requirement_clarification,
 )
+from src.infrastructure.agents.transport_references import TransportReferenceMap
 from src.infrastructure.llm.agent_structured_outputs import (
     AnalyticalDerivationOutcome,
     AnalyticalRequirementItem,
@@ -40,7 +41,7 @@ def _ambiguous_requirement() -> GeneratedRequirementItem:
         description="Phân tích số lượng bệnh nhân theo năm.",
         requirement_type="ANALYTICAL",
         priority="MEDIUM",
-        existing_requirement_id=None,
+        existing_requirement_ref=None,
     )
 
 
@@ -80,7 +81,7 @@ def test_missing_optional_dimensions_do_not_prevent_ready_contract() -> None:
                 description="Mỗi bệnh nhân được tính một lần trong từng năm.",
                 requirement_type="ANALYTICAL",
                 priority="MEDIUM",
-                existing_requirement_id=None,
+                existing_requirement_ref=None,
             )
         ],
         status="READY",
@@ -110,14 +111,13 @@ def test_ready_result_automatically_clears_clarification_fields() -> None:
 
 
 def test_analytical_fields_accept_null_but_reject_empty_text() -> None:
-    item = AnalyticalRequirementItem(source_requirement_id=str(uuid4()))
+    item = AnalyticalRequirementItem()
     assert item.aggregation_method is None
     with pytest.raises(ValidationError):
-        AnalyticalRequirementItem(source_requirement_id=str(uuid4()), grain="")
+        AnalyticalRequirementItem(grain="")
 
 
 def test_clear_requirement_with_missing_source_is_traced_as_source_gap() -> None:
-    requirement_id = str(uuid4())
     clarification = RequirementClarificationResult(
         requirements=[
             GeneratedRequirementItem(
@@ -125,7 +125,7 @@ def test_clear_requirement_with_missing_source_is_traced_as_source_gap() -> None
                 description="Đếm lượt khám theo từng bác sĩ mỗi tháng.",
                 requirement_type="ANALYTICAL",
                 priority="MEDIUM",
-                existing_requirement_id=None,
+                existing_requirement_ref=None,
             )
         ],
         status="READY",
@@ -134,26 +134,20 @@ def test_clear_requirement_with_missing_source_is_traced_as_source_gap() -> None
     result = AnalyticalRequirementResult(
         outcomes=[
             AnalyticalDerivationOutcome(
-                source_requirement_id=requirement_id,
-                status="SOURCE_GAP",
-                source_gap={
-                    "gap_kind": "MISSING_DATA",
-                    "missing_concepts": ["doctor identifier"],
-                    "reason": "SchemaMetadata has no doctor identifier or relationship.",
-                    "suggested_source_fields": ["doctor identity data"],
-                    "suggested_action": "ADD_OR_REPLACE_SOURCE",
-                },
+                requirement_ref="R1",
+                status="READY",
+                analytical_requirements=[AnalyticalRequirementItem(metric="visit count")],
             )
         ]
     )
     assert clarification.status == "READY"
-    assert result.outcomes[0].status == "SOURCE_GAP"
-    assert result.outcomes[0].analytical_requirements == []
+    assert result.outcomes[0].status == "READY"
+    assert result.outcomes[0].analytical_requirements[0].metric == "visit count"
 
 
 def test_patient_id_does_not_hide_count_semantic_gap() -> None:
     outcome = AnalyticalDerivationOutcome(
-        source_requirement_id=str(uuid4()),
+        requirement_ref="R1",
         status="NEEDS_REQUIREMENT_CLARIFICATION",
         reason="Patient count does not define event count versus distinct patients.",
     )
@@ -162,25 +156,18 @@ def test_patient_id_does_not_hide_count_semantic_gap() -> None:
 
 def test_technical_requirement_has_explicit_non_analytical_outcome() -> None:
     outcome = AnalyticalDerivationOutcome(
-        source_requirement_id=str(uuid4()),
+        requirement_ref="R1",
         status="NOT_ANALYTICAL",
         reason="This deployment constraint requests no analysis.",
     )
     assert outcome.status == "NOT_ANALYTICAL"
 
 
-def test_ready_derivation_requires_grounded_item_with_matching_id() -> None:
-    requirement_id = str(uuid4())
+def test_ready_derivation_requires_grounded_item() -> None:
     with pytest.raises(ValidationError):
         AnalyticalDerivationOutcome(
-            source_requirement_id=requirement_id,
+            requirement_ref="R1",
             status="READY",
-        )
-    with pytest.raises(ValidationError):
-        AnalyticalDerivationOutcome(
-            source_requirement_id=requirement_id,
-            status="READY",
-            analytical_requirements=[AnalyticalRequirementItem(source_requirement_id=str(uuid4()))],
         )
 
 
@@ -219,7 +206,7 @@ def test_distinct_patient_and_visit_count_remain_different() -> None:
 
 def test_agent_outputs_forbid_unknown_fields() -> None:
     with pytest.raises(ValidationError):
-        AnalyticalRequirementItem(source_requirement_id=str(uuid4()), invented_source_column="patient_id")
+        AnalyticalRequirementItem(invented_source_column="patient_id")
 
 
 def test_dw_clarification_requires_reason() -> None:
@@ -244,7 +231,10 @@ def test_renderer_distinguishes_pending_answer_from_normal_message() -> None:
         ConversationInputKind.CLARIFICATION_ANSWER,
         pending,
     )
-    sections = render_requirement_clarification(ClarifyRequirementsInput("Số lượng bệnh nhân theo năm", (), (), memory))
+    sections = render_requirement_clarification(
+        ClarifyRequirementsInput("Số lượng bệnh nhân theo năm", (), (), memory),
+        TransportReferenceMap.create("R", ()),
+    )
     assert sections["input_kind"] == "CLARIFICATION_ANSWER"
     assert sections["current_input"] == memory.current_input
     assert "counting unit" in sections["pending_clarification"]

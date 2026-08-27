@@ -62,11 +62,12 @@ def get_data_warehouse_workflow(
     session: AsyncSession = Depends(get_async_db_session),
 ) -> IDataWarehouseWorkflowService:
     """Wiring workflow với Agent, typed repositories và persistence adapters."""
+    settings = get_settings()
     repositories = _repositories(session)
     unit_of_work = SqlAlchemyUnitOfWork(session)
     source_analysis = WorkflowSourceAnalysisRunner(
         repositories.data_sources,
-        LocalFileStorage(get_settings().upload_dir),
+        LocalFileStorage(settings.upload_dir),
         SourceAnalysisRunner(
             SourceFileInspector(),
             ColumnTypeClassifier(get_cached_chat_model, pii_guard),
@@ -81,7 +82,11 @@ def get_data_warehouse_workflow(
         repositories.data_sources,
         repositories.models,
         repositories.changes,
-        RequirementAnalysisAgent(get_cached_chat_model, pii_guard),
+        RequirementAnalysisAgent(
+            get_cached_chat_model,
+            pii_guard,
+            settings.structured_output_max_attempts,
+        ),
         source_analysis,
         DataWarehouseDesignAgent(
             get_cached_chat_model,

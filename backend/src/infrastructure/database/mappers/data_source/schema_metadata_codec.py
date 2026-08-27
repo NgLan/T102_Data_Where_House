@@ -13,8 +13,11 @@ from src.infrastructure.database.mappers.data_source.schema_metadata_records imp
     ColumnRecord,
     RelationshipRecord,
     SchemaRecord,
-    SemanticAnnotationRecord,
     TableRecord,
+)
+from src.infrastructure.database.mappers.data_source.semantic_annotation_codec import (
+    annotation_to_record,
+    record_to_annotation,
 )
 
 
@@ -31,10 +34,7 @@ def encode_schema_metadata(
                 from_column=item.from_column,
                 to_column=item.to_column,
                 type=item.type,
-                semantic_annotations=[
-                    _annotation_to_record(annotation)
-                    for annotation in item.semantic_annotations
-                ],
+                semantic_annotations=[annotation_to_record(annotation) for annotation in item.semantic_annotations],
             )
             for item in schema.relationships
         ],
@@ -62,7 +62,7 @@ def decode_schema_metadata(
                 item.from_column,
                 item.to_column,
                 item.type,
-                tuple(_record_to_annotation(value) for value in item.semantic_annotations),
+                tuple(record_to_annotation(value) for value in item.semantic_annotations),
             )
             for item in record.relationships
         ),
@@ -92,9 +92,7 @@ def _column_to_record(column: source_values.ColumnMetadata) -> ColumnRecord:
         distinct_values=list(column.distinct_values),
         is_unique_candidate=column.is_unique_candidate,
         is_key_candidate=column.is_key_candidate,
-        semantic_annotations=[
-            _annotation_to_record(item) for item in column.semantic_annotations
-        ],
+        semantic_annotations=[annotation_to_record(item) for item in column.semantic_annotations],
     )
 
 
@@ -121,29 +119,5 @@ def _record_to_column(record: ColumnRecord) -> source_values.ColumnMetadata:
         distinct_values=tuple(record.distinct_values),
         is_unique_candidate=record.is_unique_candidate,
         is_key_candidate=record.is_key_candidate,
-        semantic_annotations=tuple(
-            _record_to_annotation(item) for item in record.semantic_annotations
-        ),
-    )
-
-
-def _annotation_to_record(
-    annotation: source_values.SourceSemanticAnnotation,
-) -> SemanticAnnotationRecord:
-    return SemanticAnnotationRecord(
-        requirement_id=annotation.requirement_id,
-        required_concept_key=annotation.required_concept_key,
-        decision=annotation.decision,
-        provenance=annotation.provenance,
-    )
-
-
-def _record_to_annotation(
-    record: SemanticAnnotationRecord,
-) -> source_values.SourceSemanticAnnotation:
-    return source_values.SourceSemanticAnnotation(
-        record.requirement_id,
-        record.required_concept_key,
-        record.decision,
-        record.provenance,
+        semantic_annotations=tuple(record_to_annotation(item) for item in record.semantic_annotations),
     )

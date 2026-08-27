@@ -25,9 +25,7 @@ class IAnalyticalRequirementRepository(IBaseRepository[AnalyticalRequirement]):
         """
 
     @abstractmethod
-    async def list_by_project(
-        self, project_id: EntityID
-    ) -> list[AnalyticalRequirement]:
+    async def list_by_project(self, project_id: EntityID) -> list[AnalyticalRequirement]:
         """Lấy toàn bộ yêu cầu phân tích thuộc dự án."""
 
     @abstractmethod

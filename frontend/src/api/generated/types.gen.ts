@@ -2303,6 +2303,8 @@ export type ReadinessResponse = {
 
 /**
  * RecheckSourceCoverageRequest
+ *
+ * Yêu cầu materialize một batch hoàn chỉnh và đánh giá lại.
  */
 export type RecheckSourceCoverageRequest = {
     /**
@@ -2536,6 +2538,8 @@ export type RequirementType = 'BUSINESS' | 'ANALYTICAL' | 'TECHNICAL';
 
 /**
  * ResolveSourceCoverageRequest
+ *
+ * Structured resolution của đúng một confirmation item.
  */
 export type ResolveSourceCoverageRequest = {
     /**
@@ -2796,6 +2800,13 @@ export type SessionStatus = 'ACTIVE' | 'COMPLETED' | 'ARCHIVED';
 export type SourceCandidateKind = 'COLUMN' | 'RELATIONSHIP';
 
 /**
+ * SourceConfirmationQuestionType
+ *
+ * Hợp đồng câu hỏi và cấu trúc câu trả lời Source Confirmation.
+ */
+export type SourceConfirmationQuestionType = 'SINGLE_FIELD_SELECTION' | 'FIELD_SET_CONFIRMATION' | 'BUSINESS_SEMANTIC_CHOICE' | 'SINGLE_CANDIDATE_CONFIRMATION' | 'RELATIONSHIP_CONFIRMATION';
+
+/**
  * SourceConfirmationStatus
  *
  * Trạng thái câu trả lời của một confirmation item trong batch hiện hành.
@@ -2804,6 +2815,8 @@ export type SourceConfirmationStatus = 'PENDING' | 'CONFIRMED' | 'REJECTED';
 
 /**
  * SourceCoverageAssessmentResponse
+ *
+ * Coverage assessment cùng typed question contract nếu cần xác nhận.
  */
 export type SourceCoverageAssessmentResponse = {
     /**
@@ -2839,6 +2852,7 @@ export type SourceCoverageAssessmentResponse = {
      * Question
      */
     question?: string | null;
+    question_type?: SourceConfirmationQuestionType | null;
     confirmation_status?: SourceConfirmationStatus | null;
     /**
      * Selected Candidate Id
@@ -2856,6 +2870,8 @@ export type SourceCoverageAssessmentResponse = {
 
 /**
  * SourceCoverageBatchResponse
+ *
+ * Stable Source Confirmation batch của project revision hiện hành.
  */
 export type SourceCoverageBatchResponse = {
     /**
@@ -2886,12 +2902,30 @@ export type SourceCoverageBatchResponse = {
 
 /**
  * SourceCoverageCandidateResponse
+ *
+ * Một selectable business mapping và toàn bộ evidence của nó.
  */
 export type SourceCoverageCandidateResponse = {
     /**
      * Id
      */
     id: string;
+    /**
+     * Label
+     */
+    label: string;
+    /**
+     * References
+     */
+    references: Array<SourceCoverageReferenceResponse>;
+};
+
+/**
+ * SourceCoverageReferenceResponse
+ *
+ * Exact source evidence thuộc một candidate mapping.
+ */
+export type SourceCoverageReferenceResponse = {
     kind: SourceCandidateKind;
     /**
      * Source Id
@@ -2901,6 +2935,14 @@ export type SourceCoverageCandidateResponse = {
      * Source Name
      */
     source_name: string;
+    /**
+     * Role Key
+     */
+    role_key?: string | null;
+    /**
+     * Role Label
+     */
+    role_label?: string | null;
     /**
      * Table Name
      */

@@ -10,8 +10,17 @@ from src.application.data_warehouse_workflows.input import RecheckSourceCoverage
 from src.application.data_warehouse_workflows.source_coverage_recheck import SourceCoverageRechecker
 from src.common.exceptions.business import BusinessException
 from src.domain.analytical_requirement.entities import AnalyticalRequirement
-from src.domain.analytical_requirement.enums import SourceCandidateKind, SourceConfirmationStatus, SourceCoverageStatus
-from src.domain.analytical_requirement.source_coverage import SourceCoverageAssessment, SourceCoverageCandidate
+from src.domain.analytical_requirement.enums import (
+    SourceCandidateKind,
+    SourceConfirmationQuestionType,
+    SourceConfirmationStatus,
+    SourceCoverageStatus,
+)
+from src.domain.analytical_requirement.source_coverage import SourceCoverageAssessment
+from src.domain.analytical_requirement.source_coverage_candidate import (
+    SourceCoverageCandidate,
+    SourceCoverageReference,
+)
 from src.domain.data_source.entities import DataSource
 from src.domain.data_source.enums import ColumnDataType, DataSourceType, SourceSemanticDecision
 from src.domain.data_source.value_objects import ColumnMetadata, SchemaMetadata, TableMetadata
@@ -49,10 +58,13 @@ async def test_recheck_refuses_pending_item() -> None:
     project_id, batch_id, source_id = uuid4(), uuid4(), uuid4()
     project = _current_project(project_id)
     pending = _resolved_assessment(batch_id, source_id, "patient_id", "CONFIRMED")
-    pending = SourceCoverageAssessment(**{
-        **pending.__dict__, "confirmation_status": SourceConfirmationStatus.PENDING,
-        "selected_candidate_id": None,
-    })
+    pending = SourceCoverageAssessment(
+        **{
+            **pending.__dict__,
+            "confirmation_status": SourceConfirmationStatus.PENDING,
+            "selected_candidate_id": None,
+        }
+    )
     analytical = AnalyticalRequirement(requirement_id=uuid4(), source_coverage=(pending,))
     rechecker, _, _ = _rechecker(project, analytical, _source(project_id, source_id))
     with pytest.raises(BusinessException):
@@ -73,22 +85,46 @@ async def test_service_recheck_runs_only_source_coverage() -> None:
 
 
 def _resolved_assessment(batch_id, source_id, column, decision):
-    candidate = SourceCoverageCandidate(uuid4(), SourceCandidateKind.COLUMN, source_id, "visits", column)
+    candidate = SourceCoverageCandidate(
+        uuid4(),
+        column,
+        (
+            SourceCoverageReference(
+                SourceCandidateKind.COLUMN,
+                source_id,
+                table_name="visits",
+                column_name=column,
+            ),
+        ),
+    )
     status = SourceConfirmationStatus(decision)
     return SourceCoverageAssessment(
-        id=uuid4(), batch_id=batch_id, evaluated_source_revision=4,
+        id=uuid4(),
+        batch_id=batch_id,
+        evaluated_source_revision=4,
         status=SourceCoverageStatus.NEEDS_SOURCE_CONFIRMATION,
-        required_concept_key=column.upper(), title=column, explanation="Choose.",
-        question="Use this field?", confirmation_status=status,
+        required_concept_key=column.upper(),
+        title=column,
+        explanation="Choose.",
+        question="Use this field?",
+        question_type=SourceConfirmationQuestionType.SINGLE_CANDIDATE_CONFIRMATION,
+        confirmation_status=status,
         selected_candidate_id=candidate.id if status is SourceConfirmationStatus.CONFIRMED else None,
-        resolution_revision=1, candidates=(candidate,),
+        resolution_revision=1,
+        candidates=(candidate,),
     )
 
 
 def _source(project_id, source_id):
     columns = tuple(ColumnMetadata(name, ColumnDataType.TEXT) for name in ("patient_id", "admitted_at", "status"))
-    return DataSource(id=source_id, project_id=project_id, name="visits.csv", location="visits.csv",
-                      type=DataSourceType.CSV, schema_metadata=SchemaMetadata((TableMetadata("visits", columns, 3),)))
+    return DataSource(
+        id=source_id,
+        project_id=project_id,
+        name="visits.csv",
+        location="visits.csv",
+        type=DataSourceType.CSV,
+        schema_metadata=SchemaMetadata((TableMetadata("visits", columns, 3),)),
+    )
 
 
 def _rechecker(project, analytical, source):
@@ -97,7 +133,9 @@ def _rechecker(project, analytical, source):
     rechecker = SourceCoverageRechecker(
         SimpleNamespace(save=AsyncMock()),
         SimpleNamespace(list_by_project=AsyncMock(return_value=[analytical]), save=AsyncMock()),
-        sources, unit, SimpleNamespace(require_owner_for_update=AsyncMock(return_value=project)),
+        sources,
+        unit,
+        SimpleNamespace(require_owner_for_update=AsyncMock(return_value=project)),
     )
     return rechecker, unit, sources
 

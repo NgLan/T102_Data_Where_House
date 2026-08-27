@@ -29,6 +29,16 @@ class SourceCandidateKind(StrEnum):
     RELATIONSHIP = "RELATIONSHIP"
 
 
+class SourceConfirmationQuestionType(StrEnum):
+    """Hợp đồng câu hỏi và cấu trúc câu trả lời Source Confirmation."""
+
+    SINGLE_FIELD_SELECTION = "SINGLE_FIELD_SELECTION"
+    FIELD_SET_CONFIRMATION = "FIELD_SET_CONFIRMATION"
+    BUSINESS_SEMANTIC_CHOICE = "BUSINESS_SEMANTIC_CHOICE"
+    SINGLE_CANDIDATE_CONFIRMATION = "SINGLE_CANDIDATE_CONFIRMATION"
+    RELATIONSHIP_CONFIRMATION = "RELATIONSHIP_CONFIRMATION"
+
+
 class SourceCoverageResolutionAction(StrEnum):
     """Hành động có cấu trúc để resolve một coverage assessment."""
 

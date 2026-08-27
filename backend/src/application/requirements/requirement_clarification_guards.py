@@ -23,7 +23,7 @@ def ensure_requirement_revision(project: Project, expected: int) -> None:
 def ensure_requirement_message_session(
     project: Project, session: ProjectSession | None
 ) -> None:
-    """Chỉ cho follow-up trên current Requirement cycle đã được phép edit."""
+    """Chỉ cho follow-up trên current Requirement cycle và tự động chuyển sang edit khi gửi tin nhắn."""
     valid = bool(
         session
         and session.project_id == project.id
@@ -33,12 +33,8 @@ def ensure_requirement_message_session(
     )
     if not valid:
         raise BusinessException(ErrorCode.SESSION_PURPOSE_MISMATCH, "Sai Requirement session.")
-    blocked = {
+    if session and session.requirement_continuation_state in {
         RequirementContinuationState.AWAITING_DECISION,
         RequirementContinuationState.CONTINUE_ANALYSIS,
-    }
-    if session and session.requirement_continuation_state in blocked:
-        raise BusinessException(
-            ErrorCode.REQUIREMENT_CONTINUATION_INVALID,
-            "Hãy hoàn tất continuation gate trước khi gửi tin nhắn.",
-        )
+    }:
+        session.requirement_continuation_state = RequirementContinuationState.CONTINUE_EDITING

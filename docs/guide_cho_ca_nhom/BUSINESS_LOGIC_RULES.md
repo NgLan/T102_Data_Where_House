@@ -70,7 +70,7 @@ Các nguyên tắc chung:
 - Hiện chưa có use case CRUD riêng cho Analytical Requirement; các bản ghi chủ yếu được sinh và lưu trong pipeline phân tích Data Model.
 - Analytical derivation chỉ dùng Requirement đã rõ semantic; không dùng source availability để thay đổi, làm yếu hoặc bỏ Requirement.
 - Mỗi Analytical Requirement persist Source Coverage assessments theo required business concept. Trạng thái hợp lệ là `SUPPORTED`, `NEEDS_SOURCE_CONFIRMATION`, `MISSING_SOURCE`.
-- `NEEDS_SOURCE_CONFIRMATION` bắt buộc có candidate exact reference; `MISSING_SOURCE` không được có candidate hoặc tên cột giả định.
+- `NEEDS_SOURCE_CONFIRMATION` bắt buộc có một trong năm typed question contract và candidate mapping đúng shape; mỗi mapping chứa business label cùng exact column/relationship references. `MISSING_SOURCE` không được có candidate hoặc tên cột giả định.
 
 ## 6. Data Source
 

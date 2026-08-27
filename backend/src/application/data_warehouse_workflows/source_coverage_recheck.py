@@ -6,7 +6,7 @@ from src.application.common.project_access_policy import ProjectAccessPolicy
 from src.application.common.unit_of_work import IUnitOfWork
 from src.application.data_warehouse_workflows.input import RecheckSourceCoverageInput
 from src.application.data_warehouse_workflows.source_coverage_recheck_rules import (
-    apply_candidate,
+    apply_reference,
     ensure_recheckable,
     resolution_candidates,
 )
@@ -16,6 +16,9 @@ from src.domain.analytical_requirement.i_analytical_requirement_repository impor
     IAnalyticalRequirementRepository,
 )
 from src.domain.analytical_requirement.source_coverage import SourceCoverageAssessment
+from src.domain.analytical_requirement.source_coverage_candidate import (
+    SourceCoverageCandidate,
+)
 from src.domain.data_source.entities import DataSource
 from src.domain.data_source.enums import SourceSemanticDecision, SourceSemanticProvenance
 from src.domain.data_source.i_data_source_repository import IDataSourceRepository
@@ -40,12 +43,8 @@ class SourceCoverageRechecker:
             batch = _batch_assessments(analytical, data.batch_id)
             if not ensure_recheckable(project, batch, data):
                 return
-            sources = {
-                item.id: item for item in await self.sources.list_by_project(data.project_id)
-            }
-            _materialize(
-                _Materialization(analytical, batch, sources, project.source_revision + 1)
-            )
+            sources = {item.id: item for item in await self.sources.list_by_project(data.project_id)}
+            _materialize(_Materialization(analytical, batch, sources, project.source_revision + 1))
             for source in sources.values():
                 await self.sources.save(source)
             for item in analytical:
@@ -59,8 +58,7 @@ def _batch_assessments(
     analytical: tuple[AnalyticalRequirement, ...], batch_id: object
 ) -> tuple[SourceCoverageAssessment, ...]:
     return tuple(
-        assessment for item in analytical for assessment in item.source_coverage
-        if assessment.batch_id == batch_id
+        assessment for item in analytical for assessment in item.source_coverage if assessment.batch_id == batch_id
     )
 
 
@@ -73,10 +71,7 @@ class _Materialization:
 
 
 def _materialize(data: _Materialization) -> None:
-    owners = {
-        assessment.id: item
-        for item in data.analytical for assessment in item.source_coverage
-    }
+    owners = {assessment.id: item for item in data.analytical for assessment in item.source_coverage}
     for assessment in data.batch:
         if assessment.confirmation_status is None:
             continue
@@ -97,21 +92,40 @@ def _apply_resolution(
         if assessment.confirmation_status is SourceConfirmationStatus.CONFIRMED
         else SourceSemanticDecision.REJECTED
     )
-    annotation = SourceSemanticAnnotation(
-        owner.requirement_id,
-        assessment.required_concept_key,
-        decision,
-        SourceSemanticProvenance.USER,
-    )
+    data = _CandidateApplication(owner, assessment, decision, sources)
     for candidate in resolution_candidates(assessment):
-        apply_candidate(sources, candidate, annotation)
+        _apply_candidate(data, candidate)
 
 
-def _mark_applied(
-    owner: AnalyticalRequirement, assessment_id: object, source_revision: int
+@dataclass(frozen=True, slots=True)
+class _CandidateApplication:
+    owner: AnalyticalRequirement
+    assessment: SourceCoverageAssessment
+    decision: SourceSemanticDecision
+    sources: dict[object, DataSource]
+
+
+def _apply_candidate(
+    data: _CandidateApplication,
+    candidate: SourceCoverageCandidate,
 ) -> None:
-    owner.replace_source_coverage(tuple(
-        item.with_applied_source_revision(source_revision)
-        if item.id == assessment_id else item
-        for item in owner.source_coverage
-    ))
+    for reference in candidate.references:
+        annotation = SourceSemanticAnnotation(
+            data.owner.requirement_id,
+            data.assessment.required_concept_key,
+            data.decision,
+            SourceSemanticProvenance.USER,
+            candidate.label,
+            reference.role_key,
+            reference.role_label,
+        )
+        apply_reference(data.sources, reference, annotation)
+
+
+def _mark_applied(owner: AnalyticalRequirement, assessment_id: object, source_revision: int) -> None:
+    owner.replace_source_coverage(
+        tuple(
+            item.with_applied_source_revision(source_revision) if item.id == assessment_id else item
+            for item in owner.source_coverage
+        )
+    )

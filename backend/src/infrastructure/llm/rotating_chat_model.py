@@ -30,20 +30,31 @@ class RotatingChatModel:
     def __init__(self, resources: RotatingChatModelResources) -> None:
         self._resources = resources
 
-    def with_structured_output(self, schema: type[BaseModel]) -> StructuredModel:
+    def with_structured_output(
+        self,
+        schema: type[BaseModel],
+        *,
+        include_raw: bool = False,
+    ) -> StructuredModel:
         """Tạo runnable failover cho schema của invocation."""
-        return RotatingStructuredModel(self._resources, schema)
+        return RotatingStructuredModel(self._resources, schema, include_raw)
 
 
 class RotatingStructuredModel:
     """Thử tối đa một lần trên mỗi configured key slot."""
 
-    def __init__(self, resources: RotatingChatModelResources, schema: type[BaseModel]) -> None:
+    def __init__(
+        self,
+        resources: RotatingChatModelResources,
+        schema: type[BaseModel],
+        include_raw: bool,
+    ) -> None:
         self._resources = resources
         self._schema = schema
+        self._include_raw = include_raw
         self._classifier = LlmFailureClassifier()
 
-    async def ainvoke(self, messages: list[object]) -> BaseModel:
+    async def ainvoke(self, messages: list[object]) -> BaseModel | dict[str, object]:
         """Gọi provider và chuyển slot đối với lỗi key-specific."""
         attempted: set[int] = set()
         last_exc: Exception | None = None
@@ -65,8 +76,17 @@ class RotatingStructuredModel:
             return result
         self._raise_exhausted(last_exc, len(attempted))
 
-    async def _invoke_client(self, lease: LlmKeyLease, messages: list[object]) -> BaseModel:
-        structured = self._resources.clients[lease.slot].with_structured_output(self._schema)
+    async def _invoke_client(
+        self,
+        lease: LlmKeyLease,
+        messages: list[object],
+    ) -> BaseModel | dict[str, object]:
+        client = self._resources.clients[lease.slot]
+        structured = (
+            client.with_structured_output(self._schema, include_raw=True)
+            if self._include_raw
+            else client.with_structured_output(self._schema)
+        )
         return await structured.ainvoke(messages)
 
     async def _handle_failure(

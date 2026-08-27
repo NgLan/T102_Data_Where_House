@@ -9135,7 +9135,8 @@
           "batch_id",
           "expected_source_revision"
         ],
-        "title": "RecheckSourceCoverageRequest"
+        "title": "RecheckSourceCoverageRequest",
+        "description": "Yêu cầu materialize một batch hoàn chỉnh và đánh giá lại."
       },
       "RecommendedWorkflowAction": {
         "type": "string",
@@ -9501,7 +9502,8 @@
           "expected_resolution_revision",
           "action"
         ],
-        "title": "ResolveSourceCoverageRequest"
+        "title": "ResolveSourceCoverageRequest",
+        "description": "Structured resolution của đúng một confirmation item."
       },
       "ReviseDataModelRequest": {
         "properties": {
@@ -9913,6 +9915,18 @@
         "title": "SourceCandidateKind",
         "description": "Loại bằng chứng source có thể ánh xạ tới một business concept."
       },
+      "SourceConfirmationQuestionType": {
+        "type": "string",
+        "enum": [
+          "SINGLE_FIELD_SELECTION",
+          "FIELD_SET_CONFIRMATION",
+          "BUSINESS_SEMANTIC_CHOICE",
+          "SINGLE_CANDIDATE_CONFIRMATION",
+          "RELATIONSHIP_CONFIRMATION"
+        ],
+        "title": "SourceConfirmationQuestionType",
+        "description": "Hợp đồng câu hỏi và cấu trúc câu trả lời Source Confirmation."
+      },
       "SourceConfirmationStatus": {
         "type": "string",
         "enum": [
@@ -9970,6 +9984,16 @@
             ],
             "title": "Question"
           },
+          "question_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SourceConfirmationQuestionType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "confirmation_status": {
             "anyOf": [
               {
@@ -10005,6 +10029,7 @@
             "title": "Candidates"
           }
         },
+        "additionalProperties": false,
         "type": "object",
         "required": [
           "id",
@@ -10018,7 +10043,8 @@
           "resolution_revision",
           "candidates"
         ],
-        "title": "SourceCoverageAssessmentResponse"
+        "title": "SourceCoverageAssessmentResponse",
+        "description": "Coverage assessment cùng typed question contract nếu cần xác nhận."
       },
       "SourceCoverageBatchResponse": {
         "properties": {
@@ -10054,6 +10080,7 @@
             "title": "Assessments"
           }
         },
+        "additionalProperties": false,
         "type": "object",
         "required": [
           "id",
@@ -10063,7 +10090,8 @@
           "can_recheck",
           "assessments"
         ],
-        "title": "SourceCoverageBatchResponse"
+        "title": "SourceCoverageBatchResponse",
+        "description": "Stable Source Confirmation batch của project revision hiện hành."
       },
       "SourceCoverageCandidateResponse": {
         "properties": {
@@ -10072,6 +10100,30 @@
             "format": "uuid",
             "title": "Id"
           },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "references": {
+            "items": {
+              "$ref": "#/components/schemas/SourceCoverageReferenceResponse"
+            },
+            "type": "array",
+            "title": "References"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "references"
+        ],
+        "title": "SourceCoverageCandidateResponse",
+        "description": "Một selectable business mapping và toàn bộ evidence của nó."
+      },
+      "SourceCoverageReferenceResponse": {
+        "properties": {
           "kind": {
             "$ref": "#/components/schemas/SourceCandidateKind"
           },
@@ -10083,6 +10135,28 @@
           "source_name": {
             "type": "string",
             "title": "Source Name"
+          },
+          "role_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role Key"
+          },
+          "role_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role Label"
           },
           "table_name": {
             "anyOf": [
@@ -10129,14 +10203,15 @@
             "title": "To Column"
           }
         },
+        "additionalProperties": false,
         "type": "object",
         "required": [
-          "id",
           "kind",
           "source_id",
           "source_name"
         ],
-        "title": "SourceCoverageCandidateResponse"
+        "title": "SourceCoverageReferenceResponse",
+        "description": "Exact source evidence thuộc một candidate mapping."
       },
       "SourceCoverageResolutionAction": {
         "type": "string",

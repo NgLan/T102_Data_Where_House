@@ -9,7 +9,7 @@ from pydantic import BaseModel
 class StructuredModel(Protocol):
     """Contract runnable structured output tối thiểu."""
 
-    async def ainvoke(self, messages: list[object]) -> BaseModel:
+    async def ainvoke(self, messages: list[object]) -> BaseModel | dict[str, object]:
         """Gọi model với danh sách message."""
         ...
 
@@ -17,7 +17,12 @@ class StructuredModel(Protocol):
 class StructuredChatModel(Protocol):
     """Contract chat model duy nhất mà Agent infrastructure cần."""
 
-    def with_structured_output(self, schema: type[BaseModel]) -> StructuredModel:
+    def with_structured_output(
+        self,
+        schema: type[BaseModel],
+        *,
+        include_raw: bool = False,
+    ) -> StructuredModel:
         """Bind schema output mà không làm lộ provider cụ thể."""
         ...
 

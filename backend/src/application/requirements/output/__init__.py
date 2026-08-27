@@ -13,6 +13,7 @@ from src.application.requirements.output.models import (
 from src.application.requirements.output.source_coverage import (
     GeneratedSourceCoverageAssessment,
     GeneratedSourceCoverageCandidate,
+    GeneratedSourceCoverageReference,
     SourceCoverageOutcome,
     SourceCoverageResult,
 )
@@ -25,6 +26,7 @@ __all__ = [
     "GeneratedRequirement",
     "GeneratedSourceCoverageAssessment",
     "GeneratedSourceCoverageCandidate",
+    "GeneratedSourceCoverageReference",
     "RequirementClarificationResult",
     "RequirementClarificationStateOutput",
     "RequirementOutput",

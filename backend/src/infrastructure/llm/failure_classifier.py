@@ -6,6 +6,7 @@ from enum import StrEnum
 import httpx
 from openai import (
     APIConnectionError,
+    APIStatusError,
     APITimeoutError,
     AuthenticationError,
     NotFoundError,
@@ -44,6 +45,7 @@ class LlmFailureAction(StrEnum):
     FAIL = "FAIL"
     ROTATE = "ROTATE"
     DISABLE_AND_ROTATE = "DISABLE_AND_ROTATE"
+    FALLBACK_PROVIDER = "FALLBACK_PROVIDER"
 
 
 @dataclass(frozen=True, slots=True)
@@ -66,12 +68,14 @@ class LlmFailureClassifier:
             return self._rate_limit_decision(exc.body)
         if isinstance(exc, NotFoundError):
             return _fail(ErrorCode.LLM_MODEL_NOT_FOUND, "model_not_found")
+        if isinstance(exc, APIStatusError) and exc.status_code >= 500:
+            return _fallback(ErrorCode.LLM_ERROR, "provider_unavailable")
         if isinstance(exc, GOOGLE_ERROR_TYPES):
             return self._google_decision(exc)
         if isinstance(exc, (APITimeoutError, APIConnectionError, httpx.TransportError)):
-            return _fail(ErrorCode.LLM_TIMEOUT_ERROR, "transient_network")
+            return _fallback(ErrorCode.LLM_TIMEOUT_ERROR, "transient_network")
         if isinstance(exc, (TimeoutError, ConnectionError)):
-            return _fail(ErrorCode.LLM_TIMEOUT_ERROR, "transient_network")
+            return _fallback(ErrorCode.LLM_TIMEOUT_ERROR, "transient_network")
         if isinstance(exc, ValidationError) or "outputparser" in type(exc).__name__.casefold():
             return _fail(ErrorCode.LLM_STRUCTURED_OUTPUT_ERROR, "structured_output")
         return self._fallback_decision(exc)
@@ -85,7 +89,9 @@ class LlmFailureClassifier:
         if status_code == 429:
             return self._rate_limit_decision(getattr(exc, "details", exc))
         if status_code == 408:
-            return _fail(ErrorCode.LLM_TIMEOUT_ERROR, "transient_network")
+            return _fallback(ErrorCode.LLM_TIMEOUT_ERROR, "transient_network")
+        if status_code is not None and status_code >= 500:
+            return _fallback(ErrorCode.LLM_ERROR, "provider_unavailable")
         return _fail(ErrorCode.LLM_ERROR, "provider_error")
 
     def _rate_limit_decision(self, detail: object) -> LlmFailureDecision:
@@ -104,9 +110,9 @@ class LlmFailureClassifier:
         if _contains_any(message, ("404", "not found", "not_found")):
             return _fail(ErrorCode.LLM_MODEL_NOT_FOUND, "model_not_found")
         if _contains_any(message, ("timeout", "timed out", "connection reset")):
-            return _fail(ErrorCode.LLM_TIMEOUT_ERROR, "transient_network")
-        if "validation" in message:
-            return _fail(ErrorCode.LLM_STRUCTURED_OUTPUT_ERROR, "structured_output")
+            return _fallback(ErrorCode.LLM_TIMEOUT_ERROR, "transient_network")
+        if _contains_any(message, ("service unavailable", "server error", "internal error")):
+            return _fallback(ErrorCode.LLM_ERROR, "provider_unavailable")
         return _fail(ErrorCode.LLM_ERROR, "provider_error")
 
 
@@ -149,3 +155,7 @@ def _disable(code: ErrorCode, reason: str) -> LlmFailureDecision:
 
 def _fail(code: ErrorCode, reason: str) -> LlmFailureDecision:
     return LlmFailureDecision(LlmFailureAction.FAIL, code, reason)
+
+
+def _fallback(code: ErrorCode, reason: str) -> LlmFailureDecision:
+    return LlmFailureDecision(LlmFailureAction.FALLBACK_PROVIDER, code, reason)

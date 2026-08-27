@@ -2,6 +2,7 @@
 
 from typing import Annotated
 
+from config import get_settings
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.application.requirements.i_requirement_service import IRequirementService
@@ -50,6 +51,7 @@ def get_requirement_service(
     session: AsyncSession = Depends(get_async_db_session),
 ) -> IRequirementService:
     """Khởi tạo Requirement service và Unit of Work dùng chung session."""
+    settings = get_settings()
     projects = PostgresProjectRepository(session)
     requirements = PostgresRequirementRepository(session)
     sessions = PostgresProjectSessionRepository(session)
@@ -63,7 +65,11 @@ def get_requirement_service(
         requirements,
         sessions,
         events,
-        RequirementAnalysisAgent(get_cached_chat_model, pii_guard),
+        RequirementAnalysisAgent(
+            get_cached_chat_model,
+            pii_guard,
+            settings.structured_output_max_attempts,
+        ),
         SqlAlchemyUnitOfWork(session),
         access,
         build_conversation_context(session, pii_guard),

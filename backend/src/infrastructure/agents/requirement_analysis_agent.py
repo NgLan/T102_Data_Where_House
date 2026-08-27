@@ -11,35 +11,16 @@ from src.application.requirements.output import (
     RequirementClarificationResult,
     SourceCoverageResult,
 )
-from src.common.exceptions.error_codes import ErrorCode
-from src.common.exceptions.infrastructure import InfrastructureException
 from src.domain.project_session.enums import RequirementClarificationStatus
-from src.infrastructure.agents.agent_context_renderer import (
-    render_analytical_input,
-    render_source_coverage_input,
-)
-from src.infrastructure.agents.prompts.requirement import (
-    ANALYTICAL_SYSTEM_PROMPT,
-    ANALYTICAL_USER_PROMPT,
-    REQUIREMENT_CLARIFICATION_SYSTEM_PROMPT,
-    REQUIREMENT_CLARIFICATION_USER_PROMPT,
-    SOURCE_COVERAGE_SYSTEM_PROMPT,
-    SOURCE_COVERAGE_USER_PROMPT,
-)
+from src.infrastructure.agents.analytical_output_retry import AnalyticalOutputRetry
+from src.infrastructure.agents.clarification_output_retry import ClarificationOutputRetry
 from src.infrastructure.agents.requirement_agent_output_mapper import (
-    map_derivation_outcome,
     map_requirement_items,
 )
-from src.infrastructure.agents.requirement_context_renderer import render_requirement_clarification
-from src.infrastructure.agents.source_coverage_output_mapper import (
-    map_source_coverage_result,
-)
-from src.infrastructure.llm.agent_structured_outputs import (
-    AnalyticalRequirementResult,
-    SourceCoverageLlmResult,
-)
-from src.infrastructure.llm.agent_structured_outputs import (
-    RequirementClarificationResult as RequirementClarificationLlmResult,
+from src.infrastructure.agents.source_coverage_output_retry import SourceCoverageOutputRetry
+from src.infrastructure.agents.transport_references import (
+    SourceCoverageReferenceBoundary,
+    TransportReferenceMap,
 )
 from src.infrastructure.llm.lazy_chat_model import ChatModelSource, LazyChatModel
 from src.infrastructure.llm.structured_llm_invoker import StructuredLlmInvoker
@@ -50,21 +31,23 @@ from typing_extensions import override
 class RequirementAnalysisAgent(IRequirementAnalysisAgent):
     """Adapter provider-neutral cho hai RequirementAgent operations."""
 
-    def __init__(self, chat_model: ChatModelSource, pii_guard: PiiGuard) -> None:
+    def __init__(
+        self,
+        chat_model: ChatModelSource,
+        pii_guard: PiiGuard,
+        max_attempts: int = 3,
+    ) -> None:
         self._model = LazyChatModel(chat_model)
         self._pii_guard = pii_guard
+        self._max_attempts = max_attempts
 
     @override
     async def clarify_requirements(self, data: ClarifyRequirementsInput) -> RequirementClarificationResult:
         """Cấu trúc/làm rõ Requirement bằng một structured invocation."""
-        sections = render_requirement_clarification(data)
-        result = await self._invoker().invoke(
-            REQUIREMENT_CLARIFICATION_SYSTEM_PROMPT,
-            REQUIREMENT_CLARIFICATION_USER_PROMPT.format(**sections),
-            RequirementClarificationLlmResult,
-        )
+        references = TransportReferenceMap.create("R", tuple(item.id for item in data.current_requirements))
+        result = await ClarificationOutputRetry(self._invoker(), self._max_attempts).invoke(data, references)
         return RequirementClarificationResult(
-            requirements=map_requirement_items(result.requirements, data),
+            requirements=map_requirement_items(result.requirements, references),
             status=RequirementClarificationStatus(result.status),
             question=result.question,
             options=tuple(result.options),
@@ -78,39 +61,18 @@ class RequirementAnalysisAgent(IRequirementAnalysisAgent):
         self, data: DeriveAnalyticalRequirementsInput
     ) -> AnalyticalDerivationResult:
         """Derive outcome đầy đủ với source ID bắt buộc thuộc input."""
-        requirements = render_analytical_input(data)
-        result = await self._invoker().invoke(
-            ANALYTICAL_SYSTEM_PROMPT,
-            ANALYTICAL_USER_PROMPT.format(requirements=requirements),
-            AnalyticalRequirementResult,
-        )
-        expected_ids = {str(item.id) for item in data.requirements}
-        actual_ids = [item.source_requirement_id for item in result.outcomes]
-        if len(actual_ids) != len(expected_ids) or set(actual_ids) != expected_ids:
-            raise InfrastructureException(
-                ErrorCode.LLM_STRUCTURED_OUTPUT_ERROR,
-                "RequirementAgent trả thiếu, trùng hoặc sai source_requirement_id.",
-            )
-        return AnalyticalDerivationResult(
-            tuple(map_derivation_outcome(item) for item in result.outcomes)
-        )
+        references = TransportReferenceMap.create("R", tuple(item.id for item in data.requirements))
+        return await AnalyticalOutputRetry(self._invoker(), self._max_attempts).invoke(data, references)
 
     @override
-    async def evaluate_source_coverage(
-        self, data: EvaluateSourceCoverageInput
-    ) -> SourceCoverageResult:
+    async def evaluate_source_coverage(self, data: EvaluateSourceCoverageInput) -> SourceCoverageResult:
         """Đánh giá source semantics bằng một invocation độc lập và grounded."""
-        requirements, analytical, schemas = render_source_coverage_input(data)
-        result = await self._invoker().invoke(
-            SOURCE_COVERAGE_SYSTEM_PROMPT,
-            SOURCE_COVERAGE_USER_PROMPT.format(
-                requirements=requirements,
-                analytical_requirements=analytical,
-                schema_metadata=schemas,
-            ),
-            SourceCoverageLlmResult,
+        references = SourceCoverageReferenceBoundary(
+            TransportReferenceMap.create("R", tuple(item.id for item in data.requirements)),
+            TransportReferenceMap.create("A", tuple(item.id for item in data.analytical_requirements)),
+            TransportReferenceMap.create("S", tuple(item.id for item in data.data_sources)),
         )
-        return map_source_coverage_result(result, data)
+        return await SourceCoverageOutputRetry(self._invoker(), self._max_attempts).invoke(data, references)
 
     def _invoker(self) -> StructuredLlmInvoker:
         """Dựng invoker nhẹ trên model đã lazy-cache."""

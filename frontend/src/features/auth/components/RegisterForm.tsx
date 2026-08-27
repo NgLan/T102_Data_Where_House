@@ -37,23 +37,54 @@ export function RegisterForm({ onRegisterSuccess }: RegisterFormProps) {
     : null;
 
   return (
-    <form className="space-y-3" onSubmit={form.handleSubmit((values) => mutation.mutate({
-      ...values, full_name: values.full_name || undefined,
-    }))}>
-      <AuthField id="register-username" label={t("USERNAME_LABEL")}
-        error={form.formState.errors.username?.message} autoComplete="username"
-        registration={form.register("username")} />
-      <AuthField id="register-email" label={t("EMAIL_LABEL")}
-        error={form.formState.errors.email?.message} autoComplete="email" type="email"
-        registration={form.register("email")} />
-      <AuthField id="register-full-name" label={t("FULL_NAME_LABEL")}
-        error={form.formState.errors.full_name?.message} autoComplete="name"
-        registration={form.register("full_name")} />
-      <AuthField id="register-password" label={t("PASSWORD_LABEL")}
-        error={form.formState.errors.password?.message} autoComplete="new-password" type="password"
-        registration={form.register("password")} />
-      {apiError && <p className="text-sm text-destructive" role="alert">{apiError}</p>}
-      <Button className="w-full" type="submit" disabled={mutation.isPending}>
+    <form
+      className="space-y-2.5"
+      onSubmit={form.handleSubmit((values) =>
+        mutation.mutate({
+          ...values,
+          full_name: values.full_name || undefined,
+        })
+      )}
+    >
+      <AuthField
+        id="register-username"
+        label={t("USERNAME_LABEL")}
+        required
+        error={form.formState.errors.username?.message}
+        autoComplete="username"
+        registration={form.register("username")}
+      />
+      <AuthField
+        id="register-email"
+        label={t("EMAIL_LABEL")}
+        required
+        error={form.formState.errors.email?.message}
+        autoComplete="email"
+        type="email"
+        registration={form.register("email")}
+      />
+      <AuthField
+        id="register-full-name"
+        label={t("FULL_NAME_LABEL")}
+        error={form.formState.errors.full_name?.message}
+        autoComplete="name"
+        registration={form.register("full_name")}
+      />
+      <AuthField
+        id="register-password"
+        label={t("PASSWORD_LABEL")}
+        required
+        error={form.formState.errors.password?.message}
+        autoComplete="new-password"
+        type="password"
+        registration={form.register("password")}
+      />
+      {apiError && <p className="text-xs text-destructive" role="alert">{apiError}</p>}
+      <Button
+        className="w-full h-10 text-sm font-semibold transition-all shadow-sm hover:shadow-md active:scale-[0.99] mt-1"
+        type="submit"
+        disabled={mutation.isPending}
+      >
         {t(mutation.isPending ? "MSG_REGISTERING" : "BTN_REGISTER")}
       </Button>
     </form>
@@ -63,16 +94,26 @@ export function RegisterForm({ onRegisterSuccess }: RegisterFormProps) {
 function AuthField(props: {
   id: string;
   label: string;
+  required?: boolean;
   error?: string;
   type?: string;
   autoComplete: string;
   registration: UseFormRegisterReturn;
 }) {
   return (
-    <Field data-invalid={Boolean(props.error)}>
-      <FieldLabel htmlFor={props.id}>{props.label}</FieldLabel>
-      <Input id={props.id} type={props.type} autoComplete={props.autoComplete} {...props.registration} />
-      <FieldError>{props.error}</FieldError>
+    <Field className="gap-1" data-invalid={Boolean(props.error)}>
+      <FieldLabel htmlFor={props.id} className="text-xs">
+        {props.label}
+        {props.required && <span className="text-destructive font-medium ml-0.5">*</span>}
+      </FieldLabel>
+      <Input
+        id={props.id}
+        type={props.type}
+        className="h-9 px-3 text-sm"
+        autoComplete={props.autoComplete}
+        {...props.registration}
+      />
+      <FieldError className="text-xs">{props.error}</FieldError>
     </Field>
   );
 }

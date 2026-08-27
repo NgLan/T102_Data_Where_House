@@ -10,6 +10,7 @@ from src.application.data_warehouse_workflows.i_data_warehouse_workflow_service 
 )
 from src.application.data_warehouse_workflows.output import (
     AnalysisStatusOutput,
+    InputReadinessStatus,
     RecommendedWorkflowAction,
 )
 from src.presentation.dependencies.data_warehouse_workflows import get_data_warehouse_workflow
@@ -22,7 +23,9 @@ def _status() -> AnalysisStatusOutput:
         True,
         True,
         True,
+        0,
         RecommendedWorkflowAction.ANALYZE_CHANGES,
+        InputReadinessStatus.SOURCE_DATA_REQUIRED,
     )
 
 

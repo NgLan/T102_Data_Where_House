@@ -21,8 +21,8 @@ class GeneratedRequirementItem(AgentOutputBase):
     description: str = Field(min_length=MIN_TEXT_LENGTH)
     requirement_type: RequirementType
     priority: RequirementPriority = RequirementPriority.MEDIUM
-    existing_requirement_id: str | None = Field(
-        description="Required exact current UUID, or null for a new item."
+    existing_requirement_ref: str | None = Field(
+        description="Required exact current R-reference, or null for a new item."
     )
 
 
@@ -42,7 +42,7 @@ class RequirementClarificationResult(AgentOutputBase):
     )
     allow_custom_answer: bool = False
     reason: str | None = None
-    summary: str = Field(min_length=MIN_TEXT_LENGTH)
+    summary: str = ""
 
     @model_validator(mode="after")
     def validate_clarification(self) -> "RequirementClarificationResult":

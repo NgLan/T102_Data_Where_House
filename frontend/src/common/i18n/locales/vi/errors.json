@@ -91,7 +91,7 @@
   "REQUIREMENT_FILE_NOT_FOUND": "Không tìm thấy tài liệu yêu cầu.",
   "REQUIREMENT_REVISION_CONFLICT": "Yêu cầu đã thay đổi ở nơi khác. Hãy tải lại và thử lại.",
   "REQUIREMENT_CONTEXT_EMPTY": "Hãy thêm yêu cầu thô hoặc ít nhất một tài liệu yêu cầu.",
-  "REQUIREMENT_CONTINUATION_INVALID": "Lựa chọn tiếp tục workflow này không còn hiệu lực.",
+  "REQUIREMENT_CONTINUATION_INVALID": "Vui lòng chọn bước tiếp theo hoặc bấm 'Tiếp tục chỉnh sửa' trước khi gửi tin nhắn.",
   "SESSION_PURPOSE_MISMATCH": "Phiên Agent này thuộc một workflow khác.",
   "REQUIREMENT_SEMANTIC_CLARIFICATION_REQUIRED": "Một quyết định nghiệp vụ vẫn còn mơ hồ. Hãy tiếp tục trao đổi trong Requirement Agent trước khi tạo Data Model.",
   "ANALYTICAL_SOURCE_GAP": "Nguồn dữ liệu hiện tại chưa đáp ứng đủ Requirement. Hãy thêm hoặc cập nhật nguồn dữ liệu trước khi tiếp tục."

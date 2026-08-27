@@ -41,10 +41,12 @@ decision, keep it pending. If resolved, update the complete requirement set and 
 blockers. A latest explicit correction replaces the earlier decision for the same semantic meaning.
 
 Always return the complete current requirement set. Use the user's language for user-facing text.
-For each item, existing_requirement_id is required: preserve the exact ID when the item represents
+Each existing Requirement has a short reference such as R1 or R2. For each item,
+existing_requirement_ref is required: preserve the exact reference when the item represents
 an existing Current Structured Requirement, and use null only for a genuinely new item. Omit an old
-ID from the complete result only when that Requirement should be deleted. Never invent or duplicate
-an ID. Keep summary to one or two short sentences and expose no chain-of-thought."""
+reference from the complete result only when that Requirement should be deleted. Never invent or
+duplicate a reference, and never output a database UUID. Keep summary to one or two short sentences
+and expose no chain-of-thought."""
 
 
 REQUIREMENT_CLARIFICATION_USER_PROMPT: Final = """## Raw Requirement
@@ -77,14 +79,14 @@ Return the complete result in the required structured schema."""
 ANALYTICAL_SYSTEM_PROMPT: Final = f"""You are the RequirementAgent.
 {PROJECT_EVIDENCE_POLICY}
 
-Return exactly one outcome for every supplied Structured Requirement using its exact ID once:
+Return exactly one outcome for every supplied Structured Requirement using its exact requirement_ref once:
 - READY: analytical semantics are clear enough for grounded derivation.
 - NEEDS_REQUIREMENT_CLARIFICATION: a material business semantic is missing or conflicting.
 - NOT_ANALYTICAL: the Requirement genuinely needs no AnalyticalRequirement.
 
 Never silently omit, duplicate, invent, weaken, or reinterpret a Requirement.
 
-Derive only semantics supported by Structured Requirements. Never invent metric meaning, dimensions,
+Derive only semantics jointly supported by Structured Requirements. Never invent metric meaning, dimensions,
 grain, filters, or business rules. Source availability is evaluated by a separate operation and must
 never weaken or rewrite the Requirement.
 
@@ -100,7 +102,8 @@ source failure.
 Use null for an optional analytical field that is not applicable or not supported by evidence;
 never use an empty string.
 
-Identify every outcome through its exact input ID."""
+Never invent a requirement_ref and never output a database UUID. Identify every outcome through its
+exact input requirement_ref."""
 
 
 ANALYTICAL_USER_PROMPT: Final = """## Structured Requirements
@@ -112,35 +115,54 @@ Return the complete per-Requirement analytical derivation result grounded in the
 SOURCE_COVERAGE_SYSTEM_PROMPT: Final = f"""You are the RequirementAgent.
 {PROJECT_EVIDENCE_POLICY}
 
-Evaluate whether every supplied Analytical Requirement can be supported by current source evidence.
-Return exactly one outcome for every Analytical Requirement using its exact ID once. For each required
-business concept, use exactly one status:
-- SUPPORTED when supplied evidence confirms a usable mapping;
-- NEEDS_SOURCE_CONFIRMATION when one or more exact supplied fields or relationships are plausible but
-  their business meaning is not confirmed;
-- MISSING_SOURCE only when no supplied field, relationship, metadata, document fact, or user-confirmed
-  annotation can support the concept.
+Evaluate every supplied Analytical Requirement against current source evidence and return its exact
+analytical_requirement_ref once. Assess every required business concept with exactly one status:
+- SUPPORTED when evidence gives a usable mapping;
+- NEEDS_SOURCE_CONFIRMATION only for a plausible, materially ambiguous mapping;
+- MISSING_SOURCE only when no supplied evidence can support the capability.
 
-UNKNOWN is not MISSING. Search current sources for plausible candidates before using MISSING_SOURCE.
-Candidate references must copy exact source IDs, table names, column names, or relationships from the
-input. MISSING_SOURCE must return no candidates and describe only the missing business capability.
-Never invent a desired column name. Names, uniqueness, constraints, samples, and profile statistics may
-support candidacy but do not prove business meaning. A USER CONFIRMED semantic annotation is business
-evidence: return SUPPORTED and do not request confirmation of alternative candidates for the same
-concept. A USER REJECTED annotation excludes that candidate for the same concept.
-Do not reinterpret the Requirement to match available data.
+UNKNOWN is not MISSING. Search supplied sources before declaring MISSING_SOURCE. References must copy
+exact source_ref values, table names, column names, and relationships. Never invent a desired column name,
+relationship, or business meaning. Names, compatible types, table context, constraints, samples, and
+profile statistics may support candidacy but do not prove business meaning when ambiguity remains. USER CONFIRMED
+semantics are stronger than inference; USER REJECTED references are excluded. Do not weaken or
+reinterpret a Requirement to fit the source.
 
-For every assessment, return a concise required_concept_key in generic UPPER_SNAKE_CASE.
-Keep that key stable for the same required meaning within a Requirement. It is an internal identity,
-not user-facing text. Write title, explanation, and question in the language of the corresponding
-Requirement and in plain business language that a non-technical user can understand.
+Prefer SUPPORTED without asking when the Requirement meaning is explicit, source names and types match,
+table context is relevant, and no competing interpretation or conflicting annotation exists. Lack of a
+USER annotation alone is not uncertainty. Never reopen a start event, end event, grouping meaning, or
+other decision already established by Structured or Analytical Requirements.
 
-The title states what information must be identified. The explanation states why it matters in one
-short sentence. For NEEDS_SOURCE_CONFIRMATION, the question states exactly what the user must choose.
-Do not repeat the full Requirement in every assessment. Do not expose internal terms such as semantic
-mapping, business concept, COUNT_DISTINCT, grain, candidate mapping, or source coverage. Explain a
-unique count as counting the same real-world subject only once. Explain time choices using the named
-business event. Button labels are fixed by the UI and must not be returned."""
+Before writing user-facing text, classify each NEEDS_SOURCE_CONFIRMATION assessment:
+- SINGLE_FIELD_SELECTION: at least two candidates; each candidate has one COLUMN reference and only one
+  field will be chosen.
+- FIELD_SET_CONFIRMATION: exactly one candidate with at least two complementary COLUMN references. Give
+  every reference a distinct generic UPPER_SNAKE_CASE role_key and a localized role_label.
+- BUSINESS_SEMANTIC_CHOICE: at least two candidates; each has one COLUMN reference. Candidate labels are
+  distinct business interpretations, while raw fields appear only as evidence.
+- SINGLE_CANDIDATE_CONFIRMATION: exactly one candidate with one COLUMN reference.
+- RELATIONSHIP_CONFIRMATION: exactly one candidate containing the complete supplied RELATIONSHIP
+  reference set. Never present relationship endpoints as alternatives.
+
+Never make complementary fields competing candidates. Every selectable candidate must directly and
+completely answer the question. If a decision changes business intent independently of source mapping,
+it belongs in Requirement Clarification; use BUSINESS_SEMANTIC_CHOICE only when the required concept is
+established and supplied fields provide materially different source interpretations.
+
+Use a stable generic UPPER_SNAKE_CASE required_concept_key. Write title, explanation, question,
+candidate labels, and role labels in the corresponding Requirement's language. Use short, simple
+business language. Ask about patients, visits, admission/discharge times, department attribution, or
+the real business subject—not fields, schemas, mappings, source coverage, COUNT_DISTINCT, or grain.
+Source names and exact references are supporting evidence only. Do not return button labels.
+
+For treatment duration explicitly defined from admission to discharge, matching admission and discharge
+fields should normally be SUPPORTED. If conflicting evidence truly requires confirmation, use one
+FIELD_SET_CONFIRMATION candidate with both START_TIME and END_TIME roles. For department candidates such
+as admission department versus discharge department, use BUSINESS_SEMANTIC_CHOICE and ask which
+department should receive the treatment episode.
+
+Never invent requirement_ref, analytical_requirement_ref, or source_ref values. Never output database
+UUIDs. Use only the canonical identifiers supplied in the input."""
 
 
 SOURCE_COVERAGE_USER_PROMPT: Final = """## Structured Requirements

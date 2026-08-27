@@ -159,7 +159,7 @@ Analytical derivation không nhận `SchemaMetadata`, không trả source gap v�
 - `NEEDS_SOURCE_CONFIRMATION`: có column/relationship candidate thật nhưng business identity chưa được USER xác nhận;
 - `MISSING_SOURCE`: không có candidate/evidence đáng tin cậy và không được chứa tên cột giả định.
 
-Candidate luôn mang ID và exact source reference; mapper từ chối reference không tồn tại. Uniqueness, distinct count, key candidate hoặc name similarity chỉ là profiling/candidacy, không tự chứng minh business identity.
+Mỗi confirmation phải được phân loại thành `SINGLE_FIELD_SELECTION`, `FIELD_SET_CONFIRMATION`, `BUSINESS_SEMANTIC_CHOICE`, `SINGLE_CANDIDATE_CONFIRMATION` hoặc `RELATIONSHIP_CONFIRMATION`. Candidate mang ID, business label và một hoặc nhiều exact source references; field set dùng một candidate duy nhất với role rõ ràng, còn business choice dùng label nghiệp vụ trước source evidence. Mapper từ chối reference không tồn tại hoặc answer shape không khớp question type. Uniqueness, distinct count, key candidate hoặc name similarity chỉ là profiling/candidacy, không tự chứng minh business identity.
 
 Ba bước thuộc cùng `RequirementAgent`, mỗi operation vẫn dùng đúng một structured LLM invocation; không tạo Agent hoặc session purpose mới.
 

@@ -39,20 +39,38 @@ export function LoginForm({ defaultIdentifier = "" }: LoginFormProps) {
     : null;
 
   return (
-    <form className="space-y-4" onSubmit={form.handleSubmit((values) => mutation.mutate(values))}>
-      <Field data-invalid={Boolean(form.formState.errors.identifier)}>
-        <FieldLabel htmlFor="login-identifier">{t("IDENTIFIER_LABEL")}</FieldLabel>
-        <Input id="login-identifier" autoComplete="username" {...form.register("identifier")} />
-        <FieldError>{form.formState.errors.identifier?.message}</FieldError>
+    <form className="space-y-3" onSubmit={form.handleSubmit((values) => mutation.mutate(values))}>
+      <Field className="gap-1" data-invalid={Boolean(form.formState.errors.identifier)}>
+        <FieldLabel htmlFor="login-identifier" className="text-xs">
+          {t("IDENTIFIER_LABEL")} <span className="text-destructive font-medium ml-0.5">*</span>
+        </FieldLabel>
+        <Input
+          id="login-identifier"
+          className="h-9 px-3 text-sm"
+          autoComplete="username"
+          {...form.register("identifier")}
+        />
+        <FieldError className="text-xs">{form.formState.errors.identifier?.message}</FieldError>
       </Field>
-      <Field data-invalid={Boolean(form.formState.errors.password)}>
-        <FieldLabel htmlFor="login-password">{t("PASSWORD_LABEL")}</FieldLabel>
-        <Input id="login-password" type="password" autoComplete="current-password"
-          {...form.register("password")} />
-        <FieldError>{form.formState.errors.password?.message}</FieldError>
+      <Field className="gap-1" data-invalid={Boolean(form.formState.errors.password)}>
+        <FieldLabel htmlFor="login-password" className="text-xs">
+          {t("PASSWORD_LABEL")} <span className="text-destructive font-medium ml-0.5">*</span>
+        </FieldLabel>
+        <Input
+          id="login-password"
+          type="password"
+          className="h-9 px-3 text-sm"
+          autoComplete="current-password"
+          {...form.register("password")}
+        />
+        <FieldError className="text-xs">{form.formState.errors.password?.message}</FieldError>
       </Field>
-      {apiError && <p className="text-sm text-destructive" role="alert">{apiError}</p>}
-      <Button className="w-full" type="submit" disabled={mutation.isPending}>
+      {apiError && <p className="text-xs text-destructive" role="alert">{apiError}</p>}
+      <Button
+        className="w-full h-10 text-sm font-semibold transition-all shadow-sm hover:shadow-md active:scale-[0.99] mt-1"
+        type="submit"
+        disabled={mutation.isPending}
+      >
         {t(mutation.isPending ? "MSG_LOGGING_IN" : "BTN_LOGIN")}
       </Button>
     </form>

@@ -17,13 +17,15 @@ from src.common.exceptions.business import BusinessException
 from src.domain.analytical_requirement.entities import AnalyticalRequirement
 from src.domain.analytical_requirement.enums import (
     SourceCandidateKind,
+    SourceConfirmationQuestionType,
     SourceConfirmationStatus,
     SourceCoverageResolutionAction,
     SourceCoverageStatus,
 )
-from src.domain.analytical_requirement.source_coverage import (
-    SourceCoverageAssessment,
+from src.domain.analytical_requirement.source_coverage import SourceCoverageAssessment
+from src.domain.analytical_requirement.source_coverage_candidate import (
     SourceCoverageCandidate,
+    SourceCoverageReference,
 )
 from src.domain.project.entities import Project
 
@@ -70,44 +72,67 @@ async def test_three_items_resolve_independently_without_source_revision_change(
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("readiness", [
-    InputReadinessStatus.SOURCE_CONFIRMATION_REQUIRED,
-    InputReadinessStatus.SOURCE_DATA_REQUIRED,
-    InputReadinessStatus.REQUIREMENT_CLARIFICATION_REQUIRED,
-])
+@pytest.mark.parametrize(
+    "readiness",
+    [
+        InputReadinessStatus.SOURCE_CONFIRMATION_REQUIRED,
+        InputReadinessStatus.SOURCE_DATA_REQUIRED,
+        InputReadinessStatus.REQUIREMENT_CLARIFICATION_REQUIRED,
+    ],
+)
 async def test_every_blocking_readiness_stops_design(readiness: InputReadinessStatus) -> None:
     service = object.__new__(DataWarehouseWorkflowService)
     service._reader = AsyncMock()  # noqa: SLF001
-    service._reader.calculate_analysis_status.return_value = SimpleNamespace(
-        readiness_status=readiness
-    )
+    service._reader.calculate_analysis_status.return_value = SimpleNamespace(readiness_status=readiness)
     with pytest.raises(BusinessException):
         await service._ensure_ready_for_design(SimpleNamespace(id=uuid4()))  # noqa: SLF001
 
 
 def _assessment(batch_id, revision) -> SourceCoverageAssessment:
     candidate = SourceCoverageCandidate(
-        uuid4(), SourceCandidateKind.COLUMN, uuid4(), "visits", "record_no"
+        uuid4(),
+        "Record number",
+        (
+            SourceCoverageReference(
+                SourceCandidateKind.COLUMN,
+                uuid4(),
+                table_name="visits",
+                column_name="record_no",
+            ),
+        ),
     )
     return SourceCoverageAssessment(
-        id=uuid4(), batch_id=batch_id, evaluated_source_revision=revision,
+        id=uuid4(),
+        batch_id=batch_id,
+        evaluated_source_revision=revision,
         status=SourceCoverageStatus.NEEDS_SOURCE_CONFIRMATION,
-        required_concept_key=f"CONCEPT_{uuid4().hex}", title="Choose a field",
-        explanation="A field must be confirmed.", question="Which field?",
+        required_concept_key=f"CONCEPT_{uuid4().hex}",
+        title="Choose a field",
+        explanation="A field must be confirmed.",
+        question="Which field?",
+        question_type=SourceConfirmationQuestionType.SINGLE_CANDIDATE_CONFIRMATION,
         candidates=(candidate,),
     )
 
 
 def _input(project_id, assessment_id, batch_id) -> ResolveSourceCoverageInput:
     return ResolveSourceCoverageInput(
-        project_id, assessment_id, batch_id, 4, 0,
+        project_id,
+        assessment_id,
+        batch_id,
+        4,
+        0,
         SourceCoverageResolutionAction.REJECT_ALL_CANDIDATES,
     )
 
 
 def _confirm_input(project_id, assessment, batch_id) -> ResolveSourceCoverageInput:
     return ResolveSourceCoverageInput(
-        project_id, assessment.id, batch_id, 4, 0,
+        project_id,
+        assessment.id,
+        batch_id,
+        4,
+        0,
         SourceCoverageResolutionAction.CONFIRM_CANDIDATE,
         assessment.candidates[0].id,
     )

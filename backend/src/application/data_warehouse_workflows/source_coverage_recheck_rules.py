@@ -7,9 +7,10 @@ from src.domain.analytical_requirement.enums import (
     SourceConfirmationStatus,
     SourceCoverageStatus,
 )
-from src.domain.analytical_requirement.source_coverage import (
-    SourceCoverageAssessment,
+from src.domain.analytical_requirement.source_coverage import SourceCoverageAssessment
+from src.domain.analytical_requirement.source_coverage_candidate import (
     SourceCoverageCandidate,
+    SourceCoverageReference,
 )
 from src.domain.data_source.entities import DataSource
 from src.domain.project.entities import Project
@@ -40,29 +41,24 @@ def resolution_candidates(
 ) -> tuple[SourceCoverageCandidate, ...]:
     if assessment.confirmation_status is SourceConfirmationStatus.REJECTED:
         return assessment.candidates
-    selected = tuple(
-        item for item in assessment.candidates
-        if item.id == assessment.selected_candidate_id
-    )
+    selected = tuple(item for item in assessment.candidates if item.id == assessment.selected_candidate_id)
     if len(selected) != 1:
         raise BusinessException(ErrorCode.BAD_REQUEST, "Candidate đã chọn không hợp lệ.")
     return selected
 
 
-def apply_candidate(
+def apply_reference(
     sources: dict[object, DataSource],
-    candidate: SourceCoverageCandidate,
+    reference: SourceCoverageReference,
     annotation: object,
 ) -> None:
-    source = sources.get(candidate.source_id)
+    source = sources.get(reference.source_id)
     if source is None:
         raise BusinessException(ErrorCode.ANALYSIS_INPUT_CHANGED, "Source candidate đã thay đổi.")
-    if candidate.table_name and candidate.column_name:
-        applied = source.annotate_column(candidate.table_name, candidate.column_name, annotation)
+    if reference.table_name and reference.column_name:
+        applied = source.annotate_column(reference.table_name, reference.column_name, annotation)
     else:
-        applied = source.annotate_relationship(
-            candidate.from_column or "", candidate.to_column or "", annotation
-        )
+        applied = source.annotate_relationship(reference.from_column or "", reference.to_column or "", annotation)
     if not applied:
         raise BusinessException(ErrorCode.ANALYSIS_INPUT_CHANGED, "Source candidate đã thay đổi.")
 
@@ -70,7 +66,4 @@ def apply_candidate(
 def _confirmations(
     assessments: tuple[SourceCoverageAssessment, ...],
 ) -> tuple[SourceCoverageAssessment, ...]:
-    return tuple(
-        item for item in assessments
-        if item.status is SourceCoverageStatus.NEEDS_SOURCE_CONFIRMATION
-    )
+    return tuple(item for item in assessments if item.status is SourceCoverageStatus.NEEDS_SOURCE_CONFIRMATION)

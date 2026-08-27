@@ -7,6 +7,7 @@ from src.application.data_warehouse_workflows.analysis_helpers import (
     to_requirement_context,
 )
 from src.application.data_warehouse_workflows.source_coverage_mapper import (
+    SourceCoveragePersistenceContext,
     apply_source_coverage,
 )
 from src.application.data_warehouse_workflows.workflow_data_loader import WorkflowDataReader
@@ -53,9 +54,7 @@ class WorkflowSourceCoverageRunner:
         contexts = tuple(to_requirement_context(item) for item in data.requirements)
         await self._unit_of_work.rollback()
         result = await self._agent.evaluate_source_coverage(
-            EvaluateSourceCoverageInput(
-                contexts, data.analytical_requirements, data.data_sources
-            )
+            EvaluateSourceCoverageInput(contexts, data.analytical_requirements, data.data_sources)
         )
         await self._persist(project.id, revisions, result)
 
@@ -70,7 +69,9 @@ class WorkflowSourceCoverageRunner:
             _ensure_revisions(project, revisions)
             current = tuple(await self._analytical.list_by_project(project.id))
             updated = apply_source_coverage(
-                result, current, generate_uuid(), revisions[1]
+                result,
+                current,
+                SourceCoveragePersistenceContext(generate_uuid(), revisions[1]),
             )
             await self._analytical.replace_by_project(project.id, updated)
             project.mark_source_analysis_completed()

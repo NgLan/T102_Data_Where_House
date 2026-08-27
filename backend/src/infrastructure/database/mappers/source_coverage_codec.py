@@ -6,14 +6,16 @@ from pydantic import TypeAdapter, ValidationError
 from src.common.exceptions.business import BusinessException
 from src.common.exceptions.error_codes import ErrorCode
 from src.common.exceptions.infrastructure import InfrastructureException
-from src.domain.analytical_requirement.source_coverage import (
-    SourceCoverageAssessment,
+from src.domain.analytical_requirement.source_coverage import SourceCoverageAssessment
+from src.domain.analytical_requirement.source_coverage_candidate import (
     SourceCoverageCandidate,
+    SourceCoverageReference,
 )
 from src.domain.shared.types import JsonValue
 from src.infrastructure.database.mappers.source_coverage_records import (
     SourceCoverageAssessmentRecord,
     SourceCoverageCandidateRecord,
+    SourceCoverageReferenceRecord,
 )
 
 _RECORDS = TypeAdapter(list[SourceCoverageAssessmentRecord])
@@ -51,6 +53,7 @@ def _assessment_to_record(
         title=assessment.title,
         explanation=assessment.explanation,
         question=assessment.question,
+        question_type=assessment.question_type,
         confirmation_status=assessment.confirmation_status,
         selected_candidate_id=assessment.selected_candidate_id,
         resolution_revision=assessment.resolution_revision,
@@ -59,10 +62,14 @@ def _assessment_to_record(
     )
 
 
-def _candidate_to_record(
-    candidate: SourceCoverageCandidate,
-) -> SourceCoverageCandidateRecord:
-    return SourceCoverageCandidateRecord.model_validate(candidate, from_attributes=True)
+def _candidate_to_record(candidate: SourceCoverageCandidate) -> SourceCoverageCandidateRecord:
+    return SourceCoverageCandidateRecord(
+        id=candidate.id,
+        label=candidate.label,
+        references=[
+            SourceCoverageReferenceRecord.model_validate(item, from_attributes=True) for item in candidate.references
+        ],
+    )
 
 
 def _record_to_assessment(
@@ -76,16 +83,25 @@ def _record_to_assessment(
         required_concept_key=record.required_concept_key,
         title=record.title,
         explanation=record.explanation,
-        question=record.question or (
-            record.title
-            if record.status.value == "NEEDS_SOURCE_CONFIRMATION"
-            else None
-        ),
+        question=record.question or _legacy_question(record),
+        question_type=record.question_type,
         confirmation_status=record.confirmation_status,
         selected_candidate_id=record.selected_candidate_id,
         resolution_revision=record.resolution_revision,
         applied_source_revision=record.applied_source_revision,
-        candidates=tuple(
-            SourceCoverageCandidate(**item.model_dump()) for item in record.candidates
-        ),
+        candidates=tuple(_record_to_candidate(item) for item in record.candidates),
     )
+
+
+def _record_to_candidate(record: SourceCoverageCandidateRecord) -> SourceCoverageCandidate:
+    return SourceCoverageCandidate(
+        record.id,
+        record.label,
+        tuple(SourceCoverageReference(**item.model_dump()) for item in record.references),
+    )
+
+
+def _legacy_question(record: SourceCoverageAssessmentRecord) -> str | None:
+    if record.question_type is None:
+        return None
+    return record.title

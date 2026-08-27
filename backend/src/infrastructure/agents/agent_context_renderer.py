@@ -1,44 +1,33 @@
 """Render immutable workflow context thành JSON dành cho prompt."""
 
-import json
 from dataclasses import asdict
+from enum import Enum
 
 from src.application.data_warehouse_workflows.input import DataWarehouseDesignInput, RevisionDesignInput
 from src.application.requirements.input import (
     DeriveAnalyticalRequirementsInput,
-    EvaluateSourceCoverageInput,
 )
+from src.common.utils.json import safe_json_dumps
 from src.domain.data_source.entities import DataSource
+from src.infrastructure.agents.transport_references import TransportReferenceMap
 
 
 def render_analytical_input(
     data: DeriveAnalyticalRequirementsInput,
+    references: TransportReferenceMap,
 ) -> str:
     """Render Requirements đã rõ semantic mà không dùng source availability."""
-    requirements = [asdict(item) for item in data.requirements]
-    return _json(requirements)
-
-
-def render_source_coverage_input(
-    data: EvaluateSourceCoverageInput,
-) -> tuple[str, str, str]:
-    """Render ba nhóm evidence riêng biệt cho Source Coverage."""
-    requirements = [asdict(item) for item in data.requirements]
-    analytical = [
+    requirements = [
         {
-            "id": str(item.id),
-            "source_requirement_id": str(item.requirement_id),
-            "metric": item.metric,
-            "dimension": item.dimension,
-            "time_granularity": item.time_granularity,
-            "aggregation_method": (
-                item.aggregation_method.value if item.aggregation_method else None
-            ),
-            "grain": item.grain,
+            "requirement_ref": references.reference_for(item.id),
+            "title": item.title,
+            "description": item.description,
+            "requirement_type": _enum_value(item.requirement_type),
+            "priority": _enum_value(item.priority),
         }
-        for item in data.analytical_requirements
+        for item in data.requirements
     ]
-    return _json(requirements), _json(analytical), _render_sources(data.data_sources)
+    return _json(requirements)
 
 
 def render_design_input(
@@ -78,9 +67,7 @@ def _analytical_requirements(
             "metric": item.metric,
             "dimension": item.dimension,
             "time_granularity": item.time_granularity,
-            "aggregation_method": item.aggregation_method.value
-            if item.aggregation_method
-            else None,
+            "aggregation_method": item.aggregation_method.value if item.aggregation_method else None,
             "grain": item.grain,
         }
         for item in data.analytical_requirements
@@ -104,4 +91,8 @@ def _render_sources(data_sources: tuple[DataSource, ...]) -> str:
 
 def _json(payload: object) -> str:
     """Serialize prompt JSON ổn định và hỗ trợ Enum/UUID."""
-    return json.dumps(payload, ensure_ascii=False, indent=2, default=str)
+    return safe_json_dumps(payload, indent=2)
+
+
+def _enum_value(value: Enum | str) -> str:
+    return str(value.value) if isinstance(value, Enum) else value

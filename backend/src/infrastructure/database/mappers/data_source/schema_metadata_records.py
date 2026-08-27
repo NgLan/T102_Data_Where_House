@@ -59,11 +59,12 @@ class SemanticAnnotationRecord(BaseModel):
 
     model_config = ConfigDict(extra="forbid", populate_by_name=True)
     requirement_id: UUID | None = None
-    required_concept_key: str = Field(
-        validation_alias=AliasChoices("required_concept_key", "business_concept")
-    )
+    required_concept_key: str = Field(validation_alias=AliasChoices("required_concept_key", "business_concept"))
     decision: SourceSemanticDecision
     provenance: SourceSemanticProvenance
+    candidate_label: str | None = None
+    role_key: str | None = None
+    role_label: str | None = None
 
 
 class ColumnRecord(BaseModel):

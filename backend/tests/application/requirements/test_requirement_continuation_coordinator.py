@@ -22,7 +22,7 @@ from src.domain.project_session.enums import (
 from tests.fakes import FakeUnitOfWork
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_choose_continuation_persists_idempotent_action() -> None:
     project, session, dependencies = _context()
     data = ChooseRequirementContinuationInput(
@@ -38,7 +38,7 @@ async def test_choose_continuation_persists_idempotent_action() -> None:
     assert dependencies.unit_of_work.commit_count == 2
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_choose_continuation_rejects_stale_revision() -> None:
     project, session, dependencies = _context()
     coordinator = RequirementContinuationCoordinator(dependencies)

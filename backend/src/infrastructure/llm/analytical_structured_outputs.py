@@ -13,7 +13,6 @@ from src.infrastructure.llm.structured_output_base import (
 class AnalyticalRequirementItem(AgentOutputBase):
     """Một Analytical Requirement gắn chính xác Requirement nguồn."""
 
-    source_requirement_id: str
     metric: GroundedText | None = None
     dimension: GroundedText | None = None
     time_granularity: GroundedText | None = None
@@ -24,7 +23,7 @@ class AnalyticalRequirementItem(AgentOutputBase):
 class AnalyticalDerivationOutcome(AgentOutputBase):
     """Discriminated outcome của đúng một Structured Requirement."""
 
-    source_requirement_id: str
+    requirement_ref: str
     status: AnalyticalDerivationStatus
     analytical_requirements: list[AnalyticalRequirementItem] = Field(default_factory=list)
     reason: GroundedText | None = None
@@ -44,8 +43,6 @@ class AnalyticalDerivationOutcome(AgentOutputBase):
     def _validate_ready(self, items: list[AnalyticalRequirementItem]) -> None:
         if not items:
             raise ValueError("READY requires items.")
-        if any(item.source_requirement_id != self.source_requirement_id for item in items):
-            raise ValueError("Nested source_requirement_id must match its outcome.")
         self.reason = None
 
 

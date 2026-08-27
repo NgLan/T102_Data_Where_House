@@ -61,7 +61,7 @@ def test_requirement_continuation_allows_editing_then_analysis() -> None:
     assert session.requirement_continuation_state is RequirementContinuationState.CONTINUE_ANALYSIS
 
 
-def test_requirement_continuation_cannot_reverse_analysis() -> None:
+def test_requirement_continuation_allows_transition_between_analysis_and_editing() -> None:
     session = ProjectSession(
         project_id=uuid4(), user_id=uuid4(),
         purpose=SessionPurpose.REQUIREMENT_CLARIFICATION,
@@ -69,5 +69,5 @@ def test_requirement_continuation_cannot_reverse_analysis() -> None:
         requirement_continuation_state=RequirementContinuationState.CONTINUE_ANALYSIS,
     )
 
-    with pytest.raises(BusinessException):
-        session.choose_continuation(RequirementContinuationAction.CONTINUE_EDITING)
+    session.choose_continuation(RequirementContinuationAction.CONTINUE_EDITING)
+    assert session.requirement_continuation_state is RequirementContinuationState.CONTINUE_EDITING

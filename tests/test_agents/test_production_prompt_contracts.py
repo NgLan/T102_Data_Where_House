@@ -52,7 +52,6 @@ def test_analytical_prompt_forbids_completing_unsupported_semantics() -> None:
     assert "jointly supported" in prompt
     assert "Never silently omit" in prompt
     assert "NEEDS_REQUIREMENT_CLARIFICATION" in prompt
-    assert "SOURCE_GAP" in prompt
     assert "NOT_ANALYTICAL" in prompt
     assert "Use null" in prompt
 
