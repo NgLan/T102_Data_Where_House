@@ -41,6 +41,7 @@
   "TXT_PROJECT_SELECTOR_LOADING": "Loading projects...",
   "TXT_PROJECT_SELECTOR_ERROR": "Projects unavailable",
   "TXT_PROJECT_SELECTOR_EMPTY": "No projects yet",
+  "TXT_PROJECT_SELECTOR_CREATE": "+ Create new project",
   "TXT_DOMAIN_RIDE": "Ride-hailing",
   "TXT_DOMAIN_ECOMMERCE": "E-commerce",
   "TXT_DOMAIN_RETAIL": "Retail",

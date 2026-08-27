@@ -75,6 +75,14 @@ describe("header controls", () => {
     expect(mocks.push).toHaveBeenCalledWith("/projects/project-1");
   });
 
+  it("mở dialog tạo dự án khi chọn option tạo mới", () => {
+    render(<ProjectSwitcher />);
+    fireEvent.change(screen.getByLabelText("PROJECT_SELECTOR_LABEL"), {
+      target: { value: "__create_new__" },
+    });
+    expect(screen.getByText("TXT_CREATE_TITLE")).toBeInTheDocument();
+  });
+
   it("chuyển ngôn ngữ và theme", () => {
     render(<><LanguageSwitcher /><ThemeSwitcher /></>);
     fireEvent.click(screen.getByRole("button", { name: "BTN_SWITCH_LANGUAGE" }));

@@ -41,6 +41,7 @@
   "TXT_PROJECT_SELECTOR_LOADING": "Đang tải dự án...",
   "TXT_PROJECT_SELECTOR_ERROR": "Không thể tải dự án",
   "TXT_PROJECT_SELECTOR_EMPTY": "Chưa có dự án",
+  "TXT_PROJECT_SELECTOR_CREATE": "+ Tạo dự án mới",
   "TXT_DOMAIN_RIDE": "Dịch vụ gọi xe",
   "TXT_DOMAIN_ECOMMERCE": "Thương mại điện tử",
   "TXT_DOMAIN_RETAIL": "Bán lẻ",
