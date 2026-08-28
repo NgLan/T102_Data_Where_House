@@ -69,7 +69,7 @@ class Settings(BaseSettings):
     llm_api_keys: SecretListSetting | None = None
     llm_api_key: str = ""
     llm_base_url: str = ""
-    model_name: str
+    model_name: str = ""
     gemini_api_keys: SecretListSetting = ()
     openai_api_keys: SecretListSetting = ()
     anthropic_api_keys: SecretListSetting = ()

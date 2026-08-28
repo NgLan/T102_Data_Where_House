@@ -31,7 +31,10 @@ def resolve_credentials(
     detected = _detect_credentials(generic, detector)
     if set(detected).difference(providers):
         raise ValueError("Generic credential thuộc provider không có trong priority.")
-    merged = {provider: explicit.get(provider, ()) + detected.get(provider, ()) for provider in providers}
+    merged = {
+        provider: _unique_keys(explicit.get(provider, ()) + detected.get(provider, ()))
+        for provider in providers
+    }
     _add_legacy_fallbacks(settings, providers, merged)
     _validate_credentials(merged, providers)
     return merged
@@ -80,6 +83,17 @@ def _detect_credentials(
     return {provider: tuple(values) for provider, values in grouped.items()}
 
 
+def _unique_keys(keys: tuple[SecretStr, ...]) -> tuple[SecretStr, ...]:
+    seen: set[str] = set()
+    result: list[SecretStr] = []
+    for key in keys:
+        value = key.get_secret_value()
+        if value and value not in seen:
+            seen.add(value)
+            result.append(key)
+    return tuple(result)
+
+
 def _validate_credentials(
     credentials: dict[LlmProvider, tuple[SecretStr, ...]],
     providers: tuple[LlmProvider, ...],
@@ -89,3 +103,4 @@ def _validate_credentials(
     raw = [key.get_secret_value() for values in credentials.values() for key in values]
     if any(not value.strip() for value in raw) or len(set(raw)) != len(raw):
         raise ValueError("LLM credentials không được rỗng hoặc trùng giữa các provider.")
+

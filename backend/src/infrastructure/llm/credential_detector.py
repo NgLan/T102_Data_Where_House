@@ -43,7 +43,7 @@ def create_default_credential_detector() -> CredentialProviderDetector:
     patterns = (
         ProviderKeyPattern(LlmProvider.ANTHROPIC, ("sk-ant-",)),
         ProviderKeyPattern(LlmProvider.OPENAI, ("sk-or-v1-",)),
-        ProviderKeyPattern(LlmProvider.GEMINI, ("AIza",)),
+        ProviderKeyPattern(LlmProvider.GEMINI, ("AIza", "AQ.")),
         ProviderKeyPattern(LlmProvider.OPENAI, ("sk-",)),
     )
     return CredentialProviderDetector(patterns)
