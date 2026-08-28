@@ -62,3 +62,24 @@ phase1/pitch_slides/
 - **Slide 5 (0:45 - 0:53)**: Human-in-the-Loop & Quy tắc kiểm tra chất lượng
 - **Slide 6 (0:53 - 0:58)**: Tự động sinh DDL & Sandbox DuckDB
 - **Slide 7 (0:58 - 1:05)**: Slogan chốt & Nhận diện thương hiệu
+
+---
+
+## 📄 Xuất Slide Ra PDF & PowerPoint (.pptx) (Chuẩn 16:9)
+
+- **Bản PDF**: [DATA_WHERE_HOUSE_Pitch_Slides.pdf](file:///d:/VinAI/P-102/phase1/pitch_slides/DATA_WHERE_HOUSE_Pitch_Slides.pdf)
+- **Bản PowerPoint**: [DATA_WHERE_HOUSE_Pitch_Slides.pptx](file:///d:/VinAI/P-102/phase1/pitch_slides/DATA_WHERE_HOUSE_Pitch_Slides.pptx)
+
+### 🚀 Lệnh tự động xuất lại khi cập nhật slide:
+
+1. **Xuất PDF**:
+   ```bash
+   python export_pdf.py
+   ```
+2. **Xuất PowerPoint (.pptx)**:
+   ```bash
+   python export_pptx.py
+   ```
+   *(Tự động đồng bộ từ HTML slides, xuất slide widescreen 16:9 siêu nét)*
+
+

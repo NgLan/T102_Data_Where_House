@@ -1,0 +1,87 @@
+/* ============================================================
+   DATA WHERE HOUSE? — Print Stylesheet for High-Quality PDF Export
+   ============================================================ */
+
+@media print {
+  @page {
+    size: 1280px 720px;
+    margin: 0;
+  }
+
+  html, body {
+    width: 1280px !important;
+    height: auto !important;
+    overflow: visible !important;
+    background: #FFFFFF !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .shortcuts-hint,
+  #pitch-timer,
+  #progress-bar {
+    display: none !important;
+  }
+
+  #stage {
+    width: 1280px !important;
+    height: auto !important;
+    transform: none !important;
+    box-shadow: none !important;
+    position: static !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .slide {
+    display: flex !important;
+    flex-direction: column !important;
+    position: relative !important;
+    width: 1280px !important;
+    height: 720px !important;
+    page-break-after: always !important;
+    break-after: page !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    margin: 0 !important;
+    padding: 48px 56px !important;
+    box-sizing: border-box !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    background: var(--paper) !important;
+    background-image: 
+      linear-gradient(var(--grid) 1.5px, transparent 1.5px),
+      linear-gradient(90deg, var(--grid) 1.5px, transparent 1.5px) !important;
+    background-size: 32px 32px !important;
+  }
+
+  .slide:last-child {
+    page-break-after: auto !important;
+    break-after: auto !important;
+  }
+
+  /* Force all animated elements to be visible without waiting for transitions */
+  .anim-in,
+  .anim-delay-1,
+  .anim-delay-2,
+  .anim-delay-3,
+  .anim-delay-4,
+  .anim-delay-5,
+  .pulse-badge,
+  .wiggle,
+  .flow-arrow-anim,
+  .sparkle-spin,
+  .slide,
+  .slide.active {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .punchline-text-main .hl {
+    transform: rotate(-1deg) !important;
+  }
+}

@@ -8,7 +8,7 @@ Nhưng khi thực sự bắt tay vào làm, hàng loạt câu hỏi xuất hiệ
 
 Thay vì để người dùng tự đi qua toàn bộ quá trình phức tạp đó, hệ thống sử dụng **AI Agent** để đồng hành từng bước.
 
-Từ yêu cầu được viết bằng ngôn ngữ tự nhiên và dữ liệu nguồn ban đầu, hệ thống sẽ giúp làm rõ những thông tin còn thiếu, phân tích cấu trúc dữ liệu, rồi đề xuất một mô hình Data Warehouse hoàn chỉnh với Fact, Dimension, khóa, quan hệ và mức độ chi tiết phù hợp.
+Từ yêu cầu được viết bằng ngôn ngữ tự nhiên và dữ liệu nguồn ban đầu, hệ thống sẽ giúp làm rõ những thông tin còn thiếu, phân tích cấu trúc dữ liệu, rồi đề xuất một mô hình Data Warehouse hoàn chỉnh với Fact, Dimension, khóa và quan hệ phù hợp.
 
 Nhưng AI không phải người quyết định cuối cùng.
 
