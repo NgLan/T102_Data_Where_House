@@ -7,6 +7,7 @@ import {
   ResizablePanelGroup,
 } from "@/common/components/ui/resizable";
 import type { AgentDock } from "../../agent-sessions/hooks/use-agent-dock";
+import type { DbmlHighlightTarget } from "./panels/dbml-editor/components/DBMLEditor";
 import { DBMLEditor } from "./panels/dbml-editor/components/DBMLEditor";
 import { ERDCanvas } from "./panels/erd-canvas/components/ERDCanvas";
 import type { useModelingWorkspace } from "../hooks/use-modeling-workspace";
@@ -16,6 +17,8 @@ interface ModelingWorkspacePanelsProps {
   workspace: ReturnType<typeof useModelingWorkspace>;
   projectId: string;
   selectedTableName: string | null;
+  highlightTarget?: DbmlHighlightTarget | null;
+  onTableDoubleClick?: (tableName: string) => void;
   validationIssues: DataModelValidationIssueResponse[];
   isInspectorOpen: boolean;
   agentDock: AgentDock;
@@ -74,6 +77,7 @@ export function ModelingWorkspacePanels(props: ModelingWorkspacePanelsProps) {
           parseError={workspace.parseError}
           onChange={workspace.setCode}
           selectedTableName={props.selectedTableName}
+          highlightTarget={props.highlightTarget}
           proposalReview={props.proposalReview}
         />
       </ResizablePanel>
@@ -87,6 +91,7 @@ export function ModelingWorkspacePanels(props: ModelingWorkspacePanelsProps) {
           onSelectTable={workspace.selectTable}
           onSelectReference={workspace.selectReference}
           onCreateReference={workspace.addReference}
+          onTableDoubleClick={props.onTableDoubleClick}
           validationIssues={props.validationIssues}
         />
       </ResizablePanel>

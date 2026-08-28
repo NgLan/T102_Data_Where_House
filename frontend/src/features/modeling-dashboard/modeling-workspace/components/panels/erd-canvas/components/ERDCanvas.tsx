@@ -36,6 +36,7 @@ interface ERDCanvasProps {
   onSelectTable: (tableId: string | null) => void;
   onSelectReference: (referenceId: string | null) => void;
   onCreateReference: (reference: DbmlReference) => void;
+  onTableDoubleClick?: (tableName: string) => void;
   validationIssues?: DataModelValidationIssueResponse[];
 }
 
@@ -83,6 +84,15 @@ export function ERDCanvas(props: ERDCanvasProps) {
             onNodesChange={canvas.changeNodes}
             onNodeDragStop={() => canvas.persist(canvas.nodes)}
             onNodeClick={(_, node) => props.onSelectTable(node.id)}
+            onNodeDoubleClick={(_, node) => {
+              props.onSelectTable(node.id);
+              const table = props.document.tables.find(
+                (item) => item.id === node.id,
+              );
+              if (table) {
+                props.onTableDoubleClick?.(table.name);
+              }
+            }}
             onEdgeClick={(_, edge) => props.onSelectReference(edge.id)}
             onPaneClick={() => {
               props.onSelectTable(null);

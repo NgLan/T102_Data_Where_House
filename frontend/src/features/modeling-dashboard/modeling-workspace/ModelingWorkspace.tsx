@@ -111,6 +111,15 @@ export function ModelingWorkspace({ projectId }: { projectId: string }) {
     workspace.document.tables.find(
       (item) => item.id === workspace.selectedTableId,
     )?.name ?? null;
+  const [highlightTarget, setHighlightTarget] = useState<{
+    tableName: string;
+    triggerAt: number;
+  } | null>(null);
+
+  const handleTableDoubleClick = useCallback((tableName: string) => {
+    setHighlightTarget({ tableName, triggerAt: Date.now() });
+  }, []);
+
   const selectTableByName = useCallback((tableName: string) => {
     const table = workspace.document.tables.find(
       (item) => item.name.toLowerCase() === tableName.toLowerCase(),
@@ -151,6 +160,8 @@ export function ModelingWorkspace({ projectId }: { projectId: string }) {
           workspace={workspace}
           projectId={projectId}
           selectedTableName={selectedTableName}
+          highlightTarget={highlightTarget}
+          onTableDoubleClick={handleTableDoubleClick}
           validationIssues={validation.issues}
           isInspectorOpen={isInspectorOpen}
           agentDock={agentDock.dock}
