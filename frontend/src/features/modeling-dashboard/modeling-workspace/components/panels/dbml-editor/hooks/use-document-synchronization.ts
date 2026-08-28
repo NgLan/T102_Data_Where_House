@@ -12,7 +12,7 @@ import {
   parseDbml,
   serializeDbml,
 } from "../../../../model-document/dbml/dbml-adapter";
-import type { DbmlDocument } from "../../../../model-document/dbml/types";
+import type { DbmlDocument, DbmlSyntaxError } from "../../../../model-document/dbml/types";
 import {
   dataModelEditorReducer,
   type DataModelAction,
@@ -32,6 +32,7 @@ export function useDocumentSynchronization(initialCode: string) {
   );
   const [code, setCode] = useState(initialCode);
   const [parseError, setParseError] = useState<string | null>(null);
+  const [syntaxErrors, setSyntaxErrors] = useState<DbmlSyntaxError[]>([]);
   const documentRef = useRef(document);
   const editVersionRef = useRef(0);
   const synchronizedCodeRef = useRef<string | null>(null);
@@ -52,9 +53,11 @@ export function useDocumentSynchronization(initialCode: string) {
       const parsed = parseDbml(code);
       if (!parsed.document) {
         setParseError(parsed.error ?? "DATA_MODEL_DBML_SYNTAX_INVALID");
+        setSyntaxErrors(parsed.syntaxErrors ?? []);
         return;
       }
       setParseError(null);
+      setSyntaxErrors([]);
       documentRef.current = parsed.document;
       dispatchDocument({ type: "replace", document: parsed.document });
     }, 250);
@@ -69,6 +72,7 @@ export function useDocumentSynchronization(initialCode: string) {
       synchronizedCodeRef.current = nextCode;
       setCode(nextCode);
       setParseError(null);
+      setSyntaxErrors([]);
     },
     [],
   );
@@ -87,6 +91,7 @@ export function useDocumentSynchronization(initialCode: string) {
       synchronizedCodeRef.current = nextCode;
       setCode(nextCode);
       setParseError(null);
+      setSyntaxErrors([]);
     } catch {
       setParseError("DATA_MODEL_DBML_SYNTAX_INVALID");
     }
@@ -102,6 +107,7 @@ export function useDocumentSynchronization(initialCode: string) {
     code,
     setCode: changeCode,
     parseError,
+    syntaxErrors,
     applyDocument,
     mutate,
   };

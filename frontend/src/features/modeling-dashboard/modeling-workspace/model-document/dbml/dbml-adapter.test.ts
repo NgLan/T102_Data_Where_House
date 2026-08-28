@@ -18,7 +18,7 @@ describe('DBML adapter', () => {
   });
 
   it.each(corpus.invalid)('từ chối $name', ({ source }) => {
-    expect(parseDbml(source)).toEqual({
+    expect(parseDbml(source)).toMatchObject({
       document: null,
       error: 'DATA_MODEL_DBML_SYNTAX_INVALID',
     });

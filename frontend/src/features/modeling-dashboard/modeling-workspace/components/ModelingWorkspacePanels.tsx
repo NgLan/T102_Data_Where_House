@@ -75,6 +75,8 @@ export function ModelingWorkspacePanels(props: ModelingWorkspacePanelsProps) {
         <DBMLEditor
           code={workspace.code}
           parseError={workspace.parseError}
+          syntaxErrors={workspace.syntaxErrors}
+          validationIssues={props.validationIssues}
           onChange={workspace.setCode}
           selectedTableName={props.selectedTableName}
           highlightTarget={props.highlightTarget}

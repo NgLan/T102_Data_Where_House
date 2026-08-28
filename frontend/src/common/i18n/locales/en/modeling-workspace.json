@@ -67,5 +67,8 @@
   "BTN_DISCARD_LOCAL": "Discard local draft",
   "BTN_RESTORE_DRAFT": "Restore as draft",
   "BTN_SHOW_AGENT": "Open AI",
-  "BTN_HIDE_AGENT": "Close AI"
+  "BTN_HIDE_AGENT": "Close AI",
+  "ARIA_ERROR_OVERVIEW_RULER": "Error overview ruler",
+  "TOOLTIP_ERROR_LINE": "Line {{line}}: {{message}}",
+  "MSG_DBML_SYNTAX_ERROR_DEFAULT": "Invalid DBML syntax"
 }

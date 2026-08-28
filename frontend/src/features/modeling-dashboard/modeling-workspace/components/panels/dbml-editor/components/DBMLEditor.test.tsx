@@ -76,21 +76,40 @@ describe("DBMLEditor", () => {
     const textarea = screen.getByRole("textbox", { name: "TXT_DBML_EDITOR" }) as HTMLTextAreaElement;
     expect(textarea.selectionStart).toBe(0);
 
-    rerender(
+    try {
+      rerender(
+        <DBMLEditor
+          code={code}
+          parseError={null}
+          onChange={vi.fn()}
+          highlightTarget={{ tableName: "Fact_DieuTri", triggerAt: Date.now() }}
+        />
+      );
+
+      expect(textarea.selectionStart).toBe(0);
+      expect(textarea.selectionEnd).toBe(code.length);
+
+      vi.advanceTimersByTime(1600);
+      expect(textarea.selectionStart).toBe(textarea.selectionEnd);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("hiển thị gạch chân lỗi và vạch đỏ trên thanh scroll khi có lỗi cú pháp", () => {
+    const code = "Table users {\n  id in\n}";
+    render(
       <DBMLEditor
         code={code}
-        parseError={null}
+        parseError="DATA_MODEL_DBML_SYNTAX_INVALID"
+        syntaxErrors={[{ line: 2, column: 3, endLine: 2, endColumn: 8, message: "Expect a type" }]}
         onChange={vi.fn()}
-        highlightTarget={{ tableName: "Fact_DieuTri", triggerAt: Date.now() }}
       />
     );
 
-    expect(textarea.selectionStart).toBe(0);
-    expect(textarea.selectionEnd).toBe(code.length);
-
-    vi.advanceTimersByTime(1600);
-    expect(textarea.selectionStart).toBe(textarea.selectionEnd);
-
-    vi.useRealTimers();
+    const scrollbarOverview = screen.getByLabelText("ARIA_ERROR_OVERVIEW_RULER");
+    expect(scrollbarOverview).toBeInTheDocument();
+    const errorMarkerButton = screen.getByTitle("TOOLTIP_ERROR_LINE");
+    expect(errorMarkerButton).toBeInTheDocument();
   });
 });

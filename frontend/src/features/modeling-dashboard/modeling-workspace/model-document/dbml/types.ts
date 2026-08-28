@@ -53,7 +53,16 @@ export interface DbmlDocument {
   sourceModel: unknown;
 }
 
+export interface DbmlSyntaxError {
+  line: number;
+  column: number;
+  endLine?: number;
+  endColumn?: number;
+  message?: string;
+}
+
 export interface DbmlParseResult {
   document: DbmlDocument | null;
   error: string | null;
+  syntaxErrors?: DbmlSyntaxError[];
 }
