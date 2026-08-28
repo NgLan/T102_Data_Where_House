@@ -14,7 +14,7 @@
   "MSG_STATUS_CONFLICTED": "Xung đột revision",
   "TXT_OUTDATED_TITLE": "Đề xuất đã lỗi thời",
   "MSG_OUTDATED_DESCRIPTION": "Đề xuất dựa trên revision {{baseRevision}} nhưng mô hình hiện đã ở revision {{currentRevision}}. Hãy yêu cầu AI tạo lại đề xuất trên mô hình mới nhất.",
-  "TXT_REVIEW_HINT": "Xác nhận áp dụng đề xuất thay đổi vào Data Model chính thức",
+  "TXT_REVIEW_HINT": "Xác nhận áp dụng đề xuất thay đổi vào mô hình dữ liệu chính thức",
   "BTN_RETRY_PROPOSAL": "Yêu cầu AI làm lại",
   "BTN_REJECT_PROPOSAL": "Từ chối",
   "BTN_ACCEPT_PROPOSAL": "Chấp nhận thay đổi"

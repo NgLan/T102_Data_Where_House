@@ -14,13 +14,13 @@
 
 ---
 
-## [YYYY-MM-DD]
+## [2026-08-28]
 
 | Member | Task | Status | Output | Time |
 |--------|------|--------|--------|------|
-| | | | | |
+| Team | Cập nhật UI workspace modeling & chuẩn hóa i18n | ✅ Done | Bỏ 2 nút action cũ, thêm nút toggle mở/đóng AI, chuyển đổi cụm từ "Data Model" sang "mô hình dữ liệu" trong i18n vi | 1h |
 
-**Tổng kết ngày:**
+**Tổng kết ngày:** Đã tối ưu thanh công cụ modeling workspace, hỗ trợ mở/đóng AI panel tiện lợi và chuẩn hóa thuật ngữ tiếng Việt trong toàn bộ hệ thống.
 
 ---
 

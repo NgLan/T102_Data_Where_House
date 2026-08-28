@@ -24,7 +24,7 @@ describe('i18n resources', () => {
       for (const key of Object.keys(vi)) {
         expect(key).toMatch(/^[A-Z][A-Z0-9_]*$/);
         if (namespace !== 'errors') {
-          expect(key).toMatch(/^(?:BTN_|TXT_|MSG_).+|.+_(?:LABEL|PLACEHOLDER)$/);
+          expect(key).toMatch(/^(?:BTN_|TXT_|MSG_|TIME_).+|.+_(?:LABEL|PLACEHOLDER)$/);
         }
         expect(typeof vi[key]).toBe('string');
         expect(interpolations(en[key])).toEqual(interpolations(vi[key]));

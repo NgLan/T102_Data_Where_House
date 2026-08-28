@@ -57,7 +57,7 @@
   "TXT_WORKFLOW_STEP_PROJECT_INIT": "Khởi tạo",
   "TXT_WORKFLOW_STEP_MODELING": "Thiết kế",
   "TXT_WORKFLOW_STEP_SANDBOX": "Xuất dữ liệu",
-  "TXT_DATA_MODEL_UNAVAILABLE_TITLE": "Chưa có Data Model",
+  "TXT_DATA_MODEL_UNAVAILABLE_TITLE": "Chưa có mô hình dữ liệu",
   "TXT_DATA_MODEL_UNAVAILABLE_DESCRIPTION": "Vui lòng quay lại Bước 1 và chạy Lưu và phân tích.",
   "BTN_BACK_TO_PROJECT_INIT": "Quay lại Bước 1",
   "TIME_JUST_NOW": "Vừa xong",

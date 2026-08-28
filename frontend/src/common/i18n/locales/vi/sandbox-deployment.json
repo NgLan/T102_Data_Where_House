@@ -11,7 +11,7 @@
   "TXT_DIALECT_BIGQUERY": "BigQuery",
   "BTN_FORMAT_SQL": "Định dạng SQL",
   "BTN_COPY_DDL": "Sao chép DDL",
-  "BTN_DOWNLOAD_DOC": "Tải tài liệu dữ liệu",
+  "BTN_DOWNLOAD_DOC": "Tải tài liệu phân tích",
   "BTN_DOWNLOAD_SQL": "Tải SQL",
   "TXT_EDITOR_STATS": "SQL script • {{lines}} dòng • UTF-8",
   "TXT_TARGET_DIALECT": "Đích: {{dialect}}",

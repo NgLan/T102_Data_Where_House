@@ -65,7 +65,7 @@
   "MSG_INVALID_DATA_TYPE": "Kiểu dữ liệu chưa được hỗ trợ.",
   "MSG_INVALID_DEFAULT_VALUE": "Giá trị default có quote chưa được đóng.",
   "MSG_DUPLICATE_IDENTIFIER": "Tên này đã tồn tại trong cùng phạm vi.",
-  "MSG_TABLE_REQUIRED": "Data Model phải có ít nhất một bảng.",
+  "MSG_TABLE_REQUIRED": "Mô hình dữ liệu phải có ít nhất một bảng.",
   "MSG_INVALID_RELATIONSHIP_ENDPOINT": "Hãy chọn endpoint hợp lệ cho relationship.",
   "MSG_INVALID_RELATIONSHIP_COLUMNS": "Hai phía phải có cùng số lượng cột.",
   "MSG_DUPLICATE_RELATIONSHIP": "Relationship này đã tồn tại.",

@@ -129,13 +129,12 @@ export function ModelingWorkspace({ projectId }: { projectId: string }) {
         isSaveBlocked={workspace.isDirty && !canPersist}
         lastSavedAt={workspace.snapshot?.updated_at ?? null}
         isInspectorOpen={isInspectorOpen}
-        hasExistingModel={Boolean(workspace.snapshot)}
         status={workspace.status}
-        onGenerate={() => void workspace.generate()}
-        onReload={() => void workspace.load()}
         onToggleInspector={() => setIsInspectorOpen((current) => !current)}
-        isAgentHidden={agentDock.dock === "hidden"}
-        onShowAgent={() => agentDock.setDock("right")}
+        isAgentOpen={agentDock.dock !== "hidden"}
+        onToggleAgent={() =>
+          agentDock.setDock(agentDock.dock === "hidden" ? "right" : "hidden")
+        }
       />
       {workspace.status === "empty" &&
         workspace.document.tables.length === 0 && (

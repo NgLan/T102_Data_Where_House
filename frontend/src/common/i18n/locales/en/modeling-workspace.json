@@ -66,5 +66,6 @@
   "TXT_LOCAL_DBML": "Local draft",
   "BTN_DISCARD_LOCAL": "Discard local draft",
   "BTN_RESTORE_DRAFT": "Restore as draft",
-  "BTN_SHOW_AGENT": "Show Agent"
+  "BTN_SHOW_AGENT": "Open AI",
+  "BTN_HIDE_AGENT": "Close AI"
 }

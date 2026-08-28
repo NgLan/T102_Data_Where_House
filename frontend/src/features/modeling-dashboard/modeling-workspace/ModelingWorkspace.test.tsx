@@ -55,13 +55,11 @@ describe('ModelingWorkspace', () => {
     expect(screen.getByLabelText('TXT_LOADING')).toBeInTheDocument();
   });
 
-  it('hiển thị lỗi thân thiện và cho phép thử tải lại', () => {
+  it('hiển thị lỗi thân thiện khi có conflict', () => {
     mocks.status = 'conflict';
     mocks.errorCode = 'DATA_MODEL_REVISION_CONFLICT';
     renderWorkspace("86fd6b4e-1822-42db-a847-4d580abead3e");
     expect(screen.getByRole('alert')).toHaveTextContent('DATA_MODEL_REVISION_CONFLICT');
-    fireEvent.click(screen.getByRole('button', { name: /BTN_RELOAD_LATEST/ }));
-    expect(mocks.load).toHaveBeenCalledOnce();
   });
 
   it('đóng inspector mặc định và cho phép mở lại', () => {
@@ -71,6 +69,14 @@ describe('ModelingWorkspace', () => {
     expect(screen.getByText('INSPECTOR')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'BTN_HIDE_INSPECTOR' }));
     expect(screen.queryByText('INSPECTOR')).not.toBeInTheDocument();
+  });
+
+  it('cho phép bật/tắt AI qua nút toggle', () => {
+    renderWorkspace("project-1");
+    const toggleButton = screen.getByRole('button', { name: 'BTN_HIDE_AGENT' });
+    expect(toggleButton).toBeInTheDocument();
+    fireEvent.click(toggleButton);
+    expect(screen.getByRole('button', { name: 'BTN_SHOW_AGENT' })).toBeInTheDocument();
   });
 });
 

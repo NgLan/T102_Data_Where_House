@@ -10,9 +10,6 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/common/components/ui/button";
 import type { WorkspaceStatus } from "../types/modeling-workspace-types";
 import type { AutosaveState } from "./draft-persistence/hooks/use-draft-autosave";
-import { UpdateDataModelButton } from "./header/UpdateDataModelButton";
-import { ReloadSnapshotButton } from "./header/ReloadSnapshotButton";
-
 interface ModelingWorkspaceHeaderProps {
   autosaveState: AutosaveState;
   errorMessage: string | null;
@@ -21,13 +18,10 @@ interface ModelingWorkspaceHeaderProps {
   isSaveBlocked: boolean;
   lastSavedAt: string | null;
   isInspectorOpen: boolean;
-  hasExistingModel: boolean;
   status: WorkspaceStatus;
-  onGenerate: () => void;
-  onReload: () => void;
   onToggleInspector: () => void;
-  isAgentHidden: boolean;
-  onShowAgent: () => void;
+  isAgentOpen: boolean;
+  onToggleAgent: () => void;
 }
 
 /** Hiển thị điều hướng và các action toàn cục của Modeling Workspace. */
@@ -55,28 +49,7 @@ export function ModelingWorkspaceHeader(props: ModelingWorkspaceHeaderProps) {
         })}
       </span>
       <InspectorToggle {...props} />
-      {props.isAgentHidden && (
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={props.onShowAgent}
-        >
-          <Bot />
-          {t("BTN_SHOW_AGENT")}
-        </Button>
-      )}
-      <UpdateDataModelButton
-        hasProject={props.hasProject}
-        hasExistingModel={props.hasExistingModel}
-        status={props.status}
-        onGenerate={props.onGenerate}
-      />
-      <ReloadSnapshotButton
-        isDirty={props.isDirty}
-        isDisabled={!props.hasProject || props.status === "loading"}
-        onReload={props.onReload}
-      />
+      <AgentToggle {...props} />
     </header>
   );
 }
@@ -117,6 +90,24 @@ function InspectorToggle(props: ModelingWorkspaceHeaderProps) {
       onClick={props.onToggleInspector}
     >
       {props.isInspectorOpen ? <PanelRightClose /> : <PanelRightOpen />}
+      {t(key)}
+    </Button>
+  );
+}
+
+/** Bật hoặc tắt panel AI Agent. */
+function AgentToggle(props: ModelingWorkspaceHeaderProps) {
+  const { t } = useTranslation("modeling-workspace");
+  const key = props.isAgentOpen ? "BTN_HIDE_AGENT" : "BTN_SHOW_AGENT";
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      size="sm"
+      aria-label={t(key)}
+      onClick={props.onToggleAgent}
+    >
+      <Bot className="size-4" />
       {t(key)}
     </Button>
   );
