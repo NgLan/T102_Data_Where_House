@@ -8,7 +8,7 @@ from src.application.sandbox.output import (
     SandboxConfigOutput,
     SandboxExecutionOutput,
 )
-from src.domain.sandbox.enums import SandboxDbType
+from src.domain.sandbox.enums import SandboxDbType, SandboxEndpointRisk
 
 
 class SandboxConfigResponse(BaseModel):
@@ -24,6 +24,7 @@ class SandboxConfigResponse(BaseModel):
     username: str | None = None
     schema_name: str | None = "public"
     status: str = "CONFIGURED"
+    endpoint_risk: SandboxEndpointRisk = SandboxEndpointRisk.REMOTE
 
     @classmethod
     def from_application(cls, output: SandboxConfigOutput) -> "SandboxConfigResponse":

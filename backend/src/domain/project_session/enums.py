@@ -70,6 +70,14 @@ class ClarificationAnswerKind(StrEnum):
     CUSTOM = "CUSTOM"
 
 
+class SessionQuestionKind(StrEnum):
+    """Discriminator cho question cũ và các bước xác nhận tool."""
+
+    CLARIFICATION = "CLARIFICATION"
+    SANDBOX_MODE_SELECTION = "SANDBOX_MODE_SELECTION"
+    TOOL_CONFIRMATION = "TOOL_CONFIRMATION"
+
+
 class AgentType(StrEnum):
     """Danh sách 4 Agent hợp lệ trong hệ thống."""
 

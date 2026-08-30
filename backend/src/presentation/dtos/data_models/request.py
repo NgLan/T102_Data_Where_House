@@ -6,9 +6,10 @@ from uuid import UUID
 from fastapi import Path
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from pydantic_core import PydanticCustomError
-from src.application.data_models.input import UpdateDataModelInput, ValidateDataModelInput
+from src.application.data_models.input import DataModelTargetInput, UpdateDataModelInput, ValidateDataModelInput
 from src.common.exceptions.business import BusinessException
 from src.domain.data_model.dbml_syntax_rules import validate_dbml
+from src.domain.data_model.enums import DataModelTargetKind
 
 MAX_DBML_LENGTH = 1_000_000
 MIN_INSTRUCTION_LENGTH = 5
@@ -87,3 +88,15 @@ class ReviseDataModelRequest(BaseModel):
         max_length=MAX_INSTRUCTION_LENGTH,
         description="Yêu cầu chỉnh sửa mô hình dữ liệu, viết bằng ngôn ngữ tự nhiên",
     )
+
+
+class GenerateAnalysisDocumentRequest(BaseModel):
+    """Target và locale cho tài liệu phân tích."""
+
+    model_config = ConfigDict(extra="forbid")
+    target_kind: DataModelTargetKind = DataModelTargetKind.CURRENT_MODEL
+    change_id: UUID | None = None
+    locale: str = Field(default="vi", pattern=r"^(vi|en)$")
+
+    def target(self) -> DataModelTargetInput:
+        return DataModelTargetInput(self.target_kind, self.change_id)

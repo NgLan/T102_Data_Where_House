@@ -34,4 +34,3 @@ class CredentialLease:
 
     key_id: str
     secret: SecretStr
-

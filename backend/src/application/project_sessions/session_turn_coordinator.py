@@ -2,12 +2,13 @@
 
 from dataclasses import dataclass
 
+from src.application.agent_tools import IAgentToolService, parse_agent_tool_intent
 from src.application.common.unit_of_work import IUnitOfWork
 from src.application.data_warehouse_workflows.i_data_warehouse_workflow_service import (
     IDataWarehouseWorkflowService,
 )
 from src.application.data_warehouse_workflows.input import CreateAgentTurnInput
-from src.application.data_warehouse_workflows.output import AgentTurnOutput
+from src.application.data_warehouse_workflows.output import AgentTurnKind, AgentTurnOutput
 from src.application.project_sessions.conversation_context import ConversationInputKind
 from src.application.project_sessions.conversation_context_policy import (
     ConversationMemoryInput,
@@ -15,24 +16,26 @@ from src.application.project_sessions.conversation_context_policy import (
 from src.application.project_sessions.conversation_summary_compactor import ConversationSummaryCompactor
 from src.application.project_sessions.input import SendSessionMessageInput
 from src.application.project_sessions.output import SessionTurnOutput
-from src.application.project_sessions.session_access import (
-    OwnedSessionAccess,
-    ensure_session_purpose,
-)
-from src.application.project_sessions.session_event_factory import (
-    UserEventInput,
-    create_agent_call,
-    create_user_event,
+from src.application.project_sessions.session_access import OwnedSessionAccess
+from src.application.project_sessions.session_tool_coordinator import (
+    SessionToolCoordinator,
+    SessionToolDependencies,
 )
 from src.application.project_sessions.session_turn_completion import (
     SessionTurnCompletion,
     TurnCompletionDependencies,
 )
-from src.application.project_sessions.session_turn_history import TURN_STALE_AFTER, create_stale_turn_event
-from src.common.utils.datetime import utc_now
-from src.common.utils.uuid import generate_uuid
+from src.application.project_sessions.session_turn_starter import (
+    SessionTurnStartDependencies,
+    SessionTurnStarter,
+)
+from src.application.project_sessions.structured_tool_intent import (
+    StructuredToolIntentInput,
+    create_structured_tool_intent,
+)
+from src.common.exceptions.business import BusinessException
+from src.common.exceptions.error_codes import ErrorCode
 from src.domain.project_session.entities import ProjectSession, SessionEvent
-from src.domain.project_session.enums import SessionPurpose
 from src.domain.project_session.i_project_session_repository import (
     IProjectSessionRepository,
 )
@@ -49,35 +52,56 @@ class SessionTurnDependencies:
     unit_of_work: IUnitOfWork
     access: OwnedSessionAccess
     context: ConversationSummaryCompactor
+    tools: IAgentToolService | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class StructuredToolTurn:
+    data: SendSessionMessageInput
+    session: ProjectSession
+    call: SessionEvent
+    result: AgentTurnOutput
 
 
 class SessionTurnCoordinator:
     def __init__(self, dependencies: SessionTurnDependencies) -> None:
         self._dependencies = dependencies
-        self._completion = SessionTurnCompletion(
-            TurnCompletionDependencies(
-                dependencies.sessions,
-                dependencies.events,
-                dependencies.unit_of_work,
-            )
-        )
+        self._starter = _build_starter(dependencies)
+        self._completion = _build_completion(dependencies)
+        self._tools = _build_tools(dependencies)
 
     async def send(self, data: SendSessionMessageInput) -> SessionTurnOutput:
-        session, call = await self._begin(data)
+        session, call = await self._starter.begin(data)
         try:
-            result = await self._run_agent(session, call, data.content)
+            return await self._continue(data, session, call)
         except Exception:
             await self._completion.fail(session, call)
             raise
+
+    async def _continue(
+        self,
+        data: SendSessionMessageInput,
+        session: ProjectSession,
+        call: SessionEvent,
+    ) -> SessionTurnOutput:
+        intent = parse_agent_tool_intent(session.project_id, data.content, data.locale) if self._tools else None
+        if intent is not None and self._tools is not None:
+            return await self._tools.start(session, call, intent)
+        result = await self._run_agent(session, call, data.content)
+        if result.kind is AgentTurnKind.TOOL_REQUEST:
+            return await self._start_structured_tool(StructuredToolTurn(data, session, call, result))
         output = await self._completion.complete(session, call, result)
-        await self._dependencies.context.compact_after_completion(
-            session.id, session.project_id
-        )
+        await self._dependencies.context.compact_after_completion(session.id, session.project_id)
         return output
 
-    async def _run_agent(
-        self, session: ProjectSession, call: SessionEvent, content: str
-    ) -> AgentTurnOutput:
+    async def _start_structured_tool(self, turn: StructuredToolTurn) -> SessionTurnOutput:
+        data, session, call, result = (turn.data, turn.session, turn.call, turn.result)
+        if self._tools is None or result.tool_request is None:
+            raise BusinessException(ErrorCode.VALIDATION_ERROR, "Agent tool request không hợp lệ.")
+        tool_input = StructuredToolIntentInput(session.project_id, data.content, data.locale, result.tool_request)
+        return await self._tools.start(session, call, create_structured_tool_intent(tool_input))
+
+    async def _run_agent(self, session: ProjectSession, call: SessionEvent, content: str) -> AgentTurnOutput:
         memory = await self._dependencies.context.build_memory(
             ConversationMemoryInput(
                 session.id,
@@ -95,29 +119,19 @@ class SessionTurnCoordinator:
             )
         )
 
-    async def _begin(self, data: SendSessionMessageInput) -> tuple[ProjectSession, SessionEvent]:
-        dependencies = self._dependencies
-        async with dependencies.unit_of_work:
-            session = await dependencies.access.require(data.session_id, for_update=True)
-            ensure_session_purpose(session, SessionPurpose.DATA_MODELING)
-            history = await dependencies.events.list_by_session(session.id, limit=200)
-            call = await self._persist_start(session, data.content, history)
-            await dependencies.unit_of_work.commit()
-        return session, call
 
-    async def _persist_start(
-        self,
-        session: ProjectSession,
-        content: str,
-        history: list[SessionEvent],
-    ) -> SessionEvent:
-        turn_id = generate_uuid()
-        stale_event = create_stale_turn_event(session, history)
-        session.acquire_turn(turn_id, utc_now() - TURN_STALE_AFTER)
-        call = create_agent_call(session.id, turn_id)
-        await self._dependencies.sessions.save(session)
-        if stale_event:
-            await self._dependencies.events.save(stale_event)
-        await self._dependencies.events.save(create_user_event(UserEventInput(session.id, turn_id, content)))
-        await self._dependencies.events.save(call)
-        return call
+def _build_starter(data: SessionTurnDependencies) -> SessionTurnStarter:
+    dependencies = SessionTurnStartDependencies(data.sessions, data.events, data.unit_of_work, data.access)
+    return SessionTurnStarter(dependencies)
+
+
+def _build_completion(data: SessionTurnDependencies) -> SessionTurnCompletion:
+    dependencies = TurnCompletionDependencies(data.sessions, data.events, data.unit_of_work)
+    return SessionTurnCompletion(dependencies)
+
+
+def _build_tools(data: SessionTurnDependencies) -> SessionToolCoordinator | None:
+    if data.tools is None:
+        return None
+    dependencies = SessionToolDependencies(data.sessions, data.events, data.unit_of_work, data.tools)
+    return SessionToolCoordinator(dependencies)

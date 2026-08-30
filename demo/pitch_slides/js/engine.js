@@ -13,24 +13,39 @@
   const progressBar = document.getElementById('progress-bar');
   const slideElements = Array.from(document.querySelectorAll('.slide'));
   const totalSlides = slideElements.length;
+  const audioElement = document.getElementById('pitch-audio');
+  const audioBtn = document.getElementById('audio-btn');
+  const fsBtn = document.getElementById('fs-btn');
+  const timerBtn = document.getElementById('timer-btn');
 
   let currentIndex = 0;
 
   /**
-   * Scales the 1280x720 stage to fit current viewport with crisp 16:9 aspect ratio
+   * Scales the 1280x720 stage to fit current viewport.
+   * When in fullscreen, stretches edge-to-edge with no padding or black side bars.
    */
   function fitStage() {
     if (!stage) return;
-    const paddingX = 40;
-    const paddingY = 40;
-    const availableWidth = window.innerWidth - paddingX;
-    const availableHeight = window.innerHeight - paddingY;
+    const isFullscreen = !!document.fullscreenElement;
 
-    const scaleX = availableWidth / SLIDE_WIDTH;
-    const scaleY = availableHeight / SLIDE_HEIGHT;
-    const scale = Math.min(scaleX, scaleY, 1.35); // Allow slight upscale for 2K/4K recording
+    if (isFullscreen) {
+      document.body.classList.add('fullscreen-mode');
+      const scaleX = window.innerWidth / SLIDE_WIDTH;
+      const scaleY = window.innerHeight / SLIDE_HEIGHT;
+      stage.style.transform = `scale(${scaleX}, ${scaleY})`;
+    } else {
+      document.body.classList.remove('fullscreen-mode');
+      const paddingX = 40;
+      const paddingY = 40;
+      const availableWidth = window.innerWidth - paddingX;
+      const availableHeight = window.innerHeight - paddingY;
 
-    stage.style.transform = `scale(${scale})`;
+      const scaleX = availableWidth / SLIDE_WIDTH;
+      const scaleY = availableHeight / SLIDE_HEIGHT;
+      const scale = Math.min(scaleX, scaleY, 1.35); // Allow slight upscale for 2K/4K recording
+
+      stage.style.transform = `scale(${scale})`;
+    }
   }
 
   /**
@@ -45,11 +60,14 @@
       const isActive = idx === currentIndex;
       slide.classList.toggle('active', isActive);
 
-      // Re-trigger CSS animations on active slide
+      // Re-trigger CSS animations on inner content elements of active slide
       if (isActive) {
-        slide.style.animation = 'none';
-        void slide.offsetHeight; // trigger reflow
-        slide.style.animation = '';
+        const animElems = slide.querySelectorAll('.anim-in');
+        animElems.forEach(el => {
+          el.style.animation = 'none';
+          void el.offsetHeight; // trigger reflow
+          el.style.animation = '';
+        });
       }
     });
 
@@ -78,17 +96,52 @@
   }
 
   /**
-   * Toggle fullscreen mode for video recording
+   * Toggle fullscreen mode for video recording (edge-to-edge)
    */
   function toggleFullscreen() {
     if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch(err => {
+      document.documentElement.requestFullscreen().then(() => {
+        fitStage();
+      }).catch(err => {
         console.warn(`Fullscreen error: ${err.message}`);
       });
     } else {
       if (document.exitFullscreen) {
-        document.exitFullscreen();
+        document.exitFullscreen().then(() => {
+          fitStage();
+        });
       }
+    }
+  }
+
+  /**
+   * Toggle MP3 Voice Audio playback
+   */
+  function updateAudioUI() {
+    if (!audioBtn || !audioElement) return;
+    if (!audioElement.paused) {
+      audioBtn.classList.add('playing');
+      audioBtn.innerHTML = '<i class="fa-solid fa-volume-high"></i> M (Đang phát)';
+    } else {
+      audioBtn.classList.remove('playing');
+      audioBtn.innerHTML = '<i class="fa-solid fa-volume-xmark"></i> M (Voice)';
+    }
+  }
+
+  function toggleAudio() {
+    if (!audioElement) return;
+    if (audioElement.paused) {
+      audioElement.play().then(() => {
+        updateAudioUI();
+        if (window.PresenterHelper && !window.PresenterHelper.isTimerRunning()) {
+          window.PresenterHelper.startTimer();
+        }
+      }).catch(err => {
+        console.warn('Audio play error:', err);
+      });
+    } else {
+      audioElement.pause();
+      updateAudioUI();
     }
   }
 
@@ -135,6 +188,12 @@
         toggleFullscreen();
         break;
 
+      case 'm':
+      case 'M':
+        e.preventDefault();
+        toggleAudio();
+        break;
+
       case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
         const num = parseInt(e.key, 10);
         if (num <= totalSlides) {
@@ -147,6 +206,7 @@
 
   // Mouse click navigation (Right side clicks next, Left side clicks prev)
   function handleStageClick(e) {
+    if (e.target.closest('.shortcuts-hint') || e.target.closest('button')) return;
     const rect = stage.getBoundingClientRect();
     const clickX = e.clientX - rect.left;
     if (clickX > rect.width * 0.7) {
@@ -166,8 +226,43 @@
     }, 2500);
   }
 
+  // Audio listeners
+  if (audioElement) {
+    audioElement.addEventListener('play', updateAudioUI);
+    audioElement.addEventListener('pause', updateAudioUI);
+    audioElement.addEventListener('ended', updateAudioUI);
+  }
+
+  if (audioBtn) {
+    audioBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleAudio();
+    });
+  }
+
+  if (fsBtn) {
+    fsBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleFullscreen();
+    });
+  }
+
+  if (timerBtn) {
+    timerBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (window.PresenterHelper) {
+        if (window.PresenterHelper.isTimerRunning()) {
+          window.PresenterHelper.stopTimer();
+        } else {
+          window.PresenterHelper.startTimer();
+        }
+      }
+    });
+  }
+
   // Initialize
   window.addEventListener('resize', fitStage);
+  document.addEventListener('fullscreenchange', fitStage);
   document.addEventListener('keydown', handleKeydown);
   if (stage) stage.addEventListener('click', handleStageClick);
   window.addEventListener('mousemove', handleMouseMove);
@@ -182,6 +277,7 @@
     next: nextSlide,
     prev: prevSlide,
     toggleFullscreen: toggleFullscreen,
+    toggleAudio: toggleAudio,
     getCurrentIndex: () => currentIndex,
     getTotalSlides: () => totalSlides
   };

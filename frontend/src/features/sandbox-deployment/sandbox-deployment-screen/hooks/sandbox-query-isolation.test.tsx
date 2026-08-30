@@ -38,6 +38,10 @@ describe("sandbox query isolation", () => {
       db_type: dialect,
       data_model_id: "model-1",
       data_model_revision: 1,
+      target_kind: "CURRENT_MODEL",
+      proposal_change_id: null,
+      current_revision: 1,
+      base_revision: 1,
     }));
   });
 

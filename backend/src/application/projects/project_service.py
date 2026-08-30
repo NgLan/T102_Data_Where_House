@@ -14,6 +14,7 @@ from src.application.projects.output import (
     ProjectSummaryOutput,
     RawRequirementOutput,
 )
+from src.application.projects.output.models import ProjectSummaryContext
 from src.common.exceptions.business import BusinessException
 from src.common.exceptions.error_codes import ErrorCode
 from src.domain.data_model.entities import DataModel
@@ -77,10 +78,12 @@ class ProjectService(IProjectService):
         activities = await self._projects.get_latest_activity_by_project_ids(project_ids)
         summaries = [
             ProjectSummaryOutput.from_domain(
-                project,
-                counts.get(project.id, 0),
-                _is_data_model_outdated(project, data_models.get(project.id)),
-                activities.get(project.id, project.updated_at),
+                ProjectSummaryContext(
+                    project,
+                    counts.get(project.id, 0),
+                    _is_data_model_outdated(project, data_models.get(project.id)),
+                    activities.get(project.id, project.updated_at),
+                )
             )
             for project in projects
         ]
@@ -100,9 +103,7 @@ class ProjectService(IProjectService):
         """Cập nhật Project nếu actor là OWNER."""
         async with self._unit_of_work:
             project = await self._access.require_owner(data.project_id)
-            project.update_info(
-                ProjectDetails(data.name, project.requirement, data.domain, data.description)
-            )
+            project.update_info(ProjectDetails(data.name, project.requirement, data.domain, data.description))
             saved = await self._projects.save(project)
             await self._unit_of_work.commit()
         sources = await self._data_sources.list_by_project(saved.id)
@@ -110,9 +111,7 @@ class ProjectService(IProjectService):
         return ProjectOutput.from_domain(saved, tuple(sources), tuple(requirements))
 
     @override
-    async def save_raw_requirement(
-        self, data: SaveRawRequirementInput
-    ) -> RawRequirementOutput:
+    async def save_raw_requirement(self, data: SaveRawRequirementInput) -> RawRequirementOutput:
         """Lưu riêng Raw Requirement bằng row lock và expected revision."""
         async with self._unit_of_work:
             project = await self._access.require_owner_for_update(data.project_id)

@@ -32,6 +32,16 @@ export function AgentClarificationCard(props: AgentClarificationCardProps) {
     ? { answer_type: "custom", custom_answer: customAnswer }
     : { answer_type: "option", option_index: selectedIndex };
   const validation = schema.safeParse(answer);
+  const isToolQuestion = props.clarification.question_kind !== "CLARIFICATION";
+  const labels = props.clarification.options.map((option, index) => {
+    if (props.clarification.question_kind === "SANDBOX_MODE_SELECTION") {
+      return [t("BTN_KEEP_SCHEMA"), t("BTN_RESET_SCHEMA"), t("BTN_CANCEL_TOOL")][index] ?? option;
+    }
+    if (props.clarification.question_kind === "TOOL_CONFIRMATION") {
+      return [t("BTN_CONFIRM_TOOL"), t("BTN_CANCEL_TOOL")][index] ?? option;
+    }
+    return option;
+  });
 
   const handleSubmit = () => {
     if (validation.success && !props.isSubmitting) props.onSubmit(validation.data);
@@ -54,8 +64,21 @@ export function AgentClarificationCard(props: AgentClarificationCardProps) {
             {props.clarification.reason}
           </p>
         )}
+        {props.clarification.endpoint_risk === "LOOPBACK" && (
+          <Warning text={t("MSG_WARN_SANDBOX_LOOPBACK")} />
+        )}
+        {props.clarification.endpoint_risk === "PRIVATE_NETWORK" && (
+          <Warning text={t("MSG_WARN_SANDBOX_PRIVATE_NETWORK")} />
+        )}
+        {props.clarification.reset_schema && (
+          <Warning
+            text={t("MSG_WARN_SANDBOX_RESET", {
+              schema: props.clarification.schema_name ?? "-",
+            })}
+          />
+        )}
         <div className="grid gap-2">
-          {props.clarification.options.map((option, index) => (
+          {labels.map((option, index) => (
             <ChoiceButton
               key={`${index}-${option}`}
               isSelected={!isCustom && selectedIndex === index}
@@ -66,11 +89,13 @@ export function AgentClarificationCard(props: AgentClarificationCardProps) {
               }}
             />
           ))}
-          <ChoiceButton
-            isSelected={isCustom}
-            label={t("TXT_CLARIFICATION_OTHER")}
-            onClick={() => setIsCustom(true)}
-          />
+          {props.clarification.allow_custom_answer && (
+            <ChoiceButton
+              isSelected={isCustom}
+              label={t("TXT_CLARIFICATION_OTHER")}
+              onClick={() => setIsCustom(true)}
+            />
+          )}
         </div>
         {isCustom && (
           <div className="space-y-1">
@@ -100,9 +125,17 @@ export function AgentClarificationCard(props: AgentClarificationCardProps) {
         ) : (
           <SendHorizonal className="size-3.5" />
         )}
-        {t("BTN_SUBMIT_CLARIFICATION")}
+        {isToolQuestion ? t("BTN_SUBMIT_TOOL_DECISION") : t("BTN_SUBMIT_CLARIFICATION")}
       </Button>
     </form>
+  );
+}
+
+function Warning({ text }: { text: string }) {
+  return (
+    <p className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-2.5 py-2 text-[11px] font-medium text-amber-800 dark:text-amber-200">
+      {text}
+    </p>
   );
 }
 

@@ -38,7 +38,12 @@ class ApiResponseRoute(APIRoute):
 
 def _has_payload_model(response_model: object) -> bool:
     """Chỉ bọc route khai báo payload model tường minh."""
-    return response_model is not None and not isinstance(response_model, DefaultPlaceholder)
+    if response_model is None or isinstance(response_model, DefaultPlaceholder):
+        return False
+    return not (
+        isinstance(response_model, type)
+        and issubclass(response_model, ApiResponse)
+    )
 
 
 def _wrap_endpoint(endpoint: Endpoint, status_code: int | None) -> Endpoint:

@@ -68,7 +68,7 @@
   "BTN_RESTORE_DRAFT": "Khôi phục bản nháp",
   "BTN_SHOW_AGENT": "Mở AI",
   "BTN_HIDE_AGENT": "Đóng AI",
-  "ARIA_ERROR_OVERVIEW_RULER": "Thanh vị trí lỗi",
-  "TOOLTIP_ERROR_LINE": "Dòng {{line}}: {{message}}",
+  "TXT_ERROR_OVERVIEW_RULER": "Thanh vị trí lỗi",
+  "TXT_ERROR_LINE_TOOLTIP": "Dòng {{line}}: {{message}}",
   "MSG_DBML_SYNTAX_ERROR_DEFAULT": "Lỗi cú pháp DBML"
 }

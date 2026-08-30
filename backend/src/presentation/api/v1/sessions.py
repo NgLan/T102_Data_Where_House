@@ -6,10 +6,11 @@ from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Header, Path, Query, Request
-from fastapi.responses import StreamingResponse
+from fastapi.responses import Response, StreamingResponse
 from src.application.project_sessions.input import (
     GetPendingClarificationInput,
     GetSessionInput,
+    GetToolArtifactInput,
     ListSessionEventsInput,
     ListSessionsInput,
 )
@@ -137,6 +138,22 @@ async def get_pending_project_session_clarification(
     return ClarificationQuestionResponse.from_application(output) if output else None
 
 
+@router.get(
+    "/sessions/{session_id}/pending-action",
+    response_model=ClarificationQuestionResponse | None,
+    operation_id="getPendingProjectSessionAction",
+    responses=error_responses(401, 403, 404, 409, 500),
+)
+async def get_pending_project_session_action(
+    session_id: ProjectSessionIdPath,
+    service: ProjectSessionServiceDependency,
+) -> ClarificationQuestionResponse | None:
+    output = await service.get_pending_clarification(
+        GetPendingClarificationInput(session_id)
+    )
+    return ClarificationQuestionResponse.from_application(output) if output else None
+
+
 @router.post(
     "/sessions/{session_id}/clarifications/{question_id}/answer",
     response_model=AgentTurnResponse,
@@ -151,6 +168,45 @@ async def answer_project_session_clarification(
 ) -> AgentTurnResponse:
     output = await service.answer_clarification(request.to_application(session_id, question_id))
     return create_agent_turn_response(output)
+
+
+@router.post(
+    "/sessions/{session_id}/pending-actions/{question_id}/decision",
+    response_model=AgentTurnResponse,
+    operation_id="decideProjectSessionPendingAction",
+    responses=error_responses(401, 403, 404, 409, 422, 500),
+)
+async def decide_project_session_pending_action(
+    session_id: ProjectSessionIdPath,
+    question_id: Annotated[UUID, Path(description="ID pending action")],
+    request: AnswerClarificationRequest,
+    service: ProjectSessionServiceDependency,
+) -> AgentTurnResponse:
+    output = await service.answer_clarification(
+        request.to_application(session_id, question_id)
+    )
+    return create_agent_turn_response(output)
+
+
+@router.get(
+    "/sessions/{session_id}/events/{tool_result_event_id}/artifact",
+    response_class=Response,
+    operation_id="downloadProjectSessionToolArtifact",
+    responses=error_responses(401, 403, 404, 500),
+)
+async def download_project_session_tool_artifact(
+    session_id: ProjectSessionIdPath,
+    tool_result_event_id: Annotated[UUID, Path(description="TOOL_RESULT event ID")],
+    service: ProjectSessionServiceDependency,
+) -> Response:
+    artifact = await service.get_tool_artifact(
+        GetToolArtifactInput(session_id, tool_result_event_id)
+    )
+    return Response(
+        artifact.content,
+        media_type=artifact.mime_type,
+        headers={"Content-Disposition": f'attachment; filename="{artifact.filename}"'},
+    )
 
 
 @router.get(

@@ -13,6 +13,7 @@ from src.application.data_models.input import (
     GetChangeProposalInput,
     GetDataModelInput,
     GetPendingChangeProposalInput,
+    ResolveDataModelTargetInput,
     UpdateDataModelInput,
     ValidateDataModelInput,
 )
@@ -21,11 +22,13 @@ from src.application.data_models.output import (
     ChangeProposalSummaryOutput,
     DataModelDdlOutput,
     DataModelOutput,
+    ResolvedDataModelTargetOutput,
 )
 from src.application.data_warehouse_workflows.output import ValidationIssue
 from src.common.exceptions.business import BusinessException
 from src.common.exceptions.error_codes import ErrorCode
 from src.domain.data_model.entities import DataModel
+from src.domain.data_model.enums import DataModelTargetKind
 from src.presentation.dependencies.data_models import get_data_model_service
 
 API_PREFIX = "/api/v1"
@@ -114,6 +117,18 @@ class StubDataModelService(IDataModelService):
             ddl="CREATE TABLE users (id uuid PRIMARY KEY);",
             db_type=data.db_type,
             data_model_revision=1,
+        )
+
+    async def resolve_target(
+        self, data: ResolveDataModelTargetInput
+    ) -> ResolvedDataModelTargetOutput:
+        output = self._require_present(data.project_id)
+        return ResolvedDataModelTargetOutput(
+            data.project_id,
+            output.dbml,
+            output.revision,
+            DataModelTargetKind.CURRENT_MODEL,
+            output.id,
         )
 
 

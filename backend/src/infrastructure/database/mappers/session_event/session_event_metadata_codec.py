@@ -64,6 +64,7 @@ def _to_record(metadata: SessionEventMetadata) -> MetadataRecord:
             model=metadata.model,
             agent_result_id=str(metadata.agent_result_id) if metadata.agent_result_id else None,
             proposal_change_id=(str(metadata.proposal_change_id) if metadata.proposal_change_id else None),
+            client_message_id=(str(metadata.client_message_id) if metadata.client_message_id else None),
         )
     if isinstance(metadata, ClarificationQuestionMetadata):
         return question_to_record(metadata)
@@ -127,4 +128,5 @@ def _message_from_payload(payload: dict[str, JsonValue]) -> MessageMetadata:
         record.model,
         UUID(record.agent_result_id) if record.agent_result_id else None,
         UUID(record.proposal_change_id) if record.proposal_change_id else None,
+        UUID(record.client_message_id) if record.client_message_id else None,
     )

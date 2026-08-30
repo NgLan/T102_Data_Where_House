@@ -103,4 +103,3 @@ def _validate_credentials(
     raw = [key.get_secret_value() for values in credentials.values() for key in values]
     if any(not value.strip() for value in raw) or len(set(raw)) != len(raw):
         raise ValueError("LLM credentials không được rỗng hoặc trùng giữa các provider.")
-

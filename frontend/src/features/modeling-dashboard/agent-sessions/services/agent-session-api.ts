@@ -1,17 +1,21 @@
 import type {
   AnswerClarificationRequest,
   ClarificationTurnResponse,
+  ConfirmationTurnResponse,
+  CancelledTurnResponse,
   ClarificationQuestionResponse,
   NoChangeTurnResponse,
   ProjectSessionResponse,
   ProposalTurnResponse,
+  ToolResultTurnResponse,
   SessionEventResponse,
 } from "@/api";
 import {
   answerProjectSessionClarification,
   apiClient,
   createProjectSession,
-  getPendingProjectSessionClarification,
+  getPendingProjectSessionAction,
+  decideProjectSessionPendingAction,
   listProjectSessionEvents,
   listProjectSessions,
   renameProjectSession,
@@ -19,6 +23,14 @@ import {
   sendProjectSessionMessage,
   unwrapApiData,
 } from "@/api";
+
+export type AgentTurn =
+  | ClarificationTurnResponse
+  | ConfirmationTurnResponse
+  | NoChangeTurnResponse
+  | ProposalTurnResponse
+  | ToolResultTurnResponse
+  | CancelledTurnResponse;
 
 export async function requestAgentSessions(
   projectId: string,
@@ -37,7 +49,7 @@ export async function requestAgentSessions(
 export async function requestPendingClarification(
   sessionId: string,
 ): Promise<ClarificationQuestionResponse | null> {
-  const response = await getPendingProjectSessionClarification({
+  const response = await getPendingProjectSessionAction({
     client: apiClient,
     path: { session_id: sessionId },
     responseStyle: "fields",
@@ -51,10 +63,12 @@ export async function requestClarificationAnswer(
   sessionId: string,
   questionId: string,
   answer: AnswerClarificationRequest,
-): Promise<
-  ClarificationTurnResponse | NoChangeTurnResponse | ProposalTurnResponse
-> {
-  const response = await answerProjectSessionClarification({
+  isToolAction = false,
+): Promise<AgentTurn> {
+  const request = isToolAction
+    ? decideProjectSessionPendingAction
+    : answerProjectSessionClarification;
+  const response = await request({
     body: answer,
     client: apiClient,
     path: { session_id: sessionId, question_id: questionId },
@@ -96,11 +110,11 @@ export async function requestSessionEvents(
 export async function requestSessionMessage(
   sessionId: string,
   content: string,
-): Promise<
-  ClarificationTurnResponse | NoChangeTurnResponse | ProposalTurnResponse
-> {
+  clientMessageId: string,
+  locale: "vi" | "en",
+): Promise<AgentTurn> {
   const response = await sendProjectSessionMessage({
-    body: { content },
+    body: { content, client_message_id: clientMessageId, locale },
     client: apiClient,
     path: { session_id: sessionId },
     responseStyle: "fields",

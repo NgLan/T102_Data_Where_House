@@ -12,11 +12,12 @@ logger = get_logger(__name__)
 
 OUTPUT_REPAIR_INSTRUCTION = """## Output contract correction
 Correct only the structured shape; preserve the original grounded decision and do not add business
-semantics. Return all seven keys: kind, question, options, allow_custom_answer, reason, dbml,
-summary. For proposal, clarification fields are empty and dbml contains complete revised raw DBML.
+semantics. Return every schema key. For proposal, clarification fields are empty and dbml contains
+complete revised raw DBML.
 For no_change, clarification fields are empty and dbml is null. For clarification, dbml is null and
 one question, one to four grounded options, custom answers, and a concrete reason are required. Keep
-summary to one or two sentences."""
+summary to one or two sentences. For tool_request, use exactly one allowlisted tool name, safe typed
+arguments, null dbml, and no credentials, connection string, DBML, DDL, or SQL."""
 
 
 class ConversationOutputInvoker:

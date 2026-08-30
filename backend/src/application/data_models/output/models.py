@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from src.domain.data_model.entities import DataModel, DataModelChange
-from src.domain.data_model.enums import DataModelChangeStatus
+from src.domain.data_model.enums import DataModelChangeStatus, DataModelTargetKind
 from src.domain.sandbox.enums import SandboxDbType
 from src.domain.shared.types import EntityID
 
@@ -88,3 +88,29 @@ class DataModelDdlOutput:
     ddl: str
     db_type: SandboxDbType
     data_model_revision: int
+    target_kind: DataModelTargetKind = DataModelTargetKind.CURRENT_MODEL
+    proposal_change_id: EntityID | None = None
+    current_revision: int | None = None
+    base_revision: int | None = None
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "current_revision", self.current_revision or self.data_model_revision)
+        object.__setattr__(self, "base_revision", self.base_revision or self.data_model_revision)
+
+
+@dataclass(frozen=True, slots=True)
+class ResolvedDataModelTargetOutput:
+    """DBML và revision chính xác mà downstream capability phải sử dụng."""
+
+    project_id: EntityID
+    dbml: str
+    revision: int
+    kind: DataModelTargetKind
+    data_model_id: EntityID
+    proposal_change_id: EntityID | None = None
+    current_revision: int | None = None
+    base_revision: int | None = None
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "current_revision", self.current_revision or self.revision)
+        object.__setattr__(self, "base_revision", self.base_revision or self.revision)

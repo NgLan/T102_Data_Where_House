@@ -13,6 +13,14 @@ from src.domain.shared.types import EntityID
 
 
 @dataclass(frozen=True, slots=True)
+class ProjectSummaryContext:
+    project: Project
+    data_source_count: int
+    is_data_model_outdated: bool = False
+    updated_at: datetime | None = None
+
+
+@dataclass(frozen=True, slots=True)
 class ProjectSummaryOutput:
     """Dữ liệu gọn cho danh sách Project."""
 
@@ -28,14 +36,9 @@ class ProjectSummaryOutput:
     is_data_model_outdated: bool = False
 
     @classmethod
-    def from_domain(
-        cls,
-        project: Project,
-        data_source_count: int,
-        is_data_model_outdated: bool = False,
-        updated_at: datetime | None = None,
-    ) -> "ProjectSummaryOutput":
+    def from_domain(cls, data: ProjectSummaryContext) -> "ProjectSummaryOutput":
         """Ánh xạ Project và source count sang summary output."""
+        project = data.project
         return cls(
             id=project.id,
             name=project.name,
@@ -44,9 +47,9 @@ class ProjectSummaryOutput:
             domain=project.domain,
             description=project.description,
             created_at=project.created_at,
-            updated_at=updated_at or project.updated_at,
-            data_source_count=data_source_count,
-            is_data_model_outdated=is_data_model_outdated,
+            updated_at=data.updated_at or project.updated_at,
+            data_source_count=data.data_source_count,
+            is_data_model_outdated=data.is_data_model_outdated,
         )
 
 
@@ -70,15 +73,13 @@ class ProjectOutput:
         requirements: tuple[Requirement, ...],
     ) -> "ProjectOutput":
         """Ánh xạ aggregate Project sang application output chi tiết."""
-        summary = ProjectSummaryOutput.from_domain(project, len(sources))
+        summary = ProjectSummaryOutput.from_domain(ProjectSummaryContext(project, len(sources)))
         return cls(
             summary=summary,
             requirement=project.requirement,
             requirement_revision=project.requirement_revision,
             analyzed_requirement_revision=project.analyzed_requirement_revision,
-            derived_analytical_requirement_revision=(
-                project.derived_analytical_requirement_revision
-            ),
+            derived_analytical_requirement_revision=(project.derived_analytical_requirement_revision),
             requirements=tuple(RequirementOutput.from_domain(item) for item in requirements),
             data_sources=tuple(DataSourceOutput.from_domain(item) for item in sources),
         )

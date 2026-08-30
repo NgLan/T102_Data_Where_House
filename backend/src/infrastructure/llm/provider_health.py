@@ -54,7 +54,6 @@ class ProviderHealthRegistry:
             state.status = ProviderStatus.AVAILABLE
             state.consecutive_failures = 0
             state.cooldown_until = None
-
     async def mark_failed(self, provider: LlmProvider) -> bool:
         """Tăng failure count và trả True khi provider vừa vào cooldown."""
         async with self._lock:
@@ -78,4 +77,3 @@ class ProviderHealthRegistry:
             state.status = ProviderStatus.AVAILABLE
             state.consecutive_failures = 0
             state.cooldown_until = None
-

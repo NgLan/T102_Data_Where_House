@@ -96,6 +96,7 @@ export function ModelingWorkspace({ projectId }: { projectId: string }) {
       pendingClarification={chat.pendingClarification}
       draft={chat.draft}
       isSending={chat.isSending}
+      pendingClientMessageId={chat.pendingClientMessageId}
       canSend={chat.canSend}
       errorCode={chat.errorCode}
       onSelectSession={chat.selectSession}

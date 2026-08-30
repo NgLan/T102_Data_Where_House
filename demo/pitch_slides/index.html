@@ -31,9 +31,13 @@
   <div class="shortcuts-hint">
     <span><i class="fa-solid fa-video" style="color:var(--red)"></i> Pitch Deck</span>
     <span class="kbd-badge">Space / &rarr;</span>
-    <span class="kbd-badge">F (Full)</span>
-    <span class="kbd-badge">T</span> <span id="pitch-timer">00:00 / 01:05</span>
+    <span class="kbd-badge clickable-badge" id="fs-btn" title="Phóng to toàn màn hình (F)">F (Full)</span>
+    <span class="kbd-badge clickable-badge" id="timer-btn" title="Bật/Dừng bấm giờ (T)">T</span> <span id="pitch-timer">00:00 / 01:05</span>
+    <span class="kbd-badge clickable-badge audio-badge" id="audio-btn" title="Bật/Tắt Voice MP3 (M)"><i class="fa-solid fa-volume-xmark"></i> M (Voice)</span>
   </div>
+
+  <!-- Audio Element -->
+  <audio id="pitch-audio" src="./data_where_house.mp3" preload="auto"></audio>
 
   <!-- 16:9 Presentation Stage Container -->
   <div id="stage">
@@ -245,14 +249,39 @@
 
           </div>
 
-          <!-- Image Placeholder Box -->
-          <div class="img-placeholder anim-in anim-delay-5" style="flex: 1;">
-            <div class="ph-icon"><i class="fa-regular fa-image"></i></div>
-            <div class="ph-title">[KHUNG ẢNH: Giao Diện Chat Làm Rõ Yêu Cầu &amp; Phân Tích Dữ Liệu Nguồn]</div>
-            <div class="ph-desc">
-              Ảnh chụp màn hình: Khung đối thoại với AI Agent để làm rõ thông tin và danh sách bảng dữ liệu nguồn tải
-              lên.
+          <!-- Screenshots: 2 Mockup Cards Side by Side -->
+          <div class="anim-in anim-delay-5" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; flex: 1; min-height: 0;">
+            
+            <!-- Mockup 1: Làm Rõ Yêu Cầu -->
+            <div class="mockup-frame">
+              <div class="mockup-bar">
+                <div class="mockup-dots">
+                  <span class="mockup-dot red"></span>
+                  <span class="mockup-dot yellow"></span>
+                  <span class="mockup-dot green"></span>
+                </div>
+                <span class="mockup-title"><i class="fa-solid fa-comments"></i> 1. Làm Rõ Yêu Cầu Cùng AI</span>
+              </div>
+              <div class="mockup-body">
+                <img src="./assets/phan_tich_lam_ro_yeu_cau.png" alt="Trợ lý làm rõ yêu cầu" class="mockup-img" style="object-position: 65% 25%;">
+              </div>
             </div>
+
+            <!-- Mockup 2: Phân Tích Dữ Liệu Nguồn -->
+            <div class="mockup-frame">
+              <div class="mockup-bar">
+                <div class="mockup-dots">
+                  <span class="mockup-dot red"></span>
+                  <span class="mockup-dot yellow"></span>
+                  <span class="mockup-dot green"></span>
+                </div>
+                <span class="mockup-title"><i class="fa-solid fa-circle-check"></i> 2. Xác Nhận Dữ Liệu Nguồn</span>
+              </div>
+              <div class="mockup-body">
+                <img src="./assets/phan_tich_lam_ro_du_lieu_nguon.png" alt="Phân tích dữ liệu nguồn" class="mockup-img" style="object-position: center 30%;">
+              </div>
+            </div>
+
           </div>
 
         </div>
@@ -279,7 +308,7 @@
       </header>
 
       <div class="slide-body">
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; height: 100%;">
+        <div style="display: grid; grid-template-columns: 370px 1fr; gap: 20px; height: 100%;">
 
           <!-- Left: 3 Script User Actions -->
           <div style="display: flex; flex-direction: column; gap: 14px; justify-content: center;">
@@ -308,13 +337,18 @@
 
           </div>
 
-          <!-- Right: Image Placeholder for Model & Detected Issues -->
-          <div class="img-placeholder anim-in anim-delay-5" style="height: 100%;">
-            <div class="ph-icon"><i class="fa-solid fa-diagram-project"></i></div>
-            <div class="ph-title">[KHUNG ẢNH: Sơ Đồ Mô Hình &amp; Các Vấn Đề Được Phát Hiện]</div>
-            <div class="ph-desc">
-              Ảnh chụp màn hình: Sơ đồ tương tác các bảng Fact/Dimension cùng khu vực hiển thị các vấn đề cảnh báo thiết
-              kế.
+          <!-- Right: Mockup for Model ERD & Detected Issues -->
+          <div class="mockup-frame anim-in anim-delay-5" style="height: 100%;">
+            <div class="mockup-bar">
+              <div class="mockup-dots">
+                <span class="mockup-dot red"></span>
+                <span class="mockup-dot yellow"></span>
+                <span class="mockup-dot green"></span>
+              </div>
+              <span class="mockup-title"><i class="fa-solid fa-diagram-project"></i> Sơ Đồ Mô Hình &amp; Cảnh Báo Thiết Kế</span>
+            </div>
+            <div class="mockup-body">
+              <img src="./assets/so_do_va_cac_van_de_duoc_phat_hien.png" alt="Sơ đồ mô hình và phát hiện vấn đề" class="mockup-img" style="object-position: right center;">
             </div>
           </div>
 
@@ -342,34 +376,40 @@
       </header>
 
       <div class="slide-body">
-        <div style="display: grid; grid-template-columns: 1fr 1.1fr; gap: 24px; height: 100%;">
+        <div style="display: flex; flex-direction: column; gap: 16px; height: 100%;">
 
-          <!-- Left: 2 Big Deliverables -->
-          <div style="display: flex; flex-direction: column; gap: 20px; justify-content: center;">
+          <!-- Top Row: 2 Deliverables Side by Side -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px;">
 
-            <div class="card anim-in anim-delay-2" style="padding: 24px; border-left: 6px solid var(--red);">
-              <div class="card-header" style="margin-bottom: 0;">
+            <div class="card anim-in anim-delay-2" style="padding: 14px 22px; border-left: 6px solid var(--red);">
+              <div class="card-header" style="margin-bottom: 0; display: flex; align-items: center; gap: 14px;">
                 <div class="card-icon red"><i class="fa-solid fa-code"></i></div>
-                <h3 class="card-title" style="font-size: 22px;">Chuyển Thành DDL</h3>
+                <h3 class="card-title" style="font-size: 20px;">Chuyển Thành DDL</h3>
               </div>
             </div>
 
-            <div class="card cream anim-in anim-delay-3" style="padding: 24px; border-left: 6px solid var(--ink);">
-              <div class="card-header" style="margin-bottom: 0;">
+            <div class="card cream anim-in anim-delay-3" style="padding: 14px 22px; border-left: 6px solid var(--ink);">
+              <div class="card-header" style="margin-bottom: 0; display: flex; align-items: center; gap: 14px;">
                 <div class="card-icon" style="background: var(--ink); color: #fff;"><i class="fa-solid fa-play"></i>
                 </div>
-                <h3 class="card-title" style="font-size: 22px;">Chạy Thử Ngay Trên Sandbox</h3>
+                <h3 class="card-title" style="font-size: 20px;">Chạy Thử Ngay Trên Sandbox</h3>
               </div>
             </div>
 
           </div>
 
-          <!-- Right: Image Placeholder for DDL & Sandbox Run -->
-          <div class="img-placeholder anim-in anim-delay-4" style="height: 100%;">
-            <div class="ph-icon"><i class="fa-solid fa-terminal"></i></div>
-            <div class="ph-title">[KHUNG ẢNH: DDL Sinh Ra &amp; Chạy Thử Trên Môi Trường Sandbox]</div>
-            <div class="ph-desc">
-              Ảnh chụp màn hình: Cửa sổ mã nguồn DDL SQL và kết quả thực thi kiểm thử dữ liệu trực tiếp trên Sandbox.
+          <!-- Bottom: Full Width Big Mockup for DDL & Sandbox Run -->
+          <div class="mockup-frame anim-in anim-delay-4" style="flex: 1; min-height: 0;">
+            <div class="mockup-bar">
+              <div class="mockup-dots">
+                <span class="mockup-dot red"></span>
+                <span class="mockup-dot yellow"></span>
+                <span class="mockup-dot green"></span>
+              </div>
+              <span class="mockup-title"><i class="fa-solid fa-terminal"></i> DDL SQL &amp; PostgreSQL Sandbox</span>
+            </div>
+            <div class="mockup-body" style="background: #ffffff;">
+              <img src="./assets/ddl_va_sandbox.png" alt="DDL sinh ra và Sandbox" class="mockup-img" style="object-fit: cover; object-position: center 30%;">
             </div>
           </div>
 

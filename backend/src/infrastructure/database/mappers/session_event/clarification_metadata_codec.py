@@ -23,6 +23,17 @@ def question_to_record(
         reason=metadata.reason,
         original_intent=metadata.original_intent,
         missing_information=metadata.missing_information,
+        question_kind=metadata.question_kind,
+        tool_name=metadata.tool_name,
+        target_kind=metadata.target_kind,
+        proposal_change_id=(
+            str(metadata.proposal_change_id) if metadata.proposal_change_id else None
+        ),
+        db_type=metadata.db_type,
+        reset_schema=metadata.reset_schema,
+        expected_revision=metadata.expected_revision,
+        endpoint_risk=metadata.endpoint_risk,
+        schema_name=metadata.schema_name,
     )
 
 
@@ -48,6 +59,15 @@ def question_from_payload(
         record.reason,
         record.original_intent,
         record.missing_information,
+        record.question_kind,
+        record.tool_name,
+        record.target_kind,
+        UUID(record.proposal_change_id) if record.proposal_change_id else None,
+        record.db_type,
+        record.reset_schema,
+        record.expected_revision,
+        record.endpoint_risk,
+        record.schema_name,
     )
 
 

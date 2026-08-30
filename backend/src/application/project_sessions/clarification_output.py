@@ -5,7 +5,8 @@ from datetime import datetime
 
 from src.domain.project_session.clarification import ClarificationQuestionMetadata
 from src.domain.project_session.entities import SessionEvent
-from src.domain.project_session.enums import SessionEventType
+from src.domain.project_session.enums import SessionEventType, SessionQuestionKind
+from src.domain.sandbox.enums import SandboxEndpointRisk
 from src.domain.shared.types import EntityID
 
 
@@ -20,6 +21,11 @@ class ClarificationQuestionOutput:
     options: tuple[str, ...]
     allow_custom_answer: bool
     reason: str | None
+    question_kind: SessionQuestionKind
+    tool_name: str | None
+    endpoint_risk: SandboxEndpointRisk | None
+    schema_name: str | None
+    reset_schema: bool | None
     created_at: datetime
 
     @classmethod
@@ -40,5 +46,10 @@ class ClarificationQuestionOutput:
             metadata.options,
             metadata.allow_custom_answer,
             metadata.reason,
+            metadata.question_kind,
+            metadata.tool_name,
+            metadata.endpoint_risk,
+            metadata.schema_name,
+            metadata.reset_schema,
             event.created_at,
         )

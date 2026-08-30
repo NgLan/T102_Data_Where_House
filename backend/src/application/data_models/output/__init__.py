@@ -5,6 +5,7 @@ from src.application.data_models.output.models import (
     ChangeProposalSummaryOutput,
     DataModelDdlOutput,
     DataModelOutput,
+    ResolvedDataModelTargetOutput,
 )
 
 __all__ = [
@@ -12,4 +13,5 @@ __all__ = [
     "ChangeProposalSummaryOutput",
     "DataModelDdlOutput",
     "DataModelOutput",
+    "ResolvedDataModelTargetOutput",
 ]

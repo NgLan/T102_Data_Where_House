@@ -8,6 +8,7 @@ from src.application.data_models.input import (
     GetChangeProposalInput,
     GetDataModelInput,
     GetPendingChangeProposalInput,
+    ResolveDataModelTargetInput,
     UpdateDataModelInput,
     ValidateDataModelInput,
 )
@@ -16,6 +17,7 @@ from src.application.data_models.output import (
     ChangeProposalSummaryOutput,
     DataModelDdlOutput,
     DataModelOutput,
+    ResolvedDataModelTargetOutput,
 )
 from src.application.data_warehouse_workflows.output import ValidationIssue
 from src.domain.sandbox.enums import SandboxDbType
@@ -70,3 +72,9 @@ class IDataModelService(ABC):
     @abstractmethod
     async def generate_ddl(self, data: GenerateDataModelDdlInput) -> DataModelDdlOutput:
         """Sinh DDL từ snapshot Data Model hiện hành."""
+
+    @abstractmethod
+    async def resolve_target(
+        self, data: ResolveDataModelTargetInput
+    ) -> ResolvedDataModelTargetOutput:
+        """Resolve current/proposal target sau authorization."""

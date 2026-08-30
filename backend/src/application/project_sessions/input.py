@@ -42,6 +42,8 @@ class ListSessionEventsInput:
 class SendSessionMessageInput:
     session_id: EntityID
     content: str
+    client_message_id: EntityID | None = None
+    locale: str = "vi"
 
 
 @dataclass(frozen=True, slots=True)
@@ -55,3 +57,9 @@ class AnswerClarificationInput:
     question_id: EntityID
     option_index: int | None = None
     custom_answer: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class GetToolArtifactInput:
+    session_id: EntityID
+    tool_result_event_id: EntityID

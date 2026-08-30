@@ -28,5 +28,19 @@
   "CLARIFICATION_CUSTOM_PLACEHOLDER": "Enter your answer...",
   "MSG_CLARIFICATION_ANSWER_REQUIRED": "Select an option or enter your answer.",
   "BTN_SUBMIT_CLARIFICATION": "Submit answer",
-  "TXT_ANSWER_CLARIFICATION_FIRST": "Answer the clarification question above first"
+  "TXT_ANSWER_CLARIFICATION_FIRST": "Answer the clarification question above first",
+  "TXT_TOOL_SUCCESS": "Tool completed successfully",
+  "TXT_TOOL_FAILED": "Tool failed",
+  "TXT_SANDBOX_RESULT": "{{succeeded}}/{{total}} statements succeeded in {{duration}} ms.",
+  "BTN_DOWNLOAD_ARTIFACT": "Download attachment",
+  "TXT_DOWNLOADING": "Downloading...",
+  "TXT_MESSAGE_SEND_FAILED": "Could not send. Your message is kept for retry.",
+  "BTN_KEEP_SCHEMA": "Keep the existing schema",
+  "BTN_RESET_SCHEMA": "Reset the schema",
+  "BTN_CANCEL_TOOL": "Cancel",
+  "BTN_CONFIRM_TOOL": "Confirm execution",
+  "MSG_WARN_SANDBOX_LOOPBACK": "This Sandbox points to a loopback host. Confirm that the backend can reach it.",
+  "MSG_WARN_SANDBOX_PRIVATE_NETWORK": "This Sandbox points to a private-network host.",
+  "MSG_WARN_SANDBOX_RESET": "Schema {{schema}} will be reset before DDL execution. Existing objects in that schema may be removed.",
+  "BTN_SUBMIT_TOOL_DECISION": "Continue"
 }

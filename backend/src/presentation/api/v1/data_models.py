@@ -1,15 +1,19 @@
 """REST endpoints cho Data Model hiện tại của dự án."""
 
 from fastapi import APIRouter, Query
+from src.application.data_model_analysis.models import GenerateAnalysisDocumentInput
 from src.application.data_models.input import GenerateDataModelDdlInput, GetDataModelInput
 from src.domain.sandbox.enums import SandboxDbType
+from src.presentation.dependencies.data_model_analysis import DataModelAnalysisDependency
 from src.presentation.dependencies.data_models import DataModelServiceDependency
 from src.presentation.dtos.data_models.request import (
+    GenerateAnalysisDocumentRequest,
     ProjectIdPath,
     UpdateDataModelRequest,
     ValidateDataModelRequest,
 )
 from src.presentation.dtos.data_models.response import (
+    AnalysisDocumentResponse,
     DataModelDdlResponse,
     DataModelResponse,
     DataModelValidationIssueResponse,
@@ -99,3 +103,20 @@ async def generate_data_model_ddl(
     """Sinh DDL từ revision Data Model hiện hành."""
     output = await service.generate_ddl(GenerateDataModelDdlInput(project_id, db_type))
     return DataModelDdlResponse.from_application(output)
+
+
+@router.post(
+    "/analysis-document",
+    response_model=AnalysisDocumentResponse,
+    operation_id="generateDataModelAnalysisDocument",
+    responses=error_responses(401, 403, 404, 422, 500),
+)
+async def generate_data_model_analysis_document(
+    project_id: ProjectIdPath,
+    request: GenerateAnalysisDocumentRequest,
+    service: DataModelAnalysisDependency,
+) -> AnalysisDocumentResponse:
+    output = await service.generate_document(
+        GenerateAnalysisDocumentInput(project_id, request.target(), request.locale)
+    )
+    return AnalysisDocumentResponse.from_application(output)

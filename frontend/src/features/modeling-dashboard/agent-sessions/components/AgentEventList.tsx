@@ -9,20 +9,24 @@ import {
   Loader2,
   User,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { ChangeProposalDetailResponse, SessionEventResponse } from "@/api";
+import type { ChangeProposalDetailResponse } from "@/api";
+import type { ChatEvent } from "../types/chat-event";
 import { fetchProposalDetail } from "../../modeling-workspace/components/proposal-review/services/proposal-api";
 import { ChatProposalDiff } from "./ChatProposalDiff";
+import { AgentToolResultCard } from "./AgentToolResultCard";
 
 /** Timeline công khai của message và các mốc Agent/tool. */
 export function AgentEventList({
   events,
   isSending,
+  pendingClientMessageId = null,
   projectId,
 }: {
-  events: SessionEventResponse[];
+  events: ChatEvent[];
   isSending: boolean;
+  pendingClientMessageId?: string | null;
   projectId: string;
 }) {
   const { t } = useTranslation("ai-chat");
@@ -34,7 +38,7 @@ export function AgentEventList({
 
   return (
     <div className="dark-scrollbar min-h-0 flex-1 space-y-3.5 overflow-y-auto p-3.5">
-      {events.length === 0 && (
+      {events.length === 0 && !isSending && (
         <div className="flex h-32 flex-col items-center justify-center gap-2 text-center text-xs text-slate-500">
           <Bot className="size-6 text-slate-600" />
           <p>{t("TXT_SESSION_EMPTY")}</p>
@@ -44,10 +48,7 @@ export function AgentEventList({
         <AgentEvent key={event.id} event={event} projectId={projectId} />
       ))}
       {isSending && (
-        <div className="flex items-center gap-2 rounded-xl border border-sky-500/20 bg-sky-500/10 px-3 py-2 text-xs font-medium text-sky-300 w-fit">
-          <Loader2 className="size-3.5 animate-spin text-sky-400" />
-          <span>{t("MSG_AI_CHAT_THINKING")}</span>
-        </div>
+        <ThinkingIndicator text={t("MSG_AI_CHAT_THINKING")} />
       )}
       <div ref={endRef} />
     </div>
@@ -58,7 +59,7 @@ function AgentEvent({
   event,
   projectId,
 }: {
-  event: SessionEventResponse;
+  event: ChatEvent;
   projectId: string;
 }) {
   const { t } = useTranslation("ai-chat");
@@ -74,7 +75,7 @@ function AgentEvent({
   if (event.type === "TOOL_CALL")
     return <StatusEvent text={t("TXT_TOOL_STARTED")} />;
   if (event.type === "TOOL_RESULT")
-    return <StatusEvent text={t("TXT_TOOL_COMPLETED")} />;
+    return <AgentToolResultCard event={event} />;
   if (event.type === "AGENT_RESULT")
     return isFailed ? (
       <StatusEvent text={event.content ?? t("TXT_AGENT_COMPLETED")} />
@@ -131,6 +132,11 @@ function AgentEvent({
         <p className="whitespace-pre-wrap break-words">
           {event.content ?? t("TXT_AGENT_COMPLETED")}
         </p>
+        {event.deliveryStatus === "failed" && (
+          <p className="mt-1 text-[10px] font-semibold text-rose-200">
+            {t("TXT_MESSAGE_SEND_FAILED")}
+          </p>
+        )}
         {event.proposal_change_id && (
           <div className="mt-2.5">
             <button
@@ -162,6 +168,15 @@ function AgentEvent({
         )}
       </div>
     </article>
+  );
+}
+
+function ThinkingIndicator({ text }: { text: string }) {
+  return (
+    <div className="flex w-fit items-center gap-2 rounded-xl border border-sky-500/20 bg-sky-500/10 px-3 py-2 text-xs font-medium text-sky-300">
+      <Loader2 className="size-3.5 animate-spin text-sky-400" />
+      <span>{text}</span>
+    </div>
   );
 }
 

@@ -18,6 +18,11 @@ const clarification: ClarificationQuestionResponse = {
   options: ["Theo ngày", "Theo tháng", "Theo quý"],
   allow_custom_answer: true,
   reason: "Time granularity chưa được xác định.",
+  question_kind: "CLARIFICATION",
+  tool_name: null,
+  endpoint_risk: null,
+  schema_name: null,
+  reset_schema: null,
   created_at: "2026-08-24T00:00:00Z",
 };
 

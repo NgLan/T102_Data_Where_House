@@ -11,6 +11,7 @@ interface DdlEditorActionsInput {
   ddlCode: string;
   dialect: DdlDialect;
   databaseName: string;
+  projectId: string;
   onDdlCodeChange: (value: string) => void;
 }
 

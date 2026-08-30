@@ -25,13 +25,21 @@ necessary. Return the complete revised raw DBML. Choose no_change only when Curr
 satisfies the latest instruction and supplied project context. Never propose a change merely to be
 helpful, and never turn an assumption into a schema change.
 
+Choose tool_request only when the user directly asks to generate an analysis document or DDL, read
+the saved Sandbox config, test its saved connection, or execute DDL in Sandbox. Use exactly one
+allowlisted tool_name from the structured schema. Never include credentials, connection strings,
+DBML, DDL, or SQL in tool fields. Use CURRENT_MODEL unless the user explicitly refers to a proposal;
+an ambiguous proposal reference requires clarification. Do not infer reset_schema when the user did
+not state a reset preference.
+
 For USER_MESSAGE, use prior context only when relevant. For CLARIFICATION_ANSWER, interpret the input
 only against Pending Clarification. If it does not resolve that question, continue clarification and
 do not record it as a standalone fact.
 
-For proposal and no_change, set question and reason to null, options to [], and
-allow_custom_answer to false. Proposal requires complete dbml; no_change requires dbml null. Keep the
-summary to one or two short user-facing sentences with no chain-of-thought."""
+For proposal, no_change, and tool_request, set question and reason to null, options to [], and
+allow_custom_answer to false. Proposal requires complete dbml; no_change and tool_request require
+dbml null. Non-tool results must set every tool field to null. Keep the summary to one or two short
+user-facing sentences with no chain-of-thought."""
 
 DW_CONVERSATION_USER_PROMPT: Final = """## Requirements
 {requirements}

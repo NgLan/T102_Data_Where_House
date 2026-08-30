@@ -61,7 +61,7 @@ describe("extractDbmlErrorMarkers", () => {
       code,
       validationIssues: [
         {
-          code: "MISSING_PRIMARY_KEY",
+          code: "TABLE_PRIMARY_KEY_MISSING",
           table_name: "Fact_DieuTri",
           column_name: "benh_nhan_key",
           severity: "ERROR",

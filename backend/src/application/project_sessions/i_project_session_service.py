@@ -8,12 +8,18 @@ from src.application.project_sessions.input import (
     CreateSessionInput,
     GetPendingClarificationInput,
     GetSessionInput,
+    GetToolArtifactInput,
     ListSessionEventsInput,
     ListSessionsInput,
     RenameSessionInput,
     SendSessionMessageInput,
 )
-from src.application.project_sessions.output import ProjectSessionOutput, SessionEventOutput, SessionTurnOutput
+from src.application.project_sessions.output import (
+    ProjectSessionOutput,
+    SessionEventOutput,
+    SessionTurnOutput,
+    ToolArtifactDownloadOutput,
+)
 
 
 class IProjectSessionService(ABC):
@@ -43,6 +49,7 @@ class IProjectSessionService(ABC):
     ) -> ClarificationQuestionOutput | None: ...
 
     @abstractmethod
-    async def answer_clarification(
-        self, data: AnswerClarificationInput
-    ) -> SessionTurnOutput: ...
+    async def answer_clarification(self, data: AnswerClarificationInput) -> SessionTurnOutput: ...
+
+    @abstractmethod
+    async def get_tool_artifact(self, data: GetToolArtifactInput) -> ToolArtifactDownloadOutput: ...

@@ -2,23 +2,7 @@
    DATA WHERE HOUSE? — Smooth Keyframe Animations & Transitions
    ============================================================ */
 
-/* Slide Entrance */
-.slide.active {
-  animation: slideFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-@keyframes slideFadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.98) translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-/* Staggered Element Entrance */
+/* Staggered Element Entrance (Slide contents only, background stays static) */
 .slide.active .anim-in {
   animation: elemPopUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
 }

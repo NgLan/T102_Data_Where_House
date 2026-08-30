@@ -107,9 +107,9 @@ describe("DBMLEditor", () => {
       />
     );
 
-    const scrollbarOverview = screen.getByLabelText("ARIA_ERROR_OVERVIEW_RULER");
+    const scrollbarOverview = screen.getByLabelText("TXT_ERROR_OVERVIEW_RULER");
     expect(scrollbarOverview).toBeInTheDocument();
-    const errorMarkerButton = screen.getByTitle("TOOLTIP_ERROR_LINE");
+    const errorMarkerButton = screen.getByTitle("TXT_ERROR_LINE_TOOLTIP");
     expect(errorMarkerButton).toBeInTheDocument();
   });
 });

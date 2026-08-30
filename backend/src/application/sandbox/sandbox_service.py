@@ -9,6 +9,7 @@ from src.application.sandbox.i_sandbox_service import (
 from src.application.sandbox.input import (
     ExecuteSandboxDdlInput,
     GetSandboxConfigInput,
+    SandboxConnectionInput,
     SaveSandboxConfigInput,
     TestSandboxConnectionInput,
 )
@@ -22,6 +23,7 @@ from src.common.exceptions.error_codes import ErrorCode
 from src.common.utils.uuid import generate_uuid
 from src.domain.sandbox.entities import SandboxConfig
 from src.domain.sandbox.i_sandbox_config_repository import ISandboxConfigRepository
+from src.domain.shared.types import EntityID
 from typing_extensions import override
 
 
@@ -62,16 +64,37 @@ class SandboxService(ISandboxService):
         return await self._executor.test_connection(data.connection)
 
     @override
+    async def test_saved_connection(
+        self, data: GetSandboxConfigInput
+    ) -> ConnectionTestOutput:
+        await self._access.require_owner(data.project_id)
+        config = await self._require_config(data.project_id)
+        connection = SandboxConnectionInput(
+            config.db_type,
+            config.host,
+            config.port,
+            config.database_name,
+            config.username,
+            config.password,
+            config.schema_name,
+        )
+        return await self._executor.test_connection(connection)
+
+    @override
     async def execute_ddl(self, data: ExecuteSandboxDdlInput) -> SandboxExecutionOutput:
         async with self._unit_of_work:
             await self._access.require_owner(data.project_id)
-            config = await self._configs.get_by_project_id(data.project_id)
-            if config is None:
-                raise BusinessException(
-                    code=ErrorCode.SANDBOX_CONFIG_NOT_FOUND,
-                    message="Dự án chưa có cấu hình Sandbox.",
-                )
+            config = await self._require_config(data.project_id)
             return await self._executor.execute(config, data.ddl_script, data.reset_schema)
+
+    async def _require_config(self, project_id: EntityID) -> SandboxConfig:
+        config = await self._configs.get_by_project_id(project_id)
+        if config is None:
+            raise BusinessException(
+                code=ErrorCode.SANDBOX_CONFIG_NOT_FOUND,
+                message="Dự án chưa có cấu hình Sandbox.",
+            )
+        return config
 
 
 def _build_config(

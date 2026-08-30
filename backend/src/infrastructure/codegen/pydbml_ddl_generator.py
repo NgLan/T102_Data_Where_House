@@ -14,6 +14,9 @@ _SQLGLOT_DIALECTS = {
     "postgres": "postgres",
     "snowflake": "snowflake",
     "bigquery": "bigquery",
+    "mysql": "mysql",
+    "sqlite": "sqlite",
+    "sqlserver": "tsql",
 }
 
 

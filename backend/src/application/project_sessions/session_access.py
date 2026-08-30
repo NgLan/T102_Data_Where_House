@@ -20,9 +20,7 @@ class OwnedSessionAccess:
         self._sessions = sessions
         self._projects = projects
 
-    async def require(
-        self, session_id: EntityID, *, for_update: bool = False
-    ) -> ProjectSession:
+    async def require(self, session_id: EntityID, *, for_update: bool = False) -> ProjectSession:
         session = (
             await self._sessions.get_by_id_for_update(session_id)
             if for_update
@@ -41,9 +39,7 @@ class OwnedSessionAccess:
             )
         return session
 
-    async def require_conversation_reader(
-        self, session_id: EntityID
-    ) -> ProjectSession:
+    async def require_conversation_reader(self, session_id: EntityID) -> ProjectSession:
         """Allow Project members to read public Requirement conversation only."""
         session = await self._sessions.get_by_id(session_id)
         if session is None:
@@ -54,10 +50,7 @@ class OwnedSessionAccess:
         return await self.require(session_id)
 
 
-
-def ensure_session_purpose(
-    session: ProjectSession, purpose: SessionPurpose
-) -> ProjectSession:
+def ensure_session_purpose(session: ProjectSession, purpose: SessionPurpose) -> ProjectSession:
     """Từ chối dùng session sai workflow."""
     if session.purpose is not purpose:
         raise BusinessException(

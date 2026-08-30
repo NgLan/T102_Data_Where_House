@@ -50,4 +50,3 @@ class LlmPolicyConfiguration:
     credential_cooldown_seconds: float
     provider_failure_threshold: int
     provider_cooldown_seconds: float
-

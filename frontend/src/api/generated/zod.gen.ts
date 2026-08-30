@@ -60,6 +60,16 @@ export const zBodyUploadProjectRequirementFiles = z.object({
 });
 
 /**
+ * CancelledTurnResponse
+ */
+export const zCancelledTurnResponse = z.object({
+    session_id: z.uuid(),
+    turn_id: z.uuid(),
+    kind: z.literal('cancelled'),
+    summary: z.string().nullish()
+});
+
+/**
  * CheckConstraintDto
  *
  * Constraint kiểm tra.
@@ -67,32 +77,6 @@ export const zBodyUploadProjectRequirementFiles = z.object({
 export const zCheckConstraintDto = z.object({
     type: z.literal('CHECK'),
     expression: z.string().min(1)
-});
-
-/**
- * ClarificationQuestionResponse
- *
- * Clarification hiện đang chờ người dùng trả lời.
- */
-export const zClarificationQuestionResponse = z.object({
-    question_id: z.uuid(),
-    session_id: z.uuid(),
-    turn_id: z.uuid(),
-    question: z.string(),
-    options: z.array(z.string()),
-    allow_custom_answer: z.boolean(),
-    reason: z.string().nullable(),
-    created_at: z.iso.datetime()
-});
-
-/**
- * ApiResponse[Union[ClarificationQuestionResponse, NoneType]]
- */
-export const zApiResponseUnionClarificationQuestionResponseNoneType = z.object({
-    status: z.literal('success').optional().default('success'),
-    code: z.int().gte(200).lte(299).optional().default(200),
-    message: z.string().optional().default('Xử lý thành công'),
-    data: zClarificationQuestionResponse.nullish()
 });
 
 /**
@@ -265,6 +249,39 @@ export const zApiResponseDataModelResponse = z.object({
 });
 
 /**
+ * DataModelTargetKind
+ *
+ * Snapshot được một capability đọc mà không thay đổi lifecycle model.
+ */
+export const zDataModelTargetKind = z.enum(['CURRENT_MODEL', 'PROPOSAL']);
+
+/**
+ * AnalysisDocumentResponse
+ *
+ * Tài liệu Markdown và metadata target nguồn.
+ */
+export const zAnalysisDocumentResponse = z.object({
+    filename: z.string(),
+    mime_type: z.string(),
+    content: z.string(),
+    data_model_revision: z.int().gte(1),
+    target_kind: zDataModelTargetKind,
+    proposal_change_id: z.uuid().nullish(),
+    current_revision: z.int().gte(1),
+    base_revision: z.int().gte(1)
+});
+
+/**
+ * ApiResponse[AnalysisDocumentResponse]
+ */
+export const zApiResponseAnalysisDocumentResponse = z.object({
+    status: z.literal('success').optional().default('success'),
+    code: z.int().gte(200).lte(299).optional().default(200),
+    message: z.string().optional().default('Xử lý thành công'),
+    data: zAnalysisDocumentResponse.nullish()
+});
+
+/**
  * DataSourceAnalysisStatus
  *
  * Trạng thái metadata phân tích của một nguồn dữ liệu.
@@ -372,6 +389,17 @@ export const zForeignKeyConstraintDto = z.object({
     type: z.literal('FOREIGN_KEY'),
     reference_table: z.string().min(1),
     reference_column: z.string().min(1)
+});
+
+/**
+ * GenerateAnalysisDocumentRequest
+ *
+ * Target và locale cho tài liệu phân tích.
+ */
+export const zGenerateAnalysisDocumentRequest = z.object({
+    target_kind: zDataModelTargetKind.optional().default('CURRENT_MODEL'),
+    change_id: z.uuid().nullish(),
+    locale: z.string().regex(/^(vi|en)$/).optional().default('vi')
 });
 
 /**
@@ -519,20 +547,6 @@ export const zProposalTurnResponse = z.object({
     kind: z.literal('proposal'),
     proposal_change_id: z.uuid(),
     summary: z.string().nullish()
-});
-
-/**
- * ApiResponse[Annotated[Union[ClarificationTurnResponse, NoChangeTurnResponse, ProposalTurnResponse], FieldInfo(annotation=NoneType, required=True, discriminator='kind')]]
- */
-export const zApiResponseAnnotatedUnionClarificationTurnResponseNoChangeTurnResponseProposalTurnResponseFieldInfoAnnotationNoneTypeRequiredTrueDiscriminatorKind = z.object({
-    status: z.literal('success').optional().default('success'),
-    code: z.int().gte(200).lte(299).optional().default(200),
-    message: z.string().optional().default('Xử lý thành công'),
-    data: z.discriminatedUnion('kind', [
-        zClarificationTurnResponse,
-        zNoChangeTurnResponse,
-        zProposalTurnResponse
-    ]).nullish()
 });
 
 /**
@@ -790,7 +804,11 @@ export const zSandboxDbType = z.enum([
 export const zDataModelDdlResponse = z.object({
     ddl: z.string(),
     db_type: zSandboxDbType,
-    data_model_revision: z.int().gte(1)
+    data_model_revision: z.int().gte(1),
+    target_kind: zDataModelTargetKind,
+    proposal_change_id: z.uuid().nullish(),
+    current_revision: z.int().gte(1),
+    base_revision: z.int().gte(1)
 });
 
 /**
@@ -819,6 +837,17 @@ export const zSandboxConfigRequest = z.object({
 });
 
 /**
+ * SandboxEndpointRisk
+ *
+ * Mức cảnh báo dựa trên endpoint literal, không thực hiện DNS lookup.
+ */
+export const zSandboxEndpointRisk = z.enum([
+    'LOOPBACK',
+    'PRIVATE_NETWORK',
+    'REMOTE'
+]);
+
+/**
  * SandboxConfigResponse
  *
  * Cấu hình Sandbox không làm lộ mật khẩu.
@@ -832,7 +861,8 @@ export const zSandboxConfigResponse = z.object({
     database_name: z.string(),
     username: z.string().nullish(),
     schema_name: z.string().nullish().default('public'),
-    status: z.string().optional().default('CONFIGURED')
+    status: z.string().optional().default('CONFIGURED'),
+    endpoint_risk: zSandboxEndpointRisk.optional().default('REMOTE')
 });
 
 /**
@@ -881,7 +911,9 @@ export const zSendRequirementClarificationMessageRequest = z.object({
  * Payload gửi message vào một session đã tồn tại.
  */
 export const zSendSessionMessageRequest = z.object({
-    content: z.string().min(1).max(2000)
+    content: z.string().min(1).max(2000),
+    client_message_id: z.uuid().nullish(),
+    locale: z.enum(['vi', 'en']).optional().default('vi')
 });
 
 /**
@@ -911,34 +943,6 @@ export const zSessionEventType = z.enum([
 ]);
 
 /**
- * SessionEventResponse
- */
-export const zSessionEventResponse = z.object({
-    id: z.uuid(),
-    session_id: z.uuid(),
-    turn_id: z.uuid().nullable(),
-    role: zSessionEventRole,
-    type: zSessionEventType,
-    content: z.string().nullable(),
-    status: zAgentResultStatus.nullable(),
-    proposal_change_id: z.uuid().nullable(),
-    question_options: z.array(z.string()),
-    allow_custom_answer: z.boolean(),
-    answer_to_question_id: z.uuid().nullable(),
-    created_at: z.iso.datetime()
-});
-
-/**
- * ApiResponse[list[SessionEventResponse]]
- */
-export const zApiResponseListSessionEventResponse = z.object({
-    status: z.literal('success').optional().default('success'),
-    code: z.int().gte(200).lte(299).optional().default(200),
-    message: z.string().optional().default('Xử lý thành công'),
-    data: z.array(zSessionEventResponse).nullish()
-});
-
-/**
  * SessionPurpose
  *
  * Mục đích nghiệp vụ của Project Session.
@@ -953,6 +957,64 @@ export const zSessionPurpose = z.enum(['REQUIREMENT_CLARIFICATION', 'DATA_MODELI
 export const zCreateProjectSessionRequest = z.object({
     title: z.string().max(255).nullish(),
     purpose: zSessionPurpose
+});
+
+/**
+ * SessionQuestionKind
+ *
+ * Discriminator cho question cũ và các bước xác nhận tool.
+ */
+export const zSessionQuestionKind = z.enum([
+    'CLARIFICATION',
+    'SANDBOX_MODE_SELECTION',
+    'TOOL_CONFIRMATION'
+]);
+
+/**
+ * ClarificationQuestionResponse
+ *
+ * Clarification hiện đang chờ người dùng trả lời.
+ */
+export const zClarificationQuestionResponse = z.object({
+    question_id: z.uuid(),
+    session_id: z.uuid(),
+    turn_id: z.uuid(),
+    question: z.string(),
+    options: z.array(z.string()),
+    allow_custom_answer: z.boolean(),
+    reason: z.string().nullable(),
+    question_kind: zSessionQuestionKind,
+    tool_name: z.string().nullable(),
+    endpoint_risk: z.string().nullable(),
+    schema_name: z.string().nullable(),
+    reset_schema: z.boolean().nullable(),
+    created_at: z.iso.datetime()
+});
+
+/**
+ * ApiResponse[Union[ClarificationQuestionResponse, NoneType]]
+ */
+export const zApiResponseUnionClarificationQuestionResponseNoneType = z.object({
+    status: z.literal('success').optional().default('success'),
+    code: z.int().gte(200).lte(299).optional().default(200),
+    message: z.string().optional().default('Xử lý thành công'),
+    data: zClarificationQuestionResponse.nullish()
+});
+
+/**
+ * ConfirmationTurnResponse
+ */
+export const zConfirmationTurnResponse = z.object({
+    session_id: z.uuid(),
+    turn_id: z.uuid(),
+    kind: z.literal('confirmation_required'),
+    question_id: z.uuid(),
+    question: z.string(),
+    options: z.array(z.string()),
+    allow_custom_answer: z.boolean(),
+    question_kind: zSessionQuestionKind,
+    tool_name: z.string(),
+    summary: z.string().nullish()
 });
 
 /**
@@ -1273,6 +1335,84 @@ export const zApiResponseTestConnectionResponse = z.object({
     code: z.int().gte(200).lte(299).optional().default(200),
     message: z.string().optional().default('Xử lý thành công'),
     data: zTestConnectionResponse.nullish()
+});
+
+/**
+ * ToolResultStatus
+ *
+ * Trạng thái kết quả thực thi của Tool (SUCCESS, FAILED).
+ */
+export const zToolResultStatus = z.enum(['SUCCESS', 'FAILED']);
+
+/**
+ * SessionEventResponse
+ */
+export const zSessionEventResponse = z.object({
+    id: z.uuid(),
+    session_id: z.uuid(),
+    turn_id: z.uuid().nullable(),
+    role: zSessionEventRole,
+    type: zSessionEventType,
+    content: z.string().nullable(),
+    status: zAgentResultStatus.nullable(),
+    proposal_change_id: z.uuid().nullable(),
+    question_options: z.array(z.string()),
+    allow_custom_answer: z.boolean(),
+    answer_to_question_id: z.uuid().nullable(),
+    client_message_id: z.uuid().nullable(),
+    question_kind: zSessionQuestionKind.nullable(),
+    tool_name: z.string().nullable(),
+    tool_status: zToolResultStatus.nullable(),
+    artifact_id: z.uuid().nullable(),
+    artifact_filename: z.string().nullable(),
+    artifact_mime_type: z.string().nullable(),
+    sandbox_schema_name: z.string().nullable(),
+    sandbox_endpoint_risk: z.string().nullable(),
+    executed_statements: z.int().nullable(),
+    succeeded_statements: z.int().nullable(),
+    failed_statements: z.int().nullable(),
+    total_duration_ms: z.number().nullable(),
+    created_at: z.iso.datetime()
+});
+
+/**
+ * ApiResponse[list[SessionEventResponse]]
+ */
+export const zApiResponseListSessionEventResponse = z.object({
+    status: z.literal('success').optional().default('success'),
+    code: z.int().gte(200).lte(299).optional().default(200),
+    message: z.string().optional().default('Xử lý thành công'),
+    data: z.array(zSessionEventResponse).nullish()
+});
+
+/**
+ * ToolResultTurnResponse
+ */
+export const zToolResultTurnResponse = z.object({
+    session_id: z.uuid(),
+    turn_id: z.uuid(),
+    kind: z.literal('tool_result'),
+    tool_name: z.string(),
+    tool_status: zToolResultStatus,
+    artifact_event_id: z.uuid().nullish(),
+    summary: z.string().nullish()
+});
+
+/**
+ * ApiResponse[Annotated[Union[ClarificationTurnResponse, ConfirmationTurnResponse, NoChangeTurnResponse, ProposalTurnResponse, ToolResultTurnResponse, CancelledTurnResponse], FieldInfo(annotation=NoneType, required=True, discriminator='kind')]]
+ */
+export const zApiResponseAnnotatedUnionClarificationTurnResponseConfirmationTurnResponseNoChangeTurnResponseProposalTurnResponseToolResultTurnResponseCancelledTurnResponseFieldInfoAnnotationNoneTypeRequiredTrueDiscriminatorKind = z.object({
+    status: z.literal('success').optional().default('success'),
+    code: z.int().gte(200).lte(299).optional().default(200),
+    message: z.string().optional().default('Xử lý thành công'),
+    data: z.discriminatedUnion('kind', [
+        zClarificationTurnResponse,
+        zConfirmationTurnResponse,
+        zNoChangeTurnResponse,
+        zProposalTurnResponse,
+        zToolResultTurnResponse,
+        zCancelledTurnResponse
+    ]).nullish()
 });
 
 /**
@@ -1869,6 +2009,17 @@ export const zGenerateDataModelDdlQuery = z.object({
  */
 export const zGenerateDataModelDdlResponse = zApiResponseDataModelDdlResponse;
 
+export const zGenerateDataModelAnalysisDocumentBody = zGenerateAnalysisDocumentRequest;
+
+export const zGenerateDataModelAnalysisDocumentPath = z.object({
+    project_id: z.uuid()
+});
+
+/**
+ * Successful Response
+ */
+export const zGenerateDataModelAnalysisDocumentResponse = zApiResponseAnalysisDocumentResponse;
+
 export const zGenerateDataModelPath = z.object({
     project_id: z.uuid()
 });
@@ -2103,7 +2254,7 @@ export const zSendProjectSessionMessagePath = z.object({
 /**
  * Successful Response
  */
-export const zSendProjectSessionMessageResponse = zApiResponseAnnotatedUnionClarificationTurnResponseNoChangeTurnResponseProposalTurnResponseFieldInfoAnnotationNoneTypeRequiredTrueDiscriminatorKind;
+export const zSendProjectSessionMessageResponse = zApiResponseAnnotatedUnionClarificationTurnResponseConfirmationTurnResponseNoChangeTurnResponseProposalTurnResponseToolResultTurnResponseCancelledTurnResponseFieldInfoAnnotationNoneTypeRequiredTrueDiscriminatorKind;
 
 export const zGetPendingProjectSessionClarificationPath = z.object({
     session_id: z.uuid()
@@ -2113,6 +2264,15 @@ export const zGetPendingProjectSessionClarificationPath = z.object({
  * Successful Response
  */
 export const zGetPendingProjectSessionClarificationResponse = zApiResponseUnionClarificationQuestionResponseNoneType;
+
+export const zGetPendingProjectSessionActionPath = z.object({
+    session_id: z.uuid()
+});
+
+/**
+ * Successful Response
+ */
+export const zGetPendingProjectSessionActionResponse = zApiResponseUnionClarificationQuestionResponseNoneType;
 
 export const zAnswerProjectSessionClarificationBody = zAnswerClarificationRequest;
 
@@ -2124,7 +2284,24 @@ export const zAnswerProjectSessionClarificationPath = z.object({
 /**
  * Successful Response
  */
-export const zAnswerProjectSessionClarificationResponse = zApiResponseAnnotatedUnionClarificationTurnResponseNoChangeTurnResponseProposalTurnResponseFieldInfoAnnotationNoneTypeRequiredTrueDiscriminatorKind;
+export const zAnswerProjectSessionClarificationResponse = zApiResponseAnnotatedUnionClarificationTurnResponseConfirmationTurnResponseNoChangeTurnResponseProposalTurnResponseToolResultTurnResponseCancelledTurnResponseFieldInfoAnnotationNoneTypeRequiredTrueDiscriminatorKind;
+
+export const zDecideProjectSessionPendingActionBody = zAnswerClarificationRequest;
+
+export const zDecideProjectSessionPendingActionPath = z.object({
+    session_id: z.uuid(),
+    question_id: z.uuid()
+});
+
+/**
+ * Successful Response
+ */
+export const zDecideProjectSessionPendingActionResponse = zApiResponseAnnotatedUnionClarificationTurnResponseConfirmationTurnResponseNoChangeTurnResponseProposalTurnResponseToolResultTurnResponseCancelledTurnResponseFieldInfoAnnotationNoneTypeRequiredTrueDiscriminatorKind;
+
+export const zDownloadProjectSessionToolArtifactPath = z.object({
+    session_id: z.uuid(),
+    tool_result_event_id: z.uuid()
+});
 
 export const zStreamProjectSessionEventsHeaders = z.object({
     'Last-Event-ID': z.uuid().nullish()

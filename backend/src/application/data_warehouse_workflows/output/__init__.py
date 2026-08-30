@@ -1,5 +1,8 @@
 """Public output models của Data Warehouse workflow."""
 
+from src.application.data_warehouse_workflows.output.conversation_tool_request import (
+    ConversationToolRequest,
+)
 from src.application.data_warehouse_workflows.output.models import (
     AgentTurnKind,
     AgentTurnOutput,
@@ -27,6 +30,7 @@ __all__ = [
     "AgentTurnKind",
     "AgentTurnOutput",
     "ConversationDesignResult",
+    "ConversationToolRequest",
     "GeneratedAnalyticalRequirement",
     "GeneratedDbml",
     "GeneratedRequirement",

@@ -113,9 +113,7 @@ def _default_success_message(kind: AgentTurnKind) -> str:
     return "The proposal is ready for review."
 
 
-def _success_events(
-    call: SessionEvent, result: AgentTurnOutput
-) -> tuple[tuple[SessionEvent, ...], EntityID | None]:
+def _success_events(call: SessionEvent, result: AgentTurnOutput) -> tuple[tuple[SessionEvent, ...], EntityID | None]:
     """Tạo technical result và đúng một public Agent message."""
     change_id = result.proposal.summary.id if result.proposal else None
     content = result.summary or _default_success_message(result.kind)
@@ -127,7 +125,5 @@ def _success_events(
             str(change_id) if change_id else None,
         )
     )
-    message = create_agent_message(
-        AgentMessageEventInput(event, content, change_id)
-    )
+    message = create_agent_message(AgentMessageEventInput(event, content, change_id))
     return (event, message), change_id

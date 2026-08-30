@@ -68,7 +68,7 @@
   "BTN_RESTORE_DRAFT": "Restore as draft",
   "BTN_SHOW_AGENT": "Open AI",
   "BTN_HIDE_AGENT": "Close AI",
-  "ARIA_ERROR_OVERVIEW_RULER": "Error overview ruler",
-  "TOOLTIP_ERROR_LINE": "Line {{line}}: {{message}}",
+  "TXT_ERROR_OVERVIEW_RULER": "Error overview ruler",
+  "TXT_ERROR_LINE_TOOLTIP": "Line {{line}}: {{message}}",
   "MSG_DBML_SYNTAX_ERROR_DEFAULT": "Invalid DBML syntax"
 }

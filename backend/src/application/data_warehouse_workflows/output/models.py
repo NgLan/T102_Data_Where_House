@@ -4,6 +4,9 @@ from dataclasses import dataclass
 from enum import StrEnum
 from typing import TYPE_CHECKING
 
+from src.application.data_warehouse_workflows.output.conversation_tool_request import (
+    ConversationToolRequest,
+)
 from src.domain.requirement.enums import RequirementPriority, RequirementType
 from src.domain.shared.types import EntityID
 
@@ -81,6 +84,10 @@ class AgentTurnKind(StrEnum):
     CLARIFICATION = "clarification"
     NO_CHANGE = "no_change"
     PROPOSAL = "proposal"
+    CONFIRMATION_REQUIRED = "confirmation_required"
+    TOOL_RESULT = "tool_result"
+    CANCELLED = "cancelled"
+    TOOL_REQUEST = "tool_request"
 
 
 @dataclass(frozen=True, slots=True)
@@ -94,6 +101,7 @@ class ConversationDesignResult:
     reason: str | None = None
     dbml: str | None = None
     summary: str | None = None
+    tool_request: ConversationToolRequest | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -108,6 +116,7 @@ class AgentTurnOutput:
     proposal: "ChangeProposalDetailOutput | None" = None
     summary: str | None = None
     original_intent: str | None = None
+    tool_request: ConversationToolRequest | None = None
 
 
 @dataclass(frozen=True, slots=True)

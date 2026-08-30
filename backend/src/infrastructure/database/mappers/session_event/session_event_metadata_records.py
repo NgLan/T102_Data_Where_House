@@ -1,12 +1,15 @@
 """Pydantic record cho payload JSONB của SessionEvent."""
 
 from pydantic import BaseModel, ConfigDict, Field
+from src.domain.data_model.enums import DataModelTargetKind
 from src.domain.project_session.enums import (
     AgentResultStatus,
     AgentType,
     ClarificationAnswerKind,
+    SessionQuestionKind,
     ToolResultStatus,
 )
+from src.domain.sandbox.enums import SandboxDbType, SandboxEndpointRisk
 
 
 class MetadataRecord(BaseModel):
@@ -21,6 +24,7 @@ class MessageRecord(MetadataRecord):
     model: str | None = None
     agent_result_id: str | None = None
     proposal_change_id: str | None = None
+    client_message_id: str | None = None
 
 
 class ClarificationQuestionRecord(MetadataRecord):
@@ -31,6 +35,15 @@ class ClarificationQuestionRecord(MetadataRecord):
     reason: str | None = None
     original_intent: str | None = None
     missing_information: str | None = None
+    question_kind: SessionQuestionKind = SessionQuestionKind.CLARIFICATION
+    tool_name: str | None = None
+    target_kind: DataModelTargetKind | None = None
+    proposal_change_id: str | None = None
+    db_type: SandboxDbType | None = None
+    reset_schema: bool | None = None
+    expected_revision: int | None = None
+    endpoint_risk: SandboxEndpointRisk | None = None
+    schema_name: str | None = None
 
 
 class ClarificationAnswerRecord(MetadataRecord):

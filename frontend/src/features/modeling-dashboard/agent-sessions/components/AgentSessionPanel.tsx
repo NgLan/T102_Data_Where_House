@@ -6,8 +6,8 @@ import type {
   AnswerClarificationRequest,
   ClarificationQuestionResponse,
   ProjectSessionResponse,
-  SessionEventResponse,
 } from "@/api";
+import type { ChatEvent } from "../types/chat-event";
 import { Button } from "@/common/components/ui/button";
 import { useAppNotification } from "@/common/notifications";
 import type { AgentDock } from "../hooks/use-agent-dock";
@@ -20,10 +20,11 @@ interface AgentSessionPanelProps {
   projectId: string;
   sessions: ProjectSessionResponse[];
   selectedSessionId: string | null;
-  events: SessionEventResponse[];
+  events: ChatEvent[];
   pendingClarification: ClarificationQuestionResponse | null;
   draft: string;
   isSending: boolean;
+  pendingClientMessageId: string | null;
   canSend: boolean;
   errorCode: string | null;
   onSelectSession: (id: string) => void;
@@ -84,6 +85,7 @@ export function AgentSessionPanel(props: AgentSessionPanelProps) {
       <AgentEventList
         events={props.events}
         isSending={props.isSending}
+        pendingClientMessageId={props.pendingClientMessageId}
         projectId={props.projectId}
       />
       {props.pendingClarification && (

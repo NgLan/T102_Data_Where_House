@@ -18,6 +18,12 @@ import {
   requestSessionRename,
 } from "../services/agent-session-api";
 import { useAgentTurnActions } from "./use-agent-turn-actions";
+import type { ChatEvent } from "../types/chat-event";
+import {
+  createOptimisticUserEvent,
+  markChatEventFailed,
+  mergeChatEvents,
+} from "../utils/chat-event-reducer";
 
 interface AgentSessionsOptions {
   projectId: string;
@@ -32,7 +38,7 @@ export function useAgentSessions(options: AgentSessionsOptions) {
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(
     null,
   );
-  const [events, setEvents] = useState<SessionEventResponse[]>([]);
+  const [events, setEvents] = useState<ChatEvent[]>([]);
   const [pendingClarification, setPendingClarification] =
     useState<ClarificationQuestionResponse | null>(null);
   const [errorCode, setErrorCode] = useState<string | null>(null);
@@ -40,11 +46,7 @@ export function useAgentSessions(options: AgentSessionsOptions) {
     useState<ChangeProposalDetailResponse | null>(null);
 
   const appendEvent = useCallback((event: SessionEventResponse) => {
-    setEvents((current) =>
-      current.some((item) => item.id === event.id)
-        ? current
-        : [...current, event],
-    );
+    setEvents((current) => mergeChatEvents(current, [event]));
   }, []);
   const loadSessions = useCallback(async () => {
     try {
@@ -63,7 +65,7 @@ export function useAgentSessions(options: AgentSessionsOptions) {
       requestSessionEvents(selectedSessionId),
       requestPendingClarification(selectedSessionId),
     ]).then(([history, clarification]) => {
-      setEvents(history);
+      setEvents((current) => mergeChatEvents(current, history));
       setPendingClarification(clarification);
       stream = openAgentEventStream({
         sessionId: selectedSessionId,
@@ -90,8 +92,18 @@ export function useAgentSessions(options: AgentSessionsOptions) {
       requestSessionEvents(sessionId),
       requestPendingClarification(sessionId),
     ]);
-    setEvents(history);
+    setEvents((current) => mergeChatEvents(current, history));
     setPendingClarification(clarification);
+  }, []);
+  const onOptimisticMessage = useCallback((input: {
+    sessionId: string;
+    clientMessageId: string;
+    content: string;
+  }) => {
+    setEvents((current) => [...current, createOptimisticUserEvent(input)]);
+  }, []);
+  const onMessageFailed = useCallback((clientMessageId: string) => {
+    setEvents((current) => markChatEventFailed(current, clientMessageId));
   }, []);
   const actions = useAgentTurnActions({
     projectId: options.projectId,
@@ -100,6 +112,8 @@ export function useAgentSessions(options: AgentSessionsOptions) {
     ensureLatestModel: options.ensureLatestModel,
     onProposal: options.onProposal,
     refreshSession,
+    onOptimisticMessage,
+    onMessageFailed,
   });
   const openProposal = useCallback(async (changeId: string) => {
     options.onInspectProposal();
@@ -118,6 +132,7 @@ export function useAgentSessions(options: AgentSessionsOptions) {
     pendingClarification,
     draft: actions.draft,
     isSending: actions.isSending,
+    pendingClientMessageId: actions.pendingClientMessageId,
     errorCode: actions.errorCode ?? errorCode,
     canSend: actions.canSend,
     selectSession,

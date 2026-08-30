@@ -18,6 +18,11 @@ def resolve_clarification_answer(
     if data.option_index is not None:
         return _resolve_option(metadata, data.option_index)
     custom = (data.custom_answer or "").strip()
+    if not metadata.allow_custom_answer:
+        raise BusinessException(
+            ErrorCode.VALIDATION_ERROR,
+            "Question này không chấp nhận câu trả lời tùy chỉnh.",
+        )
     if not custom:
         raise BusinessException(
             ErrorCode.VALIDATION_ERROR,

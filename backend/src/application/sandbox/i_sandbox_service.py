@@ -55,6 +55,13 @@ class ISandboxService(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    async def test_saved_connection(
+        self, data: GetSandboxConfigInput
+    ) -> ConnectionTestOutput:
+        """Kiểm tra config đã lưu mà không đưa credential qua Agent boundary."""
+        raise NotImplementedError
+
+    @abstractmethod
     async def execute_ddl(self, data: ExecuteSandboxDdlInput) -> SandboxExecutionOutput:
         """Thực thi script DDL bằng cấu hình đã lưu."""
         raise NotImplementedError

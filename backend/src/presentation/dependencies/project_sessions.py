@@ -39,6 +39,7 @@ from src.infrastructure.repositories.postgres_requirement_repository import (
 from src.infrastructure.repositories.postgres_session_event_repository import PostgresSessionEventRepository
 from src.infrastructure.security.pii_guard import PiiGuard
 from src.infrastructure.transaction.sqlalchemy_unit_of_work import SqlAlchemyUnitOfWork
+from src.presentation.dependencies.agent_tools import AgentToolDependency
 from src.presentation.dependencies.data_model_resources import get_pii_guard
 from src.presentation.dependencies.data_warehouse_workflows import DataWarehouseWorkflowDependency
 from src.presentation.dependencies.llm import get_summary_llm_gateway
@@ -49,6 +50,7 @@ def get_project_session_service(
     workflow: DataWarehouseWorkflowDependency,
     access: ProjectAccessDependency,
     pii_guard: Annotated[PiiGuard, Depends(get_pii_guard)],
+    tools: AgentToolDependency,
     session: AsyncSession = Depends(get_async_db_session),
 ) -> IProjectSessionService:
     """Nối repositories và workflow bằng cùng request-scoped session."""
@@ -64,6 +66,7 @@ def get_project_session_service(
             unit_of_work,
             access,
             context,
+            tools,
         )
     )
 

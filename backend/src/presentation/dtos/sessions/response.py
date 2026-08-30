@@ -12,7 +12,9 @@ from src.domain.project_session.enums import (
     SessionEventRole,
     SessionEventType,
     SessionPurpose,
+    SessionQuestionKind,
     SessionStatus,
+    ToolResultStatus,
 )
 
 
@@ -48,6 +50,19 @@ class SessionEventResponse(BaseModel):
     question_options: list[str]
     allow_custom_answer: bool
     answer_to_question_id: UUID | None
+    client_message_id: UUID | None
+    question_kind: SessionQuestionKind | None
+    tool_name: str | None
+    tool_status: ToolResultStatus | None
+    artifact_id: UUID | None
+    artifact_filename: str | None
+    artifact_mime_type: str | None
+    sandbox_schema_name: str | None
+    sandbox_endpoint_risk: str | None
+    executed_statements: int | None
+    succeeded_statements: int | None
+    failed_statements: int | None
+    total_duration_ms: float | None
     created_at: datetime
 
     @classmethod
@@ -80,6 +95,11 @@ class ClarificationQuestionResponse(BaseModel):
     options: list[str]
     allow_custom_answer: bool
     reason: str | None
+    question_kind: SessionQuestionKind
+    tool_name: str | None
+    endpoint_risk: str | None
+    schema_name: str | None
+    reset_schema: bool | None
     created_at: datetime
 
     @classmethod
@@ -108,8 +128,46 @@ class NoChangeTurnResponse(BaseModel):
     summary: str | None = None
 
 
+class ConfirmationTurnResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    session_id: UUID
+    turn_id: UUID
+    kind: Literal["confirmation_required"]
+    question_id: UUID
+    question: str
+    options: list[str]
+    allow_custom_answer: bool
+    question_kind: SessionQuestionKind
+    tool_name: str
+    summary: str | None = None
+
+
+class ToolResultTurnResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    session_id: UUID
+    turn_id: UUID
+    kind: Literal["tool_result"]
+    tool_name: str
+    tool_status: ToolResultStatus
+    artifact_event_id: UUID | None = None
+    summary: str | None = None
+
+
+class CancelledTurnResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    session_id: UUID
+    turn_id: UUID
+    kind: Literal["cancelled"]
+    summary: str | None = None
+
+
 AgentTurnResponse = Annotated[
-    ClarificationTurnResponse | NoChangeTurnResponse | ProposalTurnResponse,
+    ClarificationTurnResponse
+    | ConfirmationTurnResponse
+    | NoChangeTurnResponse
+    | ProposalTurnResponse
+    | ToolResultTurnResponse
+    | CancelledTurnResponse,
     Field(discriminator="kind"),
 ]
 
@@ -121,4 +179,10 @@ def create_agent_turn_response(output: SessionTurnOutput) -> AgentTurnResponse:
         return NoChangeTurnResponse.model_validate(output)
     if output.kind == "proposal" and output.proposal_change_id:
         return ProposalTurnResponse.model_validate(output)
+    if output.kind == "confirmation_required" and output.question_id:
+        return ConfirmationTurnResponse.model_validate(output)
+    if output.kind == "tool_result":
+        return ToolResultTurnResponse.model_validate(output)
+    if output.kind == "cancelled":
+        return CancelledTurnResponse.model_validate(output)
     raise ValueError("Agent turn result is incomplete.")

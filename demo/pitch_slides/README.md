@@ -82,4 +82,43 @@ phase1/pitch_slides/
    ```
    *(Tự động đồng bộ từ HTML slides, xuất slide widescreen 16:9 siêu nét)*
 
+---
+
+## 🔤 Danh Sách Font Chữ Trong Slide HTML & Khắc Phục Lỗi Font PPTX
+
+### 1. Bảng danh sách font đang sử dụng trong HTML
+
+| Biến CSS | Tên Font | Phân loại & Vai trò | Link Google Fonts |
+| :--- | :--- | :--- | :--- |
+| `--f-display` | **Montserrat** (700, 800, 900) | Tiêu đề chính (Heading), Số liệu nổi bật, Wordmark | [Google Fonts - Montserrat](https://fonts.google.com/specimen/Montserrat) |
+| `--f-body` | **Be Vietnam Pro** (400, 500, 600, 700) | Toàn bộ văn bản nội dung, hỗ trợ 100% tiếng Việt chuẩn | [Google Fonts - Be Vietnam Pro](https://fonts.google.com/specimen/Be+Vietnam+Pro) |
+| `--f-hand` | **Patrick Hand** & **Mali** (500, 600, 700) | Chữ viết tay phong cách Comic/Storyboard, note ghi chú | [Patrick Hand](https://fonts.google.com/specimen/Patrick+Hand) / [Mali](https://fonts.google.com/specimen/Mali) |
+| `--f-mono` | **JetBrains Mono** (500, 700) | Khối code SQL, DDL, Terminal | [Google Fonts - JetBrains Mono](https://fonts.google.com/specimen/JetBrains+Mono) |
+
+---
+
+### 2. Nguyên nhân bị lỗi font khi trích xuất qua tool (ILovePDF / Smallpdf)
+
+Khi tool chuyển từ PDF sang PPTX, nó tạo các Text Box với tên font gốc (`Be Vietnam Pro`, `Mali`, `Montserrat`...). Tuy nhiên, nếu trên **máy tính của bạn chưa cài đặt các bộ font này vào hệ điều hành Windows**, PowerPoint sẽ tự động dùng font mặc định để thay thế (fallback). Do bộ gõ tiếng Việt và bảng glyph khác nhau, các ký tự có dấu (`ơ`, `ư`, `ê`, `đ`, `ễ`...) sẽ bị nhảy size chữ, lỗi ô vuông hoặc bể layout.
+
+---
+
+### 3. Cách khắc phục
+
+#### Cách A: Cài đặt bộ font Google (Khuyên Dùng — Giữ 100% giao diện gốc)
+1. Tải 2 font chính: [Be Vietnam Pro](https://fonts.google.com/specimen/Be+Vietnam+Pro) và [Montserrat](https://fonts.google.com/specimen/Montserrat).
+2. Giải nén $\rightarrow$ Chọn toàn bộ file `.ttf` $\rightarrow$ Chuột phải chọn **Install** (hoặc *Install for all users*).
+3. Khởi động lại PowerPoint, file trích xuất sẽ hiển thị đẹp chuẩn 100% không bị lỗi dấu.
+
+#### Cách B: Chuyển sang Font mặc định có sẵn trên mọi máy Windows / Office
+Nếu muốn gửi file PPTX cho người khác mà không yêu cầu cài font, trong PowerPoint hãy dùng tính năng **Replace Fonts** (Thay thế phông chữ) hoặc chỉnh sửa sang các font mặc định sau:
+
+| Vị trí / Thành phần | Font gốc trên Web | Font thay thế mặc định Windows (Không lỗi Tiếng Việt) |
+| :--- | :--- | :--- |
+| **Nội dung / Đoạn văn (Body)** | `Be Vietnam Pro` | **`Segoe UI`** (Khuyên dùng - rất đẹp), `Calibri`, `Arial`, `Tahoma` |
+| **Tiêu đề lớn (Heading/Title)** | `Montserrat` | **`Segoe UI Black`** / **`Segoe UI Semibold`**, `Arial Black`, `Trebuchet MS` |
+| **Chữ viết tay (Handwriting/Note)** | `Patrick Hand` / `Mali` | **`Ink Free`** (Có sẵn trên Windows 10/11) hoặc `Comic Sans MS` |
+| **Mã code (Code/SQL)** | `JetBrains Mono` | **`Consolas`**, `Courier New` |
+
+
 

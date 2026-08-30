@@ -4,7 +4,9 @@ from dataclasses import dataclass
 
 from src.common.exceptions.business import BusinessException
 from src.common.exceptions.error_codes import ErrorCode
-from src.domain.project_session.enums import ClarificationAnswerKind
+from src.domain.data_model.enums import DataModelTargetKind
+from src.domain.project_session.enums import ClarificationAnswerKind, SessionQuestionKind
+from src.domain.sandbox.enums import SandboxDbType, SandboxEndpointRisk
 from src.domain.shared.enum_rules import normalize_str_enum
 from src.domain.shared.types import EntityID
 from src.domain.shared.value_object import BaseValueObject
@@ -19,12 +21,24 @@ class ClarificationQuestionMetadata(BaseValueObject):
     reason: str | None = None
     original_intent: str | None = None
     missing_information: str | None = None
+    question_kind: SessionQuestionKind = SessionQuestionKind.CLARIFICATION
+    tool_name: str | None = None
+    target_kind: DataModelTargetKind | None = None
+    proposal_change_id: EntityID | None = None
+    db_type: SandboxDbType | None = None
+    reset_schema: bool | None = None
+    expected_revision: int | None = None
+    endpoint_risk: SandboxEndpointRisk | None = None
+    schema_name: str | None = None
 
     def __post_init__(self) -> None:
         normalized = tuple(option.strip() for option in self.options if option.strip())
         if not 1 <= len(normalized) <= 4 or len(set(normalized)) != len(normalized):
             _raise_invalid("Clarification phải có từ một đến bốn lựa chọn duy nhất.")
-        if not self.allow_custom_answer:
+        if (
+            self.question_kind is SessionQuestionKind.CLARIFICATION
+            and not self.allow_custom_answer
+        ):
             _raise_invalid("Clarification phải cho phép người dùng nhập câu trả lời khác.")
         object.__setattr__(self, "options", normalized)
         object.__setattr__(self, "reason", self.reason.strip() if self.reason else None)

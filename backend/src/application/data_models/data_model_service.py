@@ -9,6 +9,7 @@ from src.application.data_models.input import (
     GetChangeProposalInput,
     GetDataModelInput,
     GetPendingChangeProposalInput,
+    ResolveDataModelTargetInput,
     UpdateDataModelInput,
     ValidateDataModelInput,
 )
@@ -17,6 +18,7 @@ from src.application.data_models.output import (
     ChangeProposalSummaryOutput,
     DataModelDdlOutput,
     DataModelOutput,
+    ResolvedDataModelTargetOutput,
 )
 from src.application.data_warehouse_workflows.i_data_warehouse_workflow_service import (
     IDataModelValidationEngine,
@@ -25,6 +27,7 @@ from src.application.data_warehouse_workflows.output import ValidationIssue, Val
 from src.common.exceptions.business import BusinessException
 from src.common.exceptions.error_codes import ErrorCode
 from src.domain.data_model.entities import DataModel, DataModelChange
+from src.domain.data_model.enums import DataModelChangeStatus, DataModelTargetKind
 from src.domain.data_model.i_data_model_change_repository import IDataModelChangeRepository
 from src.domain.data_model.i_data_model_repository import IDataModelRepository
 from src.domain.project.entities import Project
@@ -116,14 +119,70 @@ class DataModelService(IDataModelService):
 
     @override
     async def generate_ddl(self, data: GenerateDataModelDdlInput) -> DataModelDdlOutput:
-        """Sinh DDL từ snapshot hiện hành sau khi kiểm tra membership."""
+        """Sinh DDL từ target đã resolve sau khi kiểm tra membership."""
+        target = await self.resolve_target(
+            ResolveDataModelTargetInput(data.project_id, data.target)
+        )
+        return DataModelDdlOutput(
+            ddl=self._ddl_generator.generate_ddl(target.dbml, data.db_type),
+            db_type=data.db_type,
+            data_model_revision=target.revision,
+            target_kind=target.kind,
+            proposal_change_id=target.proposal_change_id,
+            current_revision=target.current_revision or target.revision,
+            base_revision=target.base_revision or target.revision,
+        )
+
+    @override
+    async def resolve_target(
+        self, data: ResolveDataModelTargetInput
+    ) -> ResolvedDataModelTargetOutput:
+        """Resolve target mà không fallback proposal sang current model."""
         await self._access.require_member(data.project_id)
         model = await self._require_project_model(data.project_id)
-        return DataModelDdlOutput(
-            ddl=self._ddl_generator.generate_ddl(model.dbml, data.db_type),
-            db_type=data.db_type,
-            data_model_revision=model.revision,
+        if data.target.kind is DataModelTargetKind.CURRENT_MODEL:
+            return ResolvedDataModelTargetOutput(
+                data.project_id,
+                model.dbml,
+                model.revision,
+                DataModelTargetKind.CURRENT_MODEL,
+                model.id,
+                current_revision=model.revision,
+                base_revision=model.revision,
+            )
+        change = await self._resolve_proposal(model, data.target.change_id)
+        return ResolvedDataModelTargetOutput(
+            data.project_id,
+            change.proposed_dbml,
+            change.base_revision,
+            DataModelTargetKind.PROPOSAL,
+            model.id,
+            change.id,
+            current_revision=model.revision,
+            base_revision=change.base_revision,
         )
+
+    async def _resolve_proposal(
+        self, model: DataModel, change_id: EntityID | None
+    ) -> DataModelChange:
+        change = (
+            await self._changes.get_by_id(change_id)
+            if change_id
+            else await self._changes.get_proposed_by_data_model_and_user(
+                model.id, self._access.actor_id
+            )
+        )
+        if change is None or change.data_model_id != model.id:
+            raise BusinessException(
+                ErrorCode.DATA_MODEL_CHANGE_NOT_FOUND,
+                "Không tìm thấy proposal phù hợp với target được yêu cầu.",
+            )
+        if change.status is not DataModelChangeStatus.PROPOSED:
+            raise BusinessException(
+                ErrorCode.DATA_MODEL_CHANGE_OUTDATED,
+                "Proposal không còn ở trạng thái chờ review.",
+            )
+        return change
 
     @override
     async def accept_change_proposal(self, data: ChangeProposalIdInput) -> DataModelOutput:

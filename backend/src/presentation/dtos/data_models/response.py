@@ -4,12 +4,14 @@ from datetime import datetime
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
+from src.application.data_model_analysis.models import AnalysisDocumentOutput
 from src.application.data_models.output import DataModelDdlOutput, DataModelOutput
 from src.application.data_warehouse_workflows.output import (
     ValidationIssue,
     ValidationIssueCode,
     ValidationSeverity,
 )
+from src.domain.data_model.enums import DataModelTargetKind
 from src.domain.sandbox.enums import SandboxDbType
 
 
@@ -58,8 +60,30 @@ class DataModelDdlResponse(BaseModel):
     ddl: str = Field(description="Script DDL đã sinh")
     db_type: SandboxDbType = Field(description="Database type đích")
     data_model_revision: int = Field(ge=1, description="Revision Data Model nguồn")
+    target_kind: DataModelTargetKind
+    proposal_change_id: UUID | None = None
+    current_revision: int = Field(ge=1)
+    base_revision: int = Field(ge=1)
 
     @classmethod
     def from_application(cls, output: DataModelDdlOutput) -> "DataModelDdlResponse":
         """Ánh xạ application DDL output sang response DTO."""
+        return cls.model_validate(output)
+
+
+class AnalysisDocumentResponse(BaseModel):
+    """Tài liệu Markdown và metadata target nguồn."""
+
+    model_config = ConfigDict(from_attributes=True)
+    filename: str
+    mime_type: str
+    content: str
+    data_model_revision: int = Field(ge=1)
+    target_kind: DataModelTargetKind
+    proposal_change_id: UUID | None = None
+    current_revision: int = Field(ge=1)
+    base_revision: int = Field(ge=1)
+
+    @classmethod
+    def from_application(cls, output: AnalysisDocumentOutput) -> "AnalysisDocumentResponse":
         return cls.model_validate(output)

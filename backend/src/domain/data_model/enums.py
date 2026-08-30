@@ -10,3 +10,10 @@ class DataModelChangeStatus(StrEnum):
     ACCEPTED = "ACCEPTED"
     REJECTED = "REJECTED"
     CONFLICTED = "CONFLICTED"
+
+
+class DataModelTargetKind(StrEnum):
+    """Snapshot được một capability đọc mà không thay đổi lifecycle model."""
+
+    CURRENT_MODEL = "CURRENT_MODEL"
+    PROPOSAL = "PROPOSAL"

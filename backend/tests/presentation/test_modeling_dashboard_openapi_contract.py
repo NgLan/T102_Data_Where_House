@@ -17,6 +17,13 @@ def test_modeling_dashboard_endpoints_are_exported() -> None:
     assert "post" in paths["/api/v1/sessions/{session_id}/messages"]
     assert "get" in paths["/api/v1/sessions/{session_id}/clarification"]
     assert "post" in paths["/api/v1/sessions/{session_id}/clarifications/{question_id}/answer"]
+    assert "get" in paths["/api/v1/sessions/{session_id}/pending-action"]
+    assert "post" in paths[
+        "/api/v1/sessions/{session_id}/pending-actions/{question_id}/decision"
+    ]
+    assert "get" in paths[
+        "/api/v1/sessions/{session_id}/events/{tool_result_event_id}/artifact"
+    ]
 
 
 def test_agent_turn_contract_is_discriminated() -> None:
@@ -27,8 +34,11 @@ def test_agent_turn_contract_is_discriminated() -> None:
     wrapper_name = response["$ref"].rsplit("/", maxsplit=1)[-1]
     turn_schema = document["components"]["schemas"][wrapper_name]["properties"]["data"]["anyOf"][0]
     assert set(turn_schema["discriminator"]["mapping"]) == {
+        "cancelled",
         "clarification",
+        "confirmation_required",
         "no_change",
         "proposal",
+        "tool_result",
     }
-    assert len(turn_schema["oneOf"]) == 3
+    assert len(turn_schema["oneOf"]) == 6

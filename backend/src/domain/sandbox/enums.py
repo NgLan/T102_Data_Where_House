@@ -20,3 +20,11 @@ class SandboxStatus(StrEnum):
     CONFIGURED = "CONFIGURED"
     CONNECTED = "CONNECTED"
     FAILED = "FAILED"
+
+
+class SandboxEndpointRisk(StrEnum):
+    """Mức cảnh báo dựa trên endpoint literal, không thực hiện DNS lookup."""
+
+    LOOPBACK = "LOOPBACK"
+    PRIVATE_NETWORK = "PRIVATE_NETWORK"
+    REMOTE = "REMOTE"

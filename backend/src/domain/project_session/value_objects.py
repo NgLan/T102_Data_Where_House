@@ -36,6 +36,7 @@ class MessageMetadata(BaseValueObject):
     model: str | None = None
     agent_result_id: EntityID | None = None
     proposal_change_id: EntityID | None = None
+    client_message_id: EntityID | None = None
 
 
 @dataclass(frozen=True)

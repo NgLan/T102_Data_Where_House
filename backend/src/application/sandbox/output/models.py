@@ -3,7 +3,8 @@
 from dataclasses import dataclass
 
 from src.domain.sandbox.entities import SandboxConfig
-from src.domain.sandbox.enums import SandboxDbType
+from src.domain.sandbox.enums import SandboxDbType, SandboxEndpointRisk
+from src.domain.sandbox.rules import classify_sandbox_endpoint
 from src.domain.shared.types import EntityID
 
 
@@ -18,6 +19,7 @@ class SandboxConfigOutput:
     username: str | None
     schema_name: str | None
     status: str = "CONFIGURED"
+    endpoint_risk: SandboxEndpointRisk = SandboxEndpointRisk.REMOTE
 
     @classmethod
     def from_domain(cls, config: SandboxConfig) -> "SandboxConfigOutput":
@@ -32,6 +34,7 @@ class SandboxConfigOutput:
             username=config.username,
             schema_name=config.schema_name,
             status=config.status.value if hasattr(config.status, "value") else str(config.status),
+            endpoint_risk=classify_sandbox_endpoint(config.host),
         )
 
 

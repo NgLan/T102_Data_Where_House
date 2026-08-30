@@ -1,10 +1,11 @@
 """Quy tắc nghiệp vụ cho cấu hình Sandbox."""
 
+import ipaddress
 import re
 
 from src.common.exceptions.business import BusinessException
 from src.common.exceptions.error_codes import ErrorCode
-from src.domain.sandbox.enums import SandboxDbType
+from src.domain.sandbox.enums import SandboxDbType, SandboxEndpointRisk
 
 MIN_PORT = 1
 MAX_PORT = 65_535
@@ -77,6 +78,22 @@ def normalize_schema_name(schema_name: str | None) -> str | None:
     if len(normalized) > MAX_SCHEMA_NAME_LENGTH or not SCHEMA_NAME_PATTERN.fullmatch(normalized):
         _raise_invalid_config("Tên schema Sandbox không hợp lệ.")
     return normalized
+
+
+def classify_sandbox_endpoint(host: str) -> SandboxEndpointRisk:
+    """Phân loại host literal mà không phát sinh network side effect."""
+    normalized = host.strip().casefold().rstrip(".")
+    if normalized == "localhost":
+        return SandboxEndpointRisk.LOOPBACK
+    try:
+        address = ipaddress.ip_address(normalized)
+    except ValueError:
+        return SandboxEndpointRisk.REMOTE
+    if address.is_loopback:
+        return SandboxEndpointRisk.LOOPBACK
+    if address.is_private or address.is_link_local:
+        return SandboxEndpointRisk.PRIVATE_NETWORK
+    return SandboxEndpointRisk.REMOTE
 
 
 def _raise_invalid_config(message: str) -> None:

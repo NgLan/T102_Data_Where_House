@@ -2,7 +2,7 @@
 
 import { type Client, type ClientMeta, formDataBodySerializer, type Options as Options2, type RequestResult, type TDataShape } from './client';
 import { client } from './client.gen';
-import type { AcceptChangeProposalData, AcceptChangeProposalErrors, AcceptChangeProposalResponses, AnalyzeProjectRequirementClarificationData, AnalyzeProjectRequirementClarificationErrors, AnalyzeProjectRequirementClarificationResponses, AnswerProjectRequirementClarificationData, AnswerProjectRequirementClarificationErrors, AnswerProjectRequirementClarificationResponses, AnswerProjectSessionClarificationData, AnswerProjectSessionClarificationErrors, AnswerProjectSessionClarificationResponses, ChooseProjectRequirementContinuationData, ChooseProjectRequirementContinuationErrors, ChooseProjectRequirementContinuationResponses, CreateAiDataModelProposalData, CreateAiDataModelProposalErrors, CreateAiDataModelProposalResponses, CreateProjectData, CreateProjectErrors, CreateProjectResponses, CreateProjectSessionData, CreateProjectSessionErrors, CreateProjectSessionResponses, DeleteProjectData, DeleteProjectDataSourceData, DeleteProjectDataSourceErrors, DeleteProjectDataSourceResponses, DeleteProjectErrors, DeleteProjectRequirementFileData, DeleteProjectRequirementFileErrors, DeleteProjectRequirementFileResponses, DeleteProjectResponses, DeleteRequirementData, DeleteRequirementErrors, DeleteRequirementResponses, ExecuteSandboxDdlData, ExecuteSandboxDdlErrors, ExecuteSandboxDdlResponses, GenerateDataModelData, GenerateDataModelDdlData, GenerateDataModelDdlErrors, GenerateDataModelDdlResponses, GenerateDataModelErrors, GenerateDataModelResponses, GetCurrentUserData, GetCurrentUserErrors, GetCurrentUserResponses, GetDataModelData, GetDataModelErrors, GetDataModelResponses, GetDataModelValidationIssuesData, GetDataModelValidationIssuesErrors, GetDataModelValidationIssuesResponses, GetPendingProjectDataModelChangeData, GetPendingProjectDataModelChangeErrors, GetPendingProjectDataModelChangeResponses, GetPendingProjectSessionClarificationData, GetPendingProjectSessionClarificationErrors, GetPendingProjectSessionClarificationResponses, GetProjectAnalysisStatusData, GetProjectAnalysisStatusErrors, GetProjectAnalysisStatusResponses, GetProjectData, GetProjectDataModelChangeData, GetProjectDataModelChangeErrors, GetProjectDataModelChangeResponses, GetProjectDataSourcePreviewData, GetProjectDataSourcePreviewErrors, GetProjectDataSourcePreviewResponses, GetProjectErrors, GetProjectRequirementClarificationData, GetProjectRequirementClarificationErrors, GetProjectRequirementClarificationResponses, GetProjectResponses, GetProjectSessionData, GetProjectSessionErrors, GetProjectSessionResponses, GetProjectSourceCoverageData, GetProjectSourceCoverageErrors, GetProjectSourceCoverageResponses, GetSandboxConfigData, GetSandboxConfigErrors, GetSandboxConfigResponses, HealthCheckHealthGetData, HealthCheckHealthGetResponses, ListProjectDataSourcesData, ListProjectDataSourcesErrors, ListProjectDataSourcesResponses, ListProjectRequirementFilesData, ListProjectRequirementFilesErrors, ListProjectRequirementFilesResponses, ListProjectsData, ListProjectsErrors, ListProjectSessionEventsData, ListProjectSessionEventsErrors, ListProjectSessionEventsResponses, ListProjectSessionsData, ListProjectSessionsErrors, ListProjectSessionsResponses, ListProjectsResponses, ListRequirementsData, ListRequirementsErrors, ListRequirementsResponses, LivenessCheckHealthLiveGetData, LivenessCheckHealthLiveGetResponses, LoginData, LoginErrors, LoginResponses, LogoutData, LogoutErrors, LogoutResponses, ReadinessCheckHealthReadyGetData, ReadinessCheckHealthReadyGetErrors, ReadinessCheckHealthReadyGetResponses, ReanalyzeProjectData, ReanalyzeProjectErrors, ReanalyzeProjectResponses, RecheckProjectSourceCoverageData, RecheckProjectSourceCoverageErrors, RecheckProjectSourceCoverageResponses, RegenerateDataModelData, RegenerateDataModelErrors, RegenerateDataModelResponses, RegisterData, RegisterErrors, RegisterResponses, RejectChangeProposalData, RejectChangeProposalErrors, RejectChangeProposalResponses, RenameProjectSessionData, RenameProjectSessionErrors, RenameProjectSessionResponses, ResolveProjectSourceCoverageData, ResolveProjectSourceCoverageErrors, ResolveProjectSourceCoverageResponses, RunProjectInitializationWorkflowData, RunProjectInitializationWorkflowErrors, RunProjectInitializationWorkflowResponses, SaveProjectRawRequirementData, SaveProjectRawRequirementErrors, SaveProjectRawRequirementResponses, SaveSandboxConfigData, SaveSandboxConfigErrors, SaveSandboxConfigResponses, SendProjectRequirementClarificationMessageData, SendProjectRequirementClarificationMessageErrors, SendProjectRequirementClarificationMessageResponses, SendProjectSessionMessageData, SendProjectSessionMessageErrors, SendProjectSessionMessageResponses, StreamProjectSessionEventsData, StreamProjectSessionEventsErrors, StreamProjectSessionEventsResponses, TestSandboxConnectionData, TestSandboxConnectionErrors, TestSandboxConnectionResponses, UpdateDataModelData, UpdateDataModelErrors, UpdateDataModelResponses, UpdateProjectData, UpdateProjectDataSourceColumnData, UpdateProjectDataSourceColumnErrors, UpdateProjectDataSourceColumnResponses, UpdateProjectErrors, UpdateProjectResponses, UploadProjectDataSourcesData, UploadProjectDataSourcesErrors, UploadProjectDataSourcesResponses, UploadProjectRequirementFilesData, UploadProjectRequirementFilesErrors, UploadProjectRequirementFilesResponses, ValidateDataModelDraftData, ValidateDataModelDraftErrors, ValidateDataModelDraftResponses } from './types.gen';
+import type { AcceptChangeProposalData, AcceptChangeProposalErrors, AcceptChangeProposalResponses, AnalyzeProjectRequirementClarificationData, AnalyzeProjectRequirementClarificationErrors, AnalyzeProjectRequirementClarificationResponses, AnswerProjectRequirementClarificationData, AnswerProjectRequirementClarificationErrors, AnswerProjectRequirementClarificationResponses, AnswerProjectSessionClarificationData, AnswerProjectSessionClarificationErrors, AnswerProjectSessionClarificationResponses, ChooseProjectRequirementContinuationData, ChooseProjectRequirementContinuationErrors, ChooseProjectRequirementContinuationResponses, CreateAiDataModelProposalData, CreateAiDataModelProposalErrors, CreateAiDataModelProposalResponses, CreateProjectData, CreateProjectErrors, CreateProjectResponses, CreateProjectSessionData, CreateProjectSessionErrors, CreateProjectSessionResponses, DecideProjectSessionPendingActionData, DecideProjectSessionPendingActionErrors, DecideProjectSessionPendingActionResponses, DeleteProjectData, DeleteProjectDataSourceData, DeleteProjectDataSourceErrors, DeleteProjectDataSourceResponses, DeleteProjectErrors, DeleteProjectRequirementFileData, DeleteProjectRequirementFileErrors, DeleteProjectRequirementFileResponses, DeleteProjectResponses, DeleteRequirementData, DeleteRequirementErrors, DeleteRequirementResponses, DownloadProjectSessionToolArtifactData, DownloadProjectSessionToolArtifactErrors, DownloadProjectSessionToolArtifactResponses, ExecuteSandboxDdlData, ExecuteSandboxDdlErrors, ExecuteSandboxDdlResponses, GenerateDataModelAnalysisDocumentData, GenerateDataModelAnalysisDocumentErrors, GenerateDataModelAnalysisDocumentResponses, GenerateDataModelData, GenerateDataModelDdlData, GenerateDataModelDdlErrors, GenerateDataModelDdlResponses, GenerateDataModelErrors, GenerateDataModelResponses, GetCurrentUserData, GetCurrentUserErrors, GetCurrentUserResponses, GetDataModelData, GetDataModelErrors, GetDataModelResponses, GetDataModelValidationIssuesData, GetDataModelValidationIssuesErrors, GetDataModelValidationIssuesResponses, GetPendingProjectDataModelChangeData, GetPendingProjectDataModelChangeErrors, GetPendingProjectDataModelChangeResponses, GetPendingProjectSessionActionData, GetPendingProjectSessionActionErrors, GetPendingProjectSessionActionResponses, GetPendingProjectSessionClarificationData, GetPendingProjectSessionClarificationErrors, GetPendingProjectSessionClarificationResponses, GetProjectAnalysisStatusData, GetProjectAnalysisStatusErrors, GetProjectAnalysisStatusResponses, GetProjectData, GetProjectDataModelChangeData, GetProjectDataModelChangeErrors, GetProjectDataModelChangeResponses, GetProjectDataSourcePreviewData, GetProjectDataSourcePreviewErrors, GetProjectDataSourcePreviewResponses, GetProjectErrors, GetProjectRequirementClarificationData, GetProjectRequirementClarificationErrors, GetProjectRequirementClarificationResponses, GetProjectResponses, GetProjectSessionData, GetProjectSessionErrors, GetProjectSessionResponses, GetProjectSourceCoverageData, GetProjectSourceCoverageErrors, GetProjectSourceCoverageResponses, GetSandboxConfigData, GetSandboxConfigErrors, GetSandboxConfigResponses, HealthCheckHealthGetData, HealthCheckHealthGetResponses, ListProjectDataSourcesData, ListProjectDataSourcesErrors, ListProjectDataSourcesResponses, ListProjectRequirementFilesData, ListProjectRequirementFilesErrors, ListProjectRequirementFilesResponses, ListProjectsData, ListProjectsErrors, ListProjectSessionEventsData, ListProjectSessionEventsErrors, ListProjectSessionEventsResponses, ListProjectSessionsData, ListProjectSessionsErrors, ListProjectSessionsResponses, ListProjectsResponses, ListRequirementsData, ListRequirementsErrors, ListRequirementsResponses, LivenessCheckHealthLiveGetData, LivenessCheckHealthLiveGetResponses, LoginData, LoginErrors, LoginResponses, LogoutData, LogoutErrors, LogoutResponses, ReadinessCheckHealthReadyGetData, ReadinessCheckHealthReadyGetErrors, ReadinessCheckHealthReadyGetResponses, ReanalyzeProjectData, ReanalyzeProjectErrors, ReanalyzeProjectResponses, RecheckProjectSourceCoverageData, RecheckProjectSourceCoverageErrors, RecheckProjectSourceCoverageResponses, RegenerateDataModelData, RegenerateDataModelErrors, RegenerateDataModelResponses, RegisterData, RegisterErrors, RegisterResponses, RejectChangeProposalData, RejectChangeProposalErrors, RejectChangeProposalResponses, RenameProjectSessionData, RenameProjectSessionErrors, RenameProjectSessionResponses, ResolveProjectSourceCoverageData, ResolveProjectSourceCoverageErrors, ResolveProjectSourceCoverageResponses, RunProjectInitializationWorkflowData, RunProjectInitializationWorkflowErrors, RunProjectInitializationWorkflowResponses, SaveProjectRawRequirementData, SaveProjectRawRequirementErrors, SaveProjectRawRequirementResponses, SaveSandboxConfigData, SaveSandboxConfigErrors, SaveSandboxConfigResponses, SendProjectRequirementClarificationMessageData, SendProjectRequirementClarificationMessageErrors, SendProjectRequirementClarificationMessageResponses, SendProjectSessionMessageData, SendProjectSessionMessageErrors, SendProjectSessionMessageResponses, StreamProjectSessionEventsData, StreamProjectSessionEventsErrors, StreamProjectSessionEventsResponses, TestSandboxConnectionData, TestSandboxConnectionErrors, TestSandboxConnectionResponses, UpdateDataModelData, UpdateDataModelErrors, UpdateDataModelResponses, UpdateProjectData, UpdateProjectDataSourceColumnData, UpdateProjectDataSourceColumnErrors, UpdateProjectDataSourceColumnResponses, UpdateProjectErrors, UpdateProjectResponses, UploadProjectDataSourcesData, UploadProjectDataSourcesErrors, UploadProjectDataSourcesResponses, UploadProjectRequirementFilesData, UploadProjectRequirementFilesErrors, UploadProjectRequirementFilesResponses, ValidateDataModelDraftData, ValidateDataModelDraftErrors, ValidateDataModelDraftResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -534,6 +534,23 @@ export const generateDataModelDdl = <ThrowOnError extends boolean = false>(optio
 });
 
 /**
+ * Generate Data Model Analysis Document
+ */
+export const generateDataModelAnalysisDocument = <ThrowOnError extends boolean = false>(options: Options<GenerateDataModelAnalysisDocumentData, ThrowOnError>): RequestResult<GenerateDataModelAnalysisDocumentResponses, GenerateDataModelAnalysisDocumentErrors, ThrowOnError> => (options.client ?? client).post<GenerateDataModelAnalysisDocumentResponses, GenerateDataModelAnalysisDocumentErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'p102_access_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/projects/{project_id}/data-model/analysis-document',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
  * Generate Data Model
  *
  * Chạy Save & Analyze và chỉ tạo Data Model đầu tiên.
@@ -900,6 +917,19 @@ export const getPendingProjectSessionClarification = <ThrowOnError extends boole
 });
 
 /**
+ * Get Pending Project Session Action
+ */
+export const getPendingProjectSessionAction = <ThrowOnError extends boolean = false>(options: Options<GetPendingProjectSessionActionData, ThrowOnError>): RequestResult<GetPendingProjectSessionActionResponses, GetPendingProjectSessionActionErrors, ThrowOnError> => (options.client ?? client).get<GetPendingProjectSessionActionResponses, GetPendingProjectSessionActionErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'p102_access_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/sessions/{session_id}/pending-action',
+    ...options
+});
+
+/**
  * Answer Project Session Clarification
  */
 export const answerProjectSessionClarification = <ThrowOnError extends boolean = false>(options: Options<AnswerProjectSessionClarificationData, ThrowOnError>): RequestResult<AnswerProjectSessionClarificationResponses, AnswerProjectSessionClarificationErrors, ThrowOnError> => (options.client ?? client).post<AnswerProjectSessionClarificationResponses, AnswerProjectSessionClarificationErrors, ThrowOnError>({
@@ -914,6 +944,36 @@ export const answerProjectSessionClarification = <ThrowOnError extends boolean =
         'Content-Type': 'application/json',
         ...options.headers
     }
+});
+
+/**
+ * Decide Project Session Pending Action
+ */
+export const decideProjectSessionPendingAction = <ThrowOnError extends boolean = false>(options: Options<DecideProjectSessionPendingActionData, ThrowOnError>): RequestResult<DecideProjectSessionPendingActionResponses, DecideProjectSessionPendingActionErrors, ThrowOnError> => (options.client ?? client).post<DecideProjectSessionPendingActionResponses, DecideProjectSessionPendingActionErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'p102_access_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/sessions/{session_id}/pending-actions/{question_id}/decision',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Download Project Session Tool Artifact
+ */
+export const downloadProjectSessionToolArtifact = <ThrowOnError extends boolean = false>(options: Options<DownloadProjectSessionToolArtifactData, ThrowOnError>): RequestResult<DownloadProjectSessionToolArtifactResponses, DownloadProjectSessionToolArtifactErrors, ThrowOnError> => (options.client ?? client).get<DownloadProjectSessionToolArtifactResponses, DownloadProjectSessionToolArtifactErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'p102_access_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/sessions/{session_id}/events/{tool_result_event_id}/artifact',
+    ...options
 });
 
 /**

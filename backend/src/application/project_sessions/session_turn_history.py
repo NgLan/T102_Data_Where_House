@@ -28,15 +28,14 @@ def create_stale_turn_event(
         (
             event
             for event in reversed(events)
-            if event.turn_id == session.active_turn_id
-            and event.type is SessionEventType.AGENT_CALL
+            if event.turn_id == session.active_turn_id and event.type is SessionEventType.AGENT_CALL
         ),
         None,
     )
     return (
-        create_agent_result(AgentResultEventInput(
-            call, AgentResultStatus.FAILED, "Agent turn timed out before completion."
-        ))
+        create_agent_result(
+            AgentResultEventInput(call, AgentResultStatus.FAILED, "Agent turn timed out before completion.")
+        )
         if call
         else None
     )

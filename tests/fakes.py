@@ -1,5 +1,6 @@
 """Bản giả lập trong bộ nhớ cho Unit of Work và các Repository, dùng chung cho test."""
 
+from datetime import datetime
 from types import TracebackType
 
 from src.application.common.unit_of_work import IUnitOfWork
@@ -82,6 +83,17 @@ class FakeProjectRepository(_InMemoryRepository, IProjectRepository):
     async def list_accessible_by_user(self, user_id: EntityID) -> list[Project]:
         """Danh sách dự án người dùng có quyền truy cập."""
         return [item for item in self._items if item.user_id == user_id]
+
+    @override
+    async def get_latest_activity_by_project_ids(
+        self, project_ids: tuple[EntityID, ...]
+    ) -> dict[EntityID, datetime]:
+        requested = set(project_ids)
+        return {
+            item.id: item.updated_at
+            for item in self._items
+            if item.id in requested
+        }
 
 
 class FakeProjectMemberRepository(_InMemoryRepository, IProjectMemberRepository):

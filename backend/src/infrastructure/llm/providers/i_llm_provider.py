@@ -17,4 +17,3 @@ class ILLMProvider(Protocol):
     def build(self, configuration: ChatModelConfiguration) -> BaseChatModel:
         """Dựng client đã tắt automatic SDK retry."""
         ...
-

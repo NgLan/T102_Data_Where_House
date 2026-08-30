@@ -50,6 +50,7 @@ class SummaryCompactorDependencies:
     unit_of_work: IUnitOfWork
     policy: ConversationContextPolicy
 
+
 class ConversationSummaryCompactor:
     """Tạo summary checkpoint và dựng bounded conversational memory dùng chung."""
 
@@ -85,16 +86,12 @@ class ConversationSummaryCompactor:
         )
         return await self._persist_if_current(session, summary, batch[-1].agent_event_id)
 
-    async def compact_after_completion(
-        self, session_id: EntityID, project_id: EntityID
-    ) -> None:
+    async def compact_after_completion(self, session_id: EntityID, project_id: EntityID) -> None:
         """Giữ turn đã persist thành công khi derived summary tạm thời thất bại."""
         try:
             await self.compact_if_needed(session_id, project_id)
         except InfrastructureException:
-            logger.exception(
-                "conversation_summary_compaction_failed session_id=%s", session_id
-            )
+            logger.exception("conversation_summary_compaction_failed session_id=%s", session_id)
 
     async def _require_session(self, session_id: EntityID) -> ProjectSession:
         session = await self._dependencies.sessions.get_by_id(session_id)
@@ -102,17 +99,13 @@ class ConversationSummaryCompactor:
             raise ValueError("Project session disappeared during context compaction.")
         return session
 
-    async def _turns_after_checkpoint(
-        self, session: ProjectSession
-    ) -> tuple[ConversationTurn, ...]:
+    async def _turns_after_checkpoint(self, session: ProjectSession) -> tuple[ConversationTurn, ...]:
         events = await self._dependencies.events.list_conversation_events(
             ConversationEventQuery(session.id, session.summarized_through_event_id)
         )
         return group_conversation_turns(events)
 
-    def _compaction_batch(
-        self, turns: tuple[ConversationTurn, ...]
-    ) -> tuple[ConversationTurn, ...]:
+    def _compaction_batch(self, turns: tuple[ConversationTurn, ...]) -> tuple[ConversationTurn, ...]:
         policy = self._dependencies.policy
         checkpoint_size = policy.recent_turns + policy.summary_batch_size
         if len(turns) < checkpoint_size:

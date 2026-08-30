@@ -32,9 +32,13 @@ class SendSessionMessageRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
     content: str = Field(min_length=1, max_length=2_000)
+    client_message_id: UUID | None = None
+    locale: Literal["vi", "en"] = "vi"
 
     def to_application(self, session_id: UUID) -> SendSessionMessageInput:
-        return SendSessionMessageInput(session_id, self.content)
+        return SendSessionMessageInput(
+            session_id, self.content, self.client_message_id, self.locale
+        )
 
 
 class RenameProjectSessionRequest(BaseModel):

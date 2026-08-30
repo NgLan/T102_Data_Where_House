@@ -47,4 +47,3 @@ def _parse_secrets(value: object) -> tuple[SecretStr, ...]:
 
 StringListSetting = Annotated[tuple[str, ...], NoDecode, BeforeValidator(_parse_items)]
 SecretListSetting = Annotated[tuple[SecretStr, ...], NoDecode, BeforeValidator(_parse_secrets)]
-

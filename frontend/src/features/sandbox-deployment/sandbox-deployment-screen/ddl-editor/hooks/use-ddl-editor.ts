@@ -30,6 +30,7 @@ export function useDdlEditor(projectId: string, databaseName: string) {
     ddlCode,
     dialect,
     databaseName,
+    projectId,
     onDdlCodeChange: setDdlCode,
   });
   const handleDialectChange = (value: DdlDialect) => {

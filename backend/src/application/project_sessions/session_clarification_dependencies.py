@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 
+from src.application.agent_tools import IAgentToolService
 from src.application.common.unit_of_work import IUnitOfWork
 from src.application.data_warehouse_workflows.i_data_warehouse_workflow_service import (
     IDataWarehouseWorkflowService,
@@ -26,3 +27,4 @@ class ClarificationDependencies:
     unit_of_work: IUnitOfWork
     access: OwnedSessionAccess
     context: ConversationSummaryCompactor
+    tools: IAgentToolService | None = None

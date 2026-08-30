@@ -2,22 +2,18 @@
 
 from dataclasses import dataclass
 from datetime import datetime
-from uuid import UUID
 
 from src.application.data_warehouse_workflows.output import AgentTurnKind
-from src.domain.project_session.clarification import (
-    ClarificationAnswerMetadata,
-    ClarificationQuestionMetadata,
+from src.application.project_sessions.session_event_output import (
+    SessionEventOutput as SessionEventOutput,
 )
-from src.domain.project_session.entities import ProjectSession, SessionEvent
+from src.domain.project_session.entities import ProjectSession
 from src.domain.project_session.enums import (
-    AgentResultStatus,
-    SessionEventRole,
-    SessionEventType,
     SessionPurpose,
+    SessionQuestionKind,
     SessionStatus,
+    ToolResultStatus,
 )
-from src.domain.project_session.value_objects import AgentResultMetadata, MessageMetadata
 from src.domain.shared.types import EntityID
 
 
@@ -50,45 +46,6 @@ class ProjectSessionOutput:
 
 
 @dataclass(frozen=True, slots=True)
-class SessionEventOutput:
-    id: EntityID
-    session_id: EntityID
-    turn_id: EntityID | None
-    role: SessionEventRole
-    type: SessionEventType
-    content: str | None
-    status: AgentResultStatus | None
-    proposal_change_id: EntityID | None
-    question_options: tuple[str, ...]
-    allow_custom_answer: bool
-    answer_to_question_id: EntityID | None
-    created_at: datetime
-
-    @classmethod
-    def from_domain(cls, event: SessionEvent) -> "SessionEventOutput":
-        """Chỉ xuất metadata cần cho presentation."""
-        metadata = event.metadata
-        status = metadata.status if isinstance(metadata, AgentResultMetadata) else None
-        proposal_id = _proposal_id(metadata)
-        question = metadata if isinstance(metadata, ClarificationQuestionMetadata) else None
-        answer = metadata if isinstance(metadata, ClarificationAnswerMetadata) else None
-        return cls(
-            event.id,
-            event.session_id,
-            event.turn_id,
-            event.role,
-            event.type,
-            event.content,
-            status,
-            proposal_id,
-            question.options if question else (),
-            question.allow_custom_answer if question else False,
-            answer.question_id if answer else None,
-            event.created_at,
-        )
-
-
-@dataclass(frozen=True, slots=True)
 class SessionTurnOutput:
     session_id: EntityID
     turn_id: EntityID
@@ -100,15 +57,14 @@ class SessionTurnOutput:
     reason: str | None = None
     proposal_change_id: EntityID | None = None
     summary: str | None = None
+    question_kind: SessionQuestionKind | None = None
+    tool_name: str | None = None
+    tool_status: ToolResultStatus | None = None
+    artifact_event_id: EntityID | None = None
 
 
-def _proposal_id(metadata: object) -> UUID | None:
-    """Đọc UUID proposal từ Agent result mà không phát output thô."""
-    if isinstance(metadata, MessageMetadata):
-        return metadata.proposal_change_id
-    if not isinstance(metadata, AgentResultMetadata) or not metadata.output_data:
-        return None
-    try:
-        return UUID(metadata.output_data)
-    except ValueError:
-        return None
+@dataclass(frozen=True, slots=True)
+class ToolArtifactDownloadOutput:
+    filename: str
+    mime_type: str
+    content: bytes

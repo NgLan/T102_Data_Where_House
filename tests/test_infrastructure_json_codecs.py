@@ -21,7 +21,7 @@ from src.domain.project_session.clarification import (
     ClarificationAnswerMetadata,
     ClarificationQuestionMetadata,
 )
-from src.domain.project_session.enums import ClarificationAnswerKind
+from src.domain.project_session.enums import ClarificationAnswerKind, SessionQuestionKind
 from src.domain.project_session.value_objects import MessageMetadata
 from src.infrastructure.database.mappers.data_source.schema_metadata_codec import (
     decode_schema_metadata,
@@ -108,3 +108,18 @@ def test_clarification_metadata_round_trip(metadata: object) -> None:
     restored = decode_event_metadata(encode_event_metadata(metadata), type(metadata))
 
     assert restored == metadata
+
+
+def test_legacy_question_metadata_defaults_to_clarification() -> None:
+    restored = decode_event_metadata(
+        {
+            "options": ["Theo ngày", "Theo tháng"],
+            "allow_custom_answer": True,
+            "reason": "Thiếu grain",
+            "original_intent": None,
+            "missing_information": None,
+        },
+        ClarificationQuestionMetadata,
+    )
+
+    assert restored.question_kind is SessionQuestionKind.CLARIFICATION

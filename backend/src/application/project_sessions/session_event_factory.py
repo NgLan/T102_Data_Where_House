@@ -34,6 +34,7 @@ def create_user_event(data: UserEventInput) -> SessionEvent:
         role=SessionEventRole.USER,
         type=SessionEventType.MESSAGE,
         content=data.content,
+        metadata=MessageMetadata(client_message_id=data.client_message_id),
     )
 
 
@@ -81,6 +82,15 @@ def create_question(data: QuestionEventInput) -> SessionEvent:
             data.reason,
             data.original_intent,
             data.missing_information,
+            data.question_kind,
+            data.tool_name,
+            data.target_kind,
+            data.proposal_change_id,
+            data.db_type,
+            data.reset_schema,
+            data.expected_revision,
+            data.endpoint_risk,
+            data.schema_name,
         ),
     )
 
@@ -100,11 +110,7 @@ def create_answer(data: AnswerEventInput) -> SessionEvent:
 def create_agent_result(data: AgentResultEventInput) -> SessionEvent:
     """Tạo kết quả Agent với metadata công khai tối thiểu."""
     call_metadata = data.call.metadata
-    agent = (
-        call_metadata.target_agent
-        if isinstance(call_metadata, AgentCallMetadata)
-        else AgentType.DW_DESIGN
-    )
+    agent = call_metadata.target_agent if isinstance(call_metadata, AgentCallMetadata) else AgentType.DW_DESIGN
     return SessionEvent(
         session_id=data.call.session_id,
         turn_id=data.call.turn_id,

@@ -16,4 +16,3 @@ class ChatModelConfiguration:
     temperature: float
     max_tokens: int
     timeout_seconds: float
-

@@ -1,5 +1,6 @@
 """In-memory adapters dùng chung cho kiểm thử Project application service."""
 
+from datetime import datetime
 from types import TracebackType
 
 from src.application.common.unit_of_work import IUnitOfWork
@@ -34,6 +35,16 @@ class InMemoryProjectRepository(IProjectRepository):
             item for item in self.items.values() if item.user_id == user_id or (item.id, user_id) in self.accessible
         ]
         return sorted(projects, key=lambda item: item.updated_at, reverse=True)
+
+    @override
+    async def get_latest_activity_by_project_ids(
+        self, project_ids: tuple[EntityID, ...]
+    ) -> dict[EntityID, datetime]:
+        return {
+            project_id: self.items[project_id].updated_at
+            for project_id in project_ids
+            if project_id in self.items
+        }
 
     @override
     async def save(self, entity: Project) -> Project:

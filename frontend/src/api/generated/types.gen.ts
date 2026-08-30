@@ -12,6 +12,43 @@ export type ClientOptions = {
 export type AgentResultStatus = 'SUCCESS' | 'FAILED' | 'CANCELLED';
 
 /**
+ * AnalysisDocumentResponse
+ *
+ * Tài liệu Markdown và metadata target nguồn.
+ */
+export type AnalysisDocumentResponse = {
+    /**
+     * Filename
+     */
+    filename: string;
+    /**
+     * Mime Type
+     */
+    mime_type: string;
+    /**
+     * Content
+     */
+    content: string;
+    /**
+     * Data Model Revision
+     */
+    data_model_revision: number;
+    target_kind: DataModelTargetKind;
+    /**
+     * Proposal Change Id
+     */
+    proposal_change_id?: string | null;
+    /**
+     * Current Revision
+     */
+    current_revision: number;
+    /**
+     * Base Revision
+     */
+    base_revision: number;
+};
+
+/**
  * AnalysisStatusResponse
  *
  * Trạng thái outdated và action tiếp theo của workflow.
@@ -140,6 +177,34 @@ export type ApiErrorResponse = {
 };
 
 /**
+ * ApiResponse[AnalysisDocumentResponse]
+ */
+export type ApiResponseAnalysisDocumentResponse = {
+    /**
+     * Status
+     *
+     * Trạng thái phản hồi (luôn là 'success' đối với 2xx)
+     */
+    status?: 'success';
+    /**
+     * Code
+     *
+     * HTTP Status Code (mặc định 200)
+     */
+    code?: number;
+    /**
+     * Message
+     *
+     * Thông điệp phản hồi cho người dùng
+     */
+    message?: string;
+    /**
+     * Dữ liệu payload chính trả về
+     */
+    data?: AnalysisDocumentResponse | null;
+};
+
+/**
  * ApiResponse[AnalysisStatusResponse]
  */
 export type ApiResponseAnalysisStatusResponse = {
@@ -168,9 +233,9 @@ export type ApiResponseAnalysisStatusResponse = {
 };
 
 /**
- * ApiResponse[Annotated[Union[ClarificationTurnResponse, NoChangeTurnResponse, ProposalTurnResponse], FieldInfo(annotation=NoneType, required=True, discriminator='kind')]]
+ * ApiResponse[Annotated[Union[ClarificationTurnResponse, ConfirmationTurnResponse, NoChangeTurnResponse, ProposalTurnResponse, ToolResultTurnResponse, CancelledTurnResponse], FieldInfo(annotation=NoneType, required=True, discriminator='kind')]]
  */
-export type ApiResponseAnnotatedUnionClarificationTurnResponseNoChangeTurnResponseProposalTurnResponseFieldInfoAnnotationNoneTypeRequiredTrueDiscriminatorKind = {
+export type ApiResponseAnnotatedUnionClarificationTurnResponseConfirmationTurnResponseNoChangeTurnResponseProposalTurnResponseToolResultTurnResponseCancelledTurnResponseFieldInfoAnnotationNoneTypeRequiredTrueDiscriminatorKind = {
     /**
      * Status
      *
@@ -197,10 +262,16 @@ export type ApiResponseAnnotatedUnionClarificationTurnResponseNoChangeTurnRespon
     data?: ({
         kind: 'clarification';
     } & ClarificationTurnResponse) | ({
+        kind: 'confirmation_required';
+    } & ConfirmationTurnResponse) | ({
         kind: 'no_change';
     } & NoChangeTurnResponse) | ({
         kind: 'proposal';
-    } & ProposalTurnResponse) | null;
+    } & ProposalTurnResponse) | ({
+        kind: 'tool_result';
+    } & ToolResultTurnResponse) | ({
+        kind: 'cancelled';
+    } & CancelledTurnResponse) | null;
 };
 
 /**
@@ -1082,6 +1153,28 @@ export type BodyUploadProjectRequirementFiles = {
 };
 
 /**
+ * CancelledTurnResponse
+ */
+export type CancelledTurnResponse = {
+    /**
+     * Session Id
+     */
+    session_id: string;
+    /**
+     * Turn Id
+     */
+    turn_id: string;
+    /**
+     * Kind
+     */
+    kind: 'cancelled';
+    /**
+     * Summary
+     */
+    summary?: string | null;
+};
+
+/**
  * ChangeProposalDetailResponse
  *
  * Chi tiết proposal kèm snapshot hiện hành.
@@ -1268,6 +1361,23 @@ export type ClarificationQuestionResponse = {
      * Reason
      */
     reason: string | null;
+    question_kind: SessionQuestionKind;
+    /**
+     * Tool Name
+     */
+    tool_name: string | null;
+    /**
+     * Endpoint Risk
+     */
+    endpoint_risk: string | null;
+    /**
+     * Schema Name
+     */
+    schema_name: string | null;
+    /**
+     * Reset Schema
+     */
+    reset_schema: boolean | null;
     /**
      * Created At
      */
@@ -1322,6 +1432,49 @@ export type ClarificationTurnResponse = {
  * Kiểu dữ liệu hiển thị của một cột nguồn.
  */
 export type ColumnDataType = 'TEXT' | 'CATEGORY' | 'INTEGER' | 'NUMBER' | 'DECIMAL' | 'DATE' | 'TIME' | 'DATETIME' | 'BOOLEAN';
+
+/**
+ * ConfirmationTurnResponse
+ */
+export type ConfirmationTurnResponse = {
+    /**
+     * Session Id
+     */
+    session_id: string;
+    /**
+     * Turn Id
+     */
+    turn_id: string;
+    /**
+     * Kind
+     */
+    kind: 'confirmation_required';
+    /**
+     * Question Id
+     */
+    question_id: string;
+    /**
+     * Question
+     */
+    question: string;
+    /**
+     * Options
+     */
+    options: Array<string>;
+    /**
+     * Allow Custom Answer
+     */
+    allow_custom_answer: boolean;
+    question_kind: SessionQuestionKind;
+    /**
+     * Tool Name
+     */
+    tool_name: string;
+    /**
+     * Summary
+     */
+    summary?: string | null;
+};
 
 /**
  * CreateProjectRequest
@@ -1444,6 +1597,19 @@ export type DataModelDdlResponse = {
      * Revision Data Model nguồn
      */
     data_model_revision: number;
+    target_kind: DataModelTargetKind;
+    /**
+     * Proposal Change Id
+     */
+    proposal_change_id?: string | null;
+    /**
+     * Current Revision
+     */
+    current_revision: number;
+    /**
+     * Base Revision
+     */
+    base_revision: number;
 };
 
 /**
@@ -1495,6 +1661,13 @@ export type DataModelResponse = {
      */
     is_outdated: boolean;
 };
+
+/**
+ * DataModelTargetKind
+ *
+ * Snapshot được một capability đọc mà không thay đổi lifecycle model.
+ */
+export type DataModelTargetKind = 'CURRENT_MODEL' | 'PROPOSAL';
 
 /**
  * DataModelValidationIssueResponse
@@ -1854,6 +2027,23 @@ export type ForeignKeyConstraintDto = {
      * Cột được tham chiếu
      */
     reference_column: string;
+};
+
+/**
+ * GenerateAnalysisDocumentRequest
+ *
+ * Target và locale cho tài liệu phân tích.
+ */
+export type GenerateAnalysisDocumentRequest = {
+    target_kind?: DataModelTargetKind;
+    /**
+     * Change Id
+     */
+    change_id?: string | null;
+    /**
+     * Locale
+     */
+    locale?: string;
 };
 
 /**
@@ -2662,6 +2852,7 @@ export type SandboxConfigResponse = {
      * Status
      */
     status?: string;
+    endpoint_risk?: SandboxEndpointRisk;
 };
 
 /**
@@ -2670,6 +2861,13 @@ export type SandboxConfigResponse = {
  * Loại cơ sở dữ liệu Sandbox.
  */
 export type SandboxDbType = 'POSTGRESQL' | 'BIGQUERY' | 'SNOWFLAKE' | 'MYSQL' | 'SQLITE' | 'SQLSERVER';
+
+/**
+ * SandboxEndpointRisk
+ *
+ * Mức cảnh báo dựa trên endpoint literal, không thực hiện DNS lookup.
+ */
+export type SandboxEndpointRisk = 'LOOPBACK' | 'PRIVATE_NETWORK' | 'REMOTE';
 
 /**
  * SaveRawRequirementRequest
@@ -2717,6 +2915,14 @@ export type SendSessionMessageRequest = {
      * Content
      */
     content: string;
+    /**
+     * Client Message Id
+     */
+    client_message_id?: string | null;
+    /**
+     * Locale
+     */
+    locale?: 'vi' | 'en';
 };
 
 /**
@@ -2759,6 +2965,52 @@ export type SessionEventResponse = {
      */
     answer_to_question_id: string | null;
     /**
+     * Client Message Id
+     */
+    client_message_id: string | null;
+    question_kind: SessionQuestionKind | null;
+    /**
+     * Tool Name
+     */
+    tool_name: string | null;
+    tool_status: ToolResultStatus | null;
+    /**
+     * Artifact Id
+     */
+    artifact_id: string | null;
+    /**
+     * Artifact Filename
+     */
+    artifact_filename: string | null;
+    /**
+     * Artifact Mime Type
+     */
+    artifact_mime_type: string | null;
+    /**
+     * Sandbox Schema Name
+     */
+    sandbox_schema_name: string | null;
+    /**
+     * Sandbox Endpoint Risk
+     */
+    sandbox_endpoint_risk: string | null;
+    /**
+     * Executed Statements
+     */
+    executed_statements: number | null;
+    /**
+     * Succeeded Statements
+     */
+    succeeded_statements: number | null;
+    /**
+     * Failed Statements
+     */
+    failed_statements: number | null;
+    /**
+     * Total Duration Ms
+     */
+    total_duration_ms: number | null;
+    /**
      * Created At
      */
     created_at: string;
@@ -2784,6 +3036,13 @@ export type SessionEventType = 'MESSAGE' | 'QUESTION' | 'ANSWER' | 'AGENT_CALL' 
  * Mục đích nghiệp vụ của Project Session.
  */
 export type SessionPurpose = 'REQUIREMENT_CLARIFICATION' | 'DATA_MODELING';
+
+/**
+ * SessionQuestionKind
+ *
+ * Discriminator cho question cũ và các bước xác nhận tool.
+ */
+export type SessionQuestionKind = 'CLARIFICATION' | 'SANDBOX_MODE_SELECTION' | 'TOOL_CONFIRMATION';
 
 /**
  * SessionStatus
@@ -3069,6 +3328,44 @@ export type TestConnectionResponse = {
      * Latency Ms
      */
     latency_ms?: number | null;
+};
+
+/**
+ * ToolResultStatus
+ *
+ * Trạng thái kết quả thực thi của Tool (SUCCESS, FAILED).
+ */
+export type ToolResultStatus = 'SUCCESS' | 'FAILED';
+
+/**
+ * ToolResultTurnResponse
+ */
+export type ToolResultTurnResponse = {
+    /**
+     * Session Id
+     */
+    session_id: string;
+    /**
+     * Turn Id
+     */
+    turn_id: string;
+    /**
+     * Kind
+     */
+    kind: 'tool_result';
+    /**
+     * Tool Name
+     */
+    tool_name: string;
+    tool_status: ToolResultStatus;
+    /**
+     * Artifact Event Id
+     */
+    artifact_event_id?: string | null;
+    /**
+     * Summary
+     */
+    summary?: string | null;
 };
 
 /**
@@ -4815,6 +5112,54 @@ export type GenerateDataModelDdlResponses = {
 
 export type GenerateDataModelDdlResponse = GenerateDataModelDdlResponses[keyof GenerateDataModelDdlResponses];
 
+export type GenerateDataModelAnalysisDocumentData = {
+    body: GenerateAnalysisDocumentRequest;
+    path: {
+        /**
+         * Project Id
+         *
+         * ID dự án chứa Data Model
+         */
+        project_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}/data-model/analysis-document';
+};
+
+export type GenerateDataModelAnalysisDocumentErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
+};
+
+export type GenerateDataModelAnalysisDocumentError = GenerateDataModelAnalysisDocumentErrors[keyof GenerateDataModelAnalysisDocumentErrors];
+
+export type GenerateDataModelAnalysisDocumentResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseAnalysisDocumentResponse;
+};
+
+export type GenerateDataModelAnalysisDocumentResponse = GenerateDataModelAnalysisDocumentResponses[keyof GenerateDataModelAnalysisDocumentResponses];
+
 export type GenerateDataModelData = {
     body?: never;
     path: {
@@ -5957,7 +6302,7 @@ export type SendProjectSessionMessageResponses = {
     /**
      * Successful Response
      */
-    200: ApiResponseAnnotatedUnionClarificationTurnResponseNoChangeTurnResponseProposalTurnResponseFieldInfoAnnotationNoneTypeRequiredTrueDiscriminatorKind;
+    200: ApiResponseAnnotatedUnionClarificationTurnResponseConfirmationTurnResponseNoChangeTurnResponseProposalTurnResponseToolResultTurnResponseCancelledTurnResponseFieldInfoAnnotationNoneTypeRequiredTrueDiscriminatorKind;
 };
 
 export type SendProjectSessionMessageResponse = SendProjectSessionMessageResponses[keyof SendProjectSessionMessageResponses];
@@ -6014,6 +6359,58 @@ export type GetPendingProjectSessionClarificationResponses = {
 
 export type GetPendingProjectSessionClarificationResponse = GetPendingProjectSessionClarificationResponses[keyof GetPendingProjectSessionClarificationResponses];
 
+export type GetPendingProjectSessionActionData = {
+    body?: never;
+    path: {
+        /**
+         * Session Id
+         *
+         * ID phiên Agent
+         */
+        session_id: string;
+    };
+    query?: never;
+    url: '/api/v1/sessions/{session_id}/pending-action';
+};
+
+export type GetPendingProjectSessionActionErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ApiErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
+};
+
+export type GetPendingProjectSessionActionError = GetPendingProjectSessionActionErrors[keyof GetPendingProjectSessionActionErrors];
+
+export type GetPendingProjectSessionActionResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseUnionClarificationQuestionResponseNoneType;
+};
+
+export type GetPendingProjectSessionActionResponse = GetPendingProjectSessionActionResponses[keyof GetPendingProjectSessionActionResponses];
+
 export type AnswerProjectSessionClarificationData = {
     body: AnswerClarificationRequest;
     path: {
@@ -6067,10 +6464,120 @@ export type AnswerProjectSessionClarificationResponses = {
     /**
      * Successful Response
      */
-    200: ApiResponseAnnotatedUnionClarificationTurnResponseNoChangeTurnResponseProposalTurnResponseFieldInfoAnnotationNoneTypeRequiredTrueDiscriminatorKind;
+    200: ApiResponseAnnotatedUnionClarificationTurnResponseConfirmationTurnResponseNoChangeTurnResponseProposalTurnResponseToolResultTurnResponseCancelledTurnResponseFieldInfoAnnotationNoneTypeRequiredTrueDiscriminatorKind;
 };
 
 export type AnswerProjectSessionClarificationResponse = AnswerProjectSessionClarificationResponses[keyof AnswerProjectSessionClarificationResponses];
+
+export type DecideProjectSessionPendingActionData = {
+    body: AnswerClarificationRequest;
+    path: {
+        /**
+         * Session Id
+         *
+         * ID phiên Agent
+         */
+        session_id: string;
+        /**
+         * Question Id
+         *
+         * ID pending action
+         */
+        question_id: string;
+    };
+    query?: never;
+    url: '/api/v1/sessions/{session_id}/pending-actions/{question_id}/decision';
+};
+
+export type DecideProjectSessionPendingActionErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ApiErrorResponse;
+    /**
+     * Unprocessable Content
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
+};
+
+export type DecideProjectSessionPendingActionError = DecideProjectSessionPendingActionErrors[keyof DecideProjectSessionPendingActionErrors];
+
+export type DecideProjectSessionPendingActionResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseAnnotatedUnionClarificationTurnResponseConfirmationTurnResponseNoChangeTurnResponseProposalTurnResponseToolResultTurnResponseCancelledTurnResponseFieldInfoAnnotationNoneTypeRequiredTrueDiscriminatorKind;
+};
+
+export type DecideProjectSessionPendingActionResponse = DecideProjectSessionPendingActionResponses[keyof DecideProjectSessionPendingActionResponses];
+
+export type DownloadProjectSessionToolArtifactData = {
+    body?: never;
+    path: {
+        /**
+         * Session Id
+         *
+         * ID phiên Agent
+         */
+        session_id: string;
+        /**
+         * Tool Result Event Id
+         *
+         * TOOL_RESULT event ID
+         */
+        tool_result_event_id: string;
+    };
+    query?: never;
+    url: '/api/v1/sessions/{session_id}/events/{tool_result_event_id}/artifact';
+};
+
+export type DownloadProjectSessionToolArtifactErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
+};
+
+export type DownloadProjectSessionToolArtifactError = DownloadProjectSessionToolArtifactErrors[keyof DownloadProjectSessionToolArtifactErrors];
+
+export type DownloadProjectSessionToolArtifactResponses = {
+    /**
+     * Successful Response
+     */
+    200: unknown;
+};
 
 export type StreamProjectSessionEventsData = {
     body?: never;

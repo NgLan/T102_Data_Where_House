@@ -47,6 +47,11 @@
     elapsedSeconds = 0;
     const timerDisplay = document.getElementById('pitch-timer');
     if (timerDisplay) timerDisplay.textContent = "00:00 / 01:05";
+    const audio = document.getElementById('pitch-audio');
+    if (audio) {
+      audio.pause();
+      audio.currentTime = 0;
+    }
   }
 
   // Keyboard shortcut: 'T' toggles rehearsal timer
@@ -79,6 +84,7 @@
     startTimer: startPitchTimer,
     stopTimer: stopPitchTimer,
     resetTimer: resetPitchTimer,
+    isTimerRunning: () => isTimerRunning,
     timings: SLIDE_TIMINGS
   };
 })();

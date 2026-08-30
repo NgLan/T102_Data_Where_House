@@ -237,6 +237,10 @@ class DataWarehouseWorkflowService(IDataWarehouseWorkflowService):
             return _clarification_turn_output(result, data.original_intent or data.instruction)
         if result.kind is AgentTurnKind.NO_CHANGE:
             return AgentTurnOutput(result.kind, summary=result.summary)
+        if result.kind is AgentTurnKind.TOOL_REQUEST:
+            return AgentTurnOutput(
+                result.kind, summary=result.summary, tool_request=result.tool_request
+            )
         change = await self._persistence.persist_proposal(
             model,
             project_snapshot,

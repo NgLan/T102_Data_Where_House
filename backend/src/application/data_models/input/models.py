@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 
+from src.domain.data_model.enums import DataModelTargetKind
 from src.domain.sandbox.enums import SandboxDbType
 from src.domain.shared.types import EntityID
 
@@ -46,8 +47,23 @@ class GetPendingChangeProposalInput:
 
 
 @dataclass(frozen=True, slots=True)
+class DataModelTargetInput:
+    """Chọn snapshot current hoặc proposal một cách tường minh."""
+
+    kind: DataModelTargetKind = DataModelTargetKind.CURRENT_MODEL
+    change_id: EntityID | None = None
+
+
+@dataclass(frozen=True, slots=True)
 class GenerateDataModelDdlInput:
-    """Input sinh DDL từ Data Model hiện hành."""
+    """Input sinh DDL từ target Data Model đã chọn."""
 
     project_id: EntityID
     db_type: SandboxDbType = SandboxDbType.POSTGRESQL
+    target: DataModelTargetInput = DataModelTargetInput()
+
+
+@dataclass(frozen=True, slots=True)
+class ResolveDataModelTargetInput:
+    project_id: EntityID
+    target: DataModelTargetInput = DataModelTargetInput()
